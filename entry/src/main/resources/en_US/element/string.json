@@ -1,0 +1,176 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "module description"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "description"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "Scan Kit Demo"
+    },
+    {
+      "name": "Scan_light_to_off",
+      "value": "Turn off light"
+    },
+    {
+      "name": "Scan_light_to_on",
+      "value": "Turn light on"
+    },
+    {
+      "name": "Scan_diaLog_not_found",
+      "value": "QR Code/barcode not found."
+    },
+    {
+      "name": "Scan_diaLog_got_it",
+      "value": "Got it"
+    },
+    {
+      "name": "Scan_access_not_enabled",
+      "value": "Camera, Access Not Enabled"
+    },
+    {
+      "name": "Scan_access_tips",
+      "value": "Grant the Camera permission in Settings > Apps > testclient > Permissions to enable the Camera permission."
+    },
+    {
+      "name": "Scan_got_it",
+      "value": "Cancel"
+    },
+    {
+      "name": "Scan_settings",
+      "value": "Settings"
+    },
+    {
+      "name": "Scan_barcode",
+      "value": "Scan QR code/barcode"
+    },
+    {
+      "name": "Scan_barcode_tips",
+      "value": "Align the QR code/barcode below"
+    },
+    {
+      "name": "demo_title",
+      "value": "HarmonyOS Scan Kit Demo"
+    },
+    {
+      "name": "demo_subject",
+      "value": "Scan Kit"
+    },
+    {
+      "name": "demo_detail",
+      "value": "Collaborate hardware and software at the system level to help you quickly build capabilities that can recognize and generate barcodes for all kinds of scenarios."
+    },
+    {
+      "name": "default_view_decoe",
+      "value": "Barcode Scan by Default UI"
+    },
+    {
+      "name": "customized_view_decode",
+      "value": "Barcode Scan by Custom UI"
+    },
+    {
+      "name": "customized_view_decode_frame",
+      "value": "Barcode Scan by Custom UI-YUV"
+    },
+    {
+      "name": "bitmap_api_decode",
+      "value": "Image-Based Barcode Recognition"
+    },
+    {
+      "name": "bitmap_api_decode_image",
+      "value": "Recognize local images"
+    },
+    {
+      "name": "bitmap_api_decode_pixel",
+      "value": "Recognize image data"
+    },
+    {
+      "name": "generate_QR_code",
+      "value": "Barcode Image Generation"
+    },
+    {
+      "name": "barcode_content",
+      "value": "Barcode Content:"
+    },
+    {
+      "name": "barcode_width",
+      "value": "Barcode width:"
+    },
+    {
+      "name": "barcode_height",
+      "value": "Barcode height:"
+    },
+    {
+      "name": "barcode_type",
+      "value": "Type:"
+    },
+    {
+      "name": "barcode_margin",
+      "value": "Margin:"
+    },
+    {
+      "name": "barcode_color",
+      "value": "Color:"
+    },
+    {
+      "name": "barcode_backgroundcolor",
+      "value": "Background:"
+    },
+    {
+      "name": "barcode_error_level",
+      "value": "Error correction level:"
+    },
+    {
+      "name": "generate_barcode",
+      "value": "Generate Barcode"
+    },
+    {
+      "name": "title_result",
+      "value": "Result"
+    },
+    {
+      "name": "code_format",
+      "value": "Code Format"
+    },
+    {
+      "name": "code_react",
+      "value": "Code React"
+    },
+    {
+      "name": "result_content",
+      "value": "Result"
+    },
+    {
+      "name": "promise_parameter",
+      "value": "Promise has parameter"
+    },
+    {
+      "name": "promise_no_parameter",
+      "value": "Promise no parameter"
+    },
+    {
+      "name": "callback_parameter",
+      "value": "callback has parameter"
+    },
+    {
+      "name": "callback_no_parameter",
+      "value": "callback no paramete"
+    },
+    {
+      "name": "permission_reason_camera",
+      "value": "Used for scanning barcodes"
+    },
+    {
+      "name": "decode_zoom_current",
+      "value": "Zoom Ratio; Current: "
+    },
+    {
+      "name": "decode_zoom_enter",
+      "value": "Enter a zoom ratio."
+    }
+  ]
+}

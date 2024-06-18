@@ -1,0 +1,144 @@
+import { router, display } from '@kit.ArkUI';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+import { scanBarcode } from '@kit.ScanKit';
+import { GlobalThisUtil } from '../../common/GlobalThisUtil';
+
+const TAG: string = 'Scan SampleCode CodeLayout';
+
+@Entry
+@Component
+struct CodeLayout {
+  private result: Array<object> = [];
+  private uri: string = '';
+  private infoW: number = 0;
+  private infoH: number = 0;
+  @State displayHeight: number = 1412;
+  @State displayWidth: number = 720;
+  @State layTop: number = 226;
+  @State layLeft: number = 0;
+  @State screen: number = 1;
+  @State codeLocation: Array<Array<number>> = [];
+  public scroller: Scroller = new Scroller();
+  private statusHeight: number = 39;
+
+  aboutToAppear() {
+    this.codeLocation = [];
+    if (GlobalThisUtil.getProperty('getStatusHeight')) {
+      this.statusHeight = px2vp(GlobalThisUtil.getProperty('getStatusHeight'));
+    }
+    let isFold: boolean = display.isFoldable();
+    this.setDisplay();
+    hilog.info(0x0001, TAG, 'aboutToAppear CodeLayout');
+    let params = router.getParams() as Record<string, number | string | Array<scanBarcode.ScanResult>>;
+    this.result = params.result as Array<scanBarcode.ScanResult>;
+    this.uri = params.uri as string;
+    this.infoW = params.infoW as number;
+    this.infoH = params.infoH as number;
+    hilog.info(0x0001, TAG, 'params: %{public}s', JSON.stringify(params));
+    hilog.info(0x0001, TAG, JSON.stringify(this.result));
+    hilog.info(0x0001, TAG, 'uri: %{public}s, infoW: %{public}d, infoH: %{public}d', this.uri, this.infoW, this.infoH);
+    this.calculate();
+    if (isFold) {
+      display.on('foldDisplayModeChange', async (foldStatus: display.FoldDisplayMode) => {
+        // 1: expanded; 2: collapsed
+        if (foldStatus === 1 || foldStatus === 2) {
+          setTimeout(() => {
+            this.codeLocation = [];
+            this.setDisplay();
+            this.calculate();
+          }, 300)
+        }
+      });
+    }
+  }
+
+  setDisplay(): void {
+    hilog.info(0x0001, TAG, 'setDisplay start');
+    let displayClass: display.Display | null = null;
+    try {
+      displayClass = display.getDefaultDisplaySync();
+      hilog.info(0x0001, TAG, 'displayClass: %{public}s', JSON.stringify(displayClass));
+    } catch (exception) {
+      hilog.error(0x0001, TAG, 'Failed to obtain the default display object. exception: %{public}s',
+        JSON.stringify(exception));
+    }
+
+    if (displayClass !== null) {
+      displayClass.height = displayClass.height - vp2px(this.statusHeight);
+      this.displayHeight = Math.round(px2lpx(displayClass.height));
+      this.displayWidth = Math.round(px2lpx(displayClass.width));
+      hilog.info(0x0001, TAG, 'displayHeight: %{public}d', this.displayHeight);
+      hilog.info(0x0001, TAG, 'displayWidth: %{public}d', this.displayWidth);
+    }
+  }
+
+  calculate() {
+    if (this.infoW && this.infoH && this.displayHeight && this.displayWidth) {
+      if (this.infoW / this.infoH > this.displayWidth / this.displayHeight) {
+        this.screen = this.displayWidth / this.infoW;
+        this.layTop = (this.displayHeight - this.displayWidth * this.infoH / this.infoW) / 2;
+        this.layLeft = 0;
+      } else {
+        this.layTop = 0;
+        this.layLeft = (this.displayWidth - this.displayHeight * this.infoW / this.infoH) / 2;
+        this.screen = this.displayHeight / this.infoH;
+      }
+    }
+    for (let i = 0; i < this.result.length; i++) {
+      let rx = Math.round(this.result[i]['scanCodeRect']['left'] * this.screen + this.layLeft);
+      let ry = Math.round(this.result[i]['scanCodeRect']['top'] * this.screen + this.layTop);
+      let rw =
+        Math.round((this.result[i]['scanCodeRect']['right'] - this.result[i]['scanCodeRect']['left']) * this.screen);
+      let rh =
+        Math.round((this.result[i]['scanCodeRect']['bottom'] - this.result[i]['scanCodeRect']['top']) * this.screen);
+      this.codeLocation.push([rx, ry, rw, rh])
+    }
+  }
+
+  build() {
+    Stack() {
+      Image($rawfile('scan_back.svg'))
+        .fillColor(Color.Black)
+        .width(30)
+        .height(30)
+        .objectFit(ImageFit.Contain)
+        .position({ x: 15, y: 0 })
+        .zIndex(10)
+        .onClick(async () => {
+          router.back();
+        })
+        .margin({
+          top: this.statusHeight
+        })
+      Column() {
+        Image(this.uri)
+          .objectFit(ImageFit.Contain)
+          .width('100%')
+          .height('100%')
+        ForEach(this.codeLocation, (item: Array<number>, index: number) => {
+          Image($rawfile('scan_selected.svg'))
+            .width(40)
+            .height(40)
+            .markAnchor({ x: 20, y: 20 })
+            .position({
+              x: item[0] + item[2] / 2 + 'lpx',
+              y: item[1] + item[3] / 2 + 'lpx',
+            })
+            .onClick(() => {
+              router.pushUrl({
+                url: 'pages/resultPage/ResultPage',
+                params: this.result[index]
+              })
+            })
+        })
+      }
+      .padding({
+        top: this.statusHeight
+      })
+      .width('100%')
+      .height('100%')
+    }
+    .width('100%')
+    .height('100%')
+  }
+}
