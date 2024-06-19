@@ -275,15 +275,14 @@ struct CameraHome {
           if (!this.isDecoding && imgComponent && imgComponent.byteBuffer as ArrayBuffer) {
             // Decode camera preview buffer.
             // Note: Cameras and camera previews aren’t always in the same orientation.
-            this.decodeImageBuffer(imgComponent, CAMERA_1920, CAMERA_1080);
+            this.decodeImageBuffer(nextImage, imgComponent, CAMERA_1920, CAMERA_1080);
           }
-          nextImage.release();
         })
       })
     })
   }
 
-  decodeImageBuffer(imgComponent: image.Component, width: number, height: number) {
+  decodeImageBuffer(nextImage: image.Image, imgComponent: image.Component, width: number, height: number) {
     try {
       let byteImg: detectBarcode.ByteImage = {
         byteBuffer: imgComponent.byteBuffer,
@@ -338,12 +337,16 @@ struct CameraHome {
         }
 
         this.isDecoding = false;
+        // Releases the image data after decoding.
+        nextImage.release();
       }).catch((error: BusinessError) => {
         hilog.error(0x0001, TAG, 'decodeImage, error: ' + JSON.stringify(error));
         this.isDecoding = false;
+        nextImage.release();
       })
     } catch (error) {
       this.isDecoding = false;
+      nextImage.release();
     }
   }
 
