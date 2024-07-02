@@ -8,38 +8,43 @@ The **import { scanCore, scanBarcode, customScan, detectBarcode, generateBarcode
 
 ## Effect Preview
 
-|            **App Home Screen**             | **Barcode Scan by Default UI**                 |            **Scan Result (Single Barcode)**            |           **Scan Result (Multiple Barcodes)**           |        **Barcode Scan Result (Default UI)**        |
-|:-------------------------------:| -------------------------------- | :------------------------------------: |:-------------------------------------------------------:| :--------------------------------: |
-| ![](entry/screenshots/homePageEs.png) | ![](entry/screenshots/defaultScanEs.png) | ![](entry/screenshots/defaultSingleScanEs.png) |         ![](entry/screenshots/defaultMutiScanEs.png)          | ![](entry/screenshots/defaultResultEs.png) |
+|          **App Home Screen**          | **Barcode Scan by Default UI**           |        **Scan Result (Single Barcode)**        |     **Scan Result (Multiple Barcodes)**      |    **Barcode Scan Result (Default UI)**    |
+| :-----------------------------------: | ---------------------------------------- | :--------------------------------------------: | :------------------------------------------: | :----------------------------------------: |
+| ![](entry/screenshots/homePageEs.png) | ![](entry/screenshots/defaultScanEs.png) | ![](entry/screenshots/defaultSingleScanEs.png) | ![](entry/screenshots/defaultMutiScanEs.png) | ![](entry/screenshots/defaultResultEs.png) |
 
-| **App Home Screen**               |             **Barcode Scan by Custom UI**              |          **Scan Result (Single Barcode)** |                         **Scan Result (Multiple Barcodes)** |                         **Barcode Scan Result (Custom UI)** |
-| :------------------------: |:----------------------------------:| :-------------------------: | :--------------------------------------: |:-------------------------------------:|
-| ![](entry/screenshots/homePageEs.png)| ![](entry/screenshots/customScanEs.png) | ![](entry/screenshots/customSingleScanEs.png) | ![](entry/screenshots/customMultiScanEs.png) | ![](entry/screenshots/customOrDetectBarcodeResultEs.png) |
+|          **App Home Screen**          |      **Barcode Scan by Custom UI**      |       **Scan Result (Single Barcode)**        |     **Scan Result (Multiple Barcodes)**      |           **Barcode Scan Result (Custom UI)**            |
+| :-----------------------------------: | :-------------------------------------: | :-------------------------------------------: | :------------------------------------------: | :------------------------------------------------------: |
+| ![](entry/screenshots/homePageEs.png) | ![](entry/screenshots/customScanEs.png) | ![](entry/screenshots/customSingleScanEs.png) | ![](entry/screenshots/customMultiScanEs.png) | ![](entry/screenshots/customOrDetectBarcodeResultEs.png) |
 
-| **App Home Screen**               |                 **Barcode Scan by Custom UI (YUV)**                 |
-| :------------------------: |:------------------------------------------:|
+|          **App Home Screen**          |    **Barcode Scan by Custom UI (YUV)**     |
+| :-----------------------------------: | :----------------------------------------: |
 | ![](entry/screenshots/homePageEs.png) | ![](entry/screenshots/customScanYUVEs.png) |
 
-| **App Home Screen**               |         **Recognize Local Images**          |               **Image-Based Barcode Recognition Result (Single Barcode)**               |               **Image-Based Barcode Recognition Result (Multiple Barcodes)**                |                    **Image-Based Barcode Recognition Result**                    |
-| :------------------------: |:-----------------------------:|:----------------------------------------:|:---------------------------------------:|:------------------------------------------------:|
-| ![](entry/screenshots/homePageEs.png) | ![](entry/screenshots/detectBarcodepickerEs.png) | ![](entry/screenshots/detectBarcodeSingleEs.png) | ![](entry/screenshots/detectBarcodeMultiEs.png) | ![](entry/screenshots/customOrDetectBarcodeResultEs.png) |
+|          **App Home Screen**          | **Barcode Scan by Custom UI – Recommended Example**           |        **Scan Result (Single Barcode)**        |     **Scan Result (Multiple Barcodes)**      |    **Barcode Scan Result (Recommended Example)**    |
+|:-------------------------------------:| ---------------------------------------- |:----------------------------------------------:| :------------------------------------------: | :----------------------------------------: |
+| ![](entry/screenshots/homePageEs.png) | ![](entry/screenshots/defaultScanEs.png) | ![](entry/screenshots/defaultSingleScanEs.png) | ![](entry/screenshots/defaultMutiScanEs.png) | ![](entry/screenshots/defaultResultEs.png) |
 
-| **App Home Screen**               |               **Recognize Image Data**               |
-| :------------------------: |:--------------------------------------:|
+|          **App Home Screen**          |            **Recognize Local Images**            | **Image-Based Barcode Recognition Result (Single Barcode)** | **Image-Based Barcode Recognition Result (Multiple Barcodes)** |        **Image-Based Barcode Recognition Result**        |
+| :-----------------------------------: | :----------------------------------------------: | :---------------------------------------------------------: | :----------------------------------------------------------: | :------------------------------------------------------: |
+| ![](entry/screenshots/homePageEs.png) | ![](entry/screenshots/detectBarcodepickerEs.png) |      ![](entry/screenshots/detectBarcodeSingleEs.png)       |       ![](entry/screenshots/detectBarcodeMultiEs.png)        | ![](entry/screenshots/customOrDetectBarcodeResultEs.png) |
+
+|          **App Home Screen**          |        **Recognize Image Data**        |
+| :-----------------------------------: | :------------------------------------: |
 | ![](entry/screenshots/homePageEs.png) | ![](entry/screenshots/decodeImage.png) |
 
-| **App Home Screen**               |          **Barcode Image Generation UI**           |                          **Barcode Image Generation Result** |
-| :------------------------: |:-----------------------------:|:-----------------------------------:|
+|          **App Home Screen**          |    **Barcode Image Generation UI**    |     **Barcode Image Generation Result**     |
+| :-----------------------------------: | :-----------------------------------: | :-----------------------------------------: |
 | ![](entry/screenshots/homePageEs.png) | ![](entry/screenshots/generateEs.png) | ![](entry/screenshots/generateResultEs.png) |
-| Usage:                |                               |                                     |
+|                Usage:                 |                                       |                                             |
 
 1. Tap **Scan Kit Demo** on the home screen of your device to start the demo app. The following buttons will be displayed on the demo app home screen: **Barcode Scan by Default UI**, **Barcode Scan by Custom UI**, **Image-Based Barcode Recognition**, and **Barcode Image Generation**.
 2. Tap **Barcode Scan by Default UI** to launch the default barcode scan UI, scan a barcode image, and check the scan result.
 3. Tap **Barcode Scan by Custom UI** to go to the level-2 UI. Tap **Barcode Scan by Custom UI** again to launch the custom barcode scan UI, scan a barcode image, and check the scan result through a promise.
-4. Tap **Barcode Scan by Custom UI** to go to the level-2 UI. Tap **Barcode Scan by Custom UI (YUV)** to launch the custom barcode scan UI, scan a barcode image, and check the scan result through a callback. 
-5. Tap **Image-Based Barcode Recognition** to the level-2 page and tap **Recognize Local Images** to start the picker, select a barcode image from the gallery for recognition, and check the scan result.
-6. Tap **Image-Based Barcode Recognition** to the level-2 page and tap **Recognize Image Data** to check the scan result. 
-7. Tap **Barcode Image Generation** to call the barcode image generation API to generate different types of barcode images.
+4. Tap **Barcode Scan by Custom UI** to go to the level-2 UI. Tap **Barcode Scan by Custom UI (YUV)** to launch the custom barcode scan UI, scan a barcode image, and check the scan result through a callback.
+5. Tap **Barcode Scan by Custom UI** to go to the level-2 UI. Tap **Barcode Scan by Custom UI – Recommended Example** to customize a barcode scan UI using the recommended method, scan a barcode image, and obtain the scan result.
+6. Tap **Image-Based Barcode Recognition** to the level-2 page and tap **Recognize Local Images** to start the picker, select a barcode image from the gallery for recognition, and check the scan result.
+7. Tap **Image-Based Barcode Recognition** to the level-2 page and tap **Recognize Image Data** to check the scan result.
+8. Tap **Barcode Image Generation** to call the barcode image generation API to generate different types of barcode images.
 
 ## Project Directory
 
@@ -57,7 +62,31 @@ The **import { scanCore, scanBarcode, customScan, detectBarcode, generateBarcode
 │ │ │ ├─CustomPage.ets          // Page where the button for accessing the custom barcode scanning UI is located.  
 │ │ │ ├─CustomScan.ets          // Custom barcode scanning UI.   
 │ │ │ ├─CustomYuv.ets         // Custom barcode scanning UI (YUV).    
-│ │ │ ├─PermissionsUtil.ets         // Camera authorization class.              
+│ │ │ ├─PermissionsUtil.ets         // Camera authorization class.    
+│ │ │ ├─customScanDefault         // Recommended example of the custom barcode scanning UI.    
+│ │ │ │ ├─constants         // Constants.    
+│ │ │ │ │ ├─BreakpointConstants         // Breakpoint constants.    
+│ │ │ │ │ ├─CommonConstants         // Common constants.    
+│ │ │ │ ├─model         // Implementation.    
+│ │ │ │ │ ├─BreakpointType         // Breakpoint.    
+│ │ │ │ │ ├─openPhoto         // Gallery.    
+│ │ │ │ │ ├─PromptTone         // Prompt tone.    
+│ │ │ │ │ ├─ScanPreferences         // Privacy statement pop-up.    
+│ │ │ │ │ ├─ScanService         // Barcode scanning customization.    
+│ │ │ │ │ ├─ScanSize         // Barcode scanning UI layout.    
+│ │ │ │ ├─pages         // Pages.    
+│ │ │ │ │ ├─ScanPage         // Barcode scanning page.    
+│ │ │ │ ├─view         // Components.    
+│ │ │ │ │ ├─CommonCodeLayout         // Radio button component.    
+│ │ │ │ │ ├─IconPress         // Image press effect component.    
+│ │ │ │ │ ├─MaskLayer         // Mask.    
+│ │ │ │ │ ├─pickerDialog         // Modal dialog box component.    
+│ │ │ │ │ ├─ScanBottom         // Bottom component.    
+│ │ │ │ │ ├─ScanLine         // Scan line component.    
+│ │ │ │ │ ├─ScanLoading         // Loading component.    
+│ │ │ │ │ ├─ScanTitle         // Title component.    
+│ │ │ │ │ ├─ScanTopTool         // Header component.    
+│ │ │ │ │ ├─ScanXComponent         // XComponent.    
 │ │ ├─detectBarcode         // Image-based barcode recognition.    
 │ │ │ ├─CommonCodeLayout.ets          // Radio button component.   
 │ │ │ ├─DecodeBarcode.ets         // Page where the image recognition button is located.    

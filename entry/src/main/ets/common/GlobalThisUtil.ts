@@ -3,11 +3,11 @@
  * 随着ets语法调整，globalThis可能被删除。后续可以考虑对globalThis进行彻底清理，通过其他方式传递全局参数
  */
 export class GlobalThisUtil {
-  public static setProperty(name: string, value: any): void {
+  public static setProperty<T>(name: string, value: T): void {
     globalThis[name] = value;
   }
 
-  public static getProperty(name: string): any {
+  public static getProperty<T>(name: string): T {
     return globalThis[name];
   }
 }

@@ -6,10 +6,11 @@ import { BusinessError } from '@kit.BasicServicesKit';
 import { scanBarcode, customScan, scanCore, detectBarcode } from '@kit.ScanKit';
 import { common, abilityAccessCtrl, Permissions, Want } from '@kit.AbilityKit';
 import { emitter } from '@kit.BasicServicesKit';
-import { ScanEventId, WindowSize } from '../../common/Utils';
+import { WindowSize } from '../../common/Utils';
 import { CodeLayout } from './CommonCodeLayout';
 import { PermissionsUtil } from './PermissionsUtil'
 import { GlobalThisUtil } from '../../common/GlobalThisUtil';
+import { CommonConstants } from '../customScanDefault/constants/CommonConstants';
 
 let maxPaddingStart = 24;
 let maxPaddingEnd = 24;
@@ -122,8 +123,8 @@ function maskStyle() {
   .height('100%')
   .backgroundColor('rgba(0,0,0,0.5)')
   .animation({
-    duration: 350, // 动画时长
-    curve: curves.cubicBezierCurve(0.33, 0, 0.67, 1), // 动画曲线
+    duration: 350, // Animation Duration
+    curve: curves.cubicBezierCurve(0.33, 0, 0.67, 1), // Animation Curves
     delay: 0,
     iterations: 1,
     playMode: PlayMode.Alternate,
@@ -183,9 +184,9 @@ struct closeImage {
 struct ScanPage {
   @State isOnPageShow: boolean = false;
   @State isReleaseCamera: boolean = false;
-  @State isFlashlight: boolean = false // 闪光灯是否开启
-  @State isShowLightIcon: boolean = false // 是否显示闪光灯
-  @State isSensorLight: boolean = false; // 记录当前环境亮暗状态
+  @State isFlashlight: boolean = false; // Whether the flashlight is turned on.
+  @State isShowLightIcon: boolean = false; // Whether to display the flashlight.
+  @State isSensorLight: boolean = false; // Record the current environment brightness status.
   @State isScanned: boolean = false;
   @State cameraHeight: number = 640; // Sets the XComponent height. The default unit is vp.
   @State cameraWidth: number = 360; // Sets the XComponent width. The default unit is vp.
@@ -245,7 +246,7 @@ struct ScanPage {
 
   existApp() {
     this.isDialogShow = false;
-    hilog.info(0x0001, TAG, 'reqPermissionsFromUser, existApp ---------- %{public}s', this.isDialogShow);
+    hilog.info(0x0001, TAG, 'Start to permissionUsedRecord. isDialogShow: %{public}s', this.isDialogShow);
   }
 
   async requestCameraPermission() {
@@ -384,7 +385,7 @@ struct ScanPage {
 
   windowSizeSubscribe(): void {
     // 订阅WINDOW_SIZE
-    emitter.on({ eventId: ScanEventId.WINDOW_SIZE_CHANGE }, async () => {
+    emitter.on({ eventId: CommonConstants.WINDOW_SIZE_CHANGE }, async () => {
       if (GlobalThisUtil.getProperty('hmsCore_scan_foldStatus') === 1 ||
         GlobalThisUtil.getProperty('hmsCore_scan_foldStatus') === 2) {
         await this.releaseCamera();
@@ -397,9 +398,9 @@ struct ScanPage {
     let params = router.getParams() as Record<string, string | boolean>;
     this.hasOptions = params.hasOptions as boolean;
     this.result = [];
-    this.statusHeight = GlobalThisUtil.getProperty('getStatusHeight');
-    if (GlobalThisUtil.getProperty('getStatusHeight')) {
-      this.statusHeight = px2vp(GlobalThisUtil.getProperty('getStatusHeight'));
+    this.statusHeight = GlobalThisUtil.getProperty('scan_topRect_height');
+    if (GlobalThisUtil.getProperty('scan_topRect_height')) {
+      this.statusHeight = px2vp(GlobalThisUtil.getProperty('scan_topRect_height'));
     }
     this.setDisplay();
     if (GlobalThisUtil.getProperty('hmsCore_scan_isFoldable')) {
@@ -416,9 +417,9 @@ struct ScanPage {
   }
 
   aboutToDisappear() {
-    hilog.info(0x0001, TAG, ' aboutToDisappear ----------');
+    hilog.info(0x0001, TAG, ' AboutToDisappear lifecycle start.');
     if (GlobalThisUtil.getProperty('hmsCore_scan_isFoldable')) {
-      emitter.off(ScanEventId.WINDOW_SIZE_CHANGE);
+      emitter.off(CommonConstants.WINDOW_SIZE_CHANGE);
       display.off('foldStatusChange');
     }
   }
@@ -541,7 +542,7 @@ struct ScanPage {
   }
 
   async onPageHide() {
-    hilog.info(0x0001, TAG, ' onPageHide ----------')
+    hilog.info(0x0001, TAG, ' OnPageHide lifecycle start.')
     this.isFlashlight = false;
     this.isSensorLight = false;
     this.dialogController.close();
@@ -687,7 +688,7 @@ struct ScanPage {
         Row() {
           Button($r('app.string.decode_zoom_current'))
             .onClick(() => {
-              // 设置相机缩放比例
+              // Set Camera Zoom
               this.zoomValue = this.zoomValue;
               this.setZoomValue = this.zoomValue;
               customScan.setZoom(this.zoomValue);
@@ -739,7 +740,7 @@ struct ScanPage {
         .width('100%')
         .position({ x: 0, y: 0 })
       }
-      // 遮罩蒙层
+      // mask layer
       if (this.isScanned) {
         Column() {
         }.maskStyle()

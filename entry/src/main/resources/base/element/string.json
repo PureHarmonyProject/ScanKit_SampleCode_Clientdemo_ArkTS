@@ -2,7 +2,7 @@
   "string": [
     {
       "name": "module_desc",
-      "value": "模块描述"
+      "value": "module description"
     },
     {
       "name": "EntryAbility_desc",
@@ -10,167 +10,203 @@
     },
     {
       "name": "EntryAbility_label",
-      "value": "统一扫码示例"
+      "value": "Scan Kit Demo"
     },
     {
       "name": "Scan_light_to_off",
-      "value": "轻触关闭"
+      "value": "Turn off light"
     },
     {
       "name": "Scan_light_to_on",
-      "value": "轻触照亮"
+      "value": "Turn light on"
     },
     {
       "name": "Scan_diaLog_not_found",
-      "value": "未识别到二维码/条形码。"
+      "value": "QR Code/barcode not found."
     },
     {
       "name": "Scan_diaLog_got_it",
-      "value": "知道了"
+      "value": "Got it"
     },
     {
       "name": "Scan_access_not_enabled",
-      "value": "未开启相机权限"
+      "value": "Camera, Access Not Enabled"
     },
     {
       "name": "Scan_access_tips",
-      "value": "请在“设置”>“应用管理”>“testclient”>“权限”中开启“相机”权限。"
+      "value": "Grant the Camera permission in Settings > Apps > testclient > Permissions to enable the Camera permission."
     },
     {
       "name": "Scan_got_it",
-      "value": "取消"
+      "value": "Cancel"
     },
     {
       "name": "Scan_settings",
-      "value": "前往设置"
+      "value": "Settings"
     },
     {
       "name": "Scan_barcode",
-      "value": "扫描二维码/条码"
+      "value": "Scan QR code/barcode"
     },
     {
       "name": "Scan_barcode_tips",
-      "value": "对准二维码/条码，即可自动扫描"
+      "value": "Align the QR code/barcode below"
     },
     {
       "name": "demo_title",
-      "value": "HarmonyOS Scan Kit示例"
+      "value": "HarmonyOS Scan Kit Demo"
     },
     {
       "name": "demo_subject",
-      "value": "统一扫码服务"
+      "value": "Scan Kit"
     },
     {
       "name": "demo_detail",
-      "value": "软硬协同的系统级扫码服务，帮助您快速构建面向各种场景的码识别和生成能力。"
+      "value": "Collaborate hardware and software at the system level to help you quickly build capabilities that can recognize and generate barcodes for all kinds of scenarios."
     },
     {
       "name": "default_view_decoe",
-      "value": "默认界面扫码能力"
+      "value": "Barcode Scan by Default UI"
     },
     {
       "name": "customized_view_decode",
-      "value": "自定义界面扫码能力"
+      "value": "Barcode Scan by Custom UI"
     },
     {
       "name": "customized_view_decode_frame",
-      "value": "自定义界面扫码能力-YUV"
+      "value": "Barcode Scan by Custom UI-YUV"
+    },
+    {
+      "name": "customized_view_decode_default",
+      "value": "Barcode Scan by Custom UI – Recommended Example"
     },
     {
       "name": "bitmap_api_decode",
-      "value": "图片识码能力"
+      "value": "Image-Based Barcode Recognition"
     },
     {
       "name": "bitmap_api_decode_image",
-      "value": "识别本地图片"
+      "value": "Recognize local images"
     },
     {
       "name": "bitmap_api_decode_pixel",
-      "value": "识别图像数据"
+      "value": "Recognize image data"
     },
     {
       "name": "generate_QR_code",
-      "value": "码图生成能力"
+      "value": "Barcode Image Generation"
     },
     {
       "name": "barcode_content",
-      "value": "码内容："
+      "value": "Barcode Content:"
     },
     {
       "name": "barcode_width",
-      "value": "码宽度："
+      "value": "Barcode width:"
     },
     {
       "name": "barcode_height",
-      "value": "码高度："
+      "value": "Barcode height:"
     },
     {
       "name": "barcode_type",
-      "value": "码类型："
+      "value": "Type:"
     },
     {
       "name": "barcode_margin",
-      "value": "边距："
+      "value": "Margin:"
     },
     {
       "name": "barcode_color",
-      "value": "颜色："
+      "value": "Color:"
     },
     {
       "name": "barcode_backgroundcolor",
-      "value": "背景色："
+      "value": "Background:"
     },
     {
       "name": "barcode_error_level",
-      "value": "纠错水平: "
+      "value": "Error correction level:"
     },
     {
       "name": "generate_barcode",
-      "value": "生成码"
+      "value": "Generate Barcode"
+    },
+    {
+      "name": "generate_trip_barcode",
+      "value": "Generate Ride Code"
+    },
+    {
+      "name": "trip_barcode_tip",
+      "value": "A ride code is created using a byte array. Input a byte array, represented as a hexadecimal string."
     },
     {
       "name": "title_result",
-      "value": "结果"
+      "value": "Result"
     },
     {
       "name": "code_format",
-      "value": "码类型"
+      "value": "Code Format"
     },
     {
       "name": "code_react",
-      "value": "码位置信息"
+      "value": "Code React"
     },
     {
       "name": "result_content",
-      "value": "码值"
+      "value": "Result"
     },
     {
       "name": "promise_parameter",
-      "value": "Promise 带参数"
+      "value": "Promise has parameter"
     },
     {
       "name": "promise_no_parameter",
-      "value": "Promise 不带参数"
+      "value": "Promise no parameter"
     },
     {
       "name": "callback_parameter",
-      "value": "callback 带参数"
+      "value": "callback has parameter"
     },
     {
       "name": "callback_no_parameter",
-      "value": "callback 不带参数"
+      "value": "callback no paramete"
     },
     {
       "name": "permission_reason_camera",
-      "value": "用于扫码拍照"
+      "value": "Used for scanning barcodes"
     },
     {
       "name": "decode_zoom_current",
-      "value": "缩放比例,当前比例: "
+      "value": "Zoom Ratio; Current: "
     },
     {
       "name": "decode_zoom_enter",
-      "value": "输入缩放倍数"
+      "value": "Enter a zoom ratio."
+    },
+    {
+      "name":"Scan_preference_text",
+      "value":"The camera is being accessed by the system. The app you're using can't access the camera directly."
+    },
+    {
+      "name":"Scan_preference_title",
+      "value":"Secure camera access"
+    },
+    {
+      "name":"Scan_gallery",
+      "value":"Gallery"
+    },
+    {
+      "name":"Scan_album_loading",
+      "value":"Processing…"
+    },
+    {
+      "name":"Scan_barcode_tips_callback",
+      "value":"Select a code to open"
+    },
+    {
+      "name":"Scan_preference_tip",
+      "value":"Secure access"
     }
   ]
 }

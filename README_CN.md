@@ -20,6 +20,10 @@
 | :------------------------: |:----------------------------------------:|
 | ![](entry/screenshots/homePage.png) | ![](entry/screenshots/customScanYUV.png) |
 
+|         **应用首页**          | **自定义界面扫码能力-推荐样例**                 |            **扫码结果单码**            |           **扫码结果多码**           |        **推荐样例扫码结果**        |
+| :---------------------------: | -------------------------------- | :------------------------------------: | :----------------------------------: | :--------------------------------: |
+| ![](entry/screenshots/homePage.png) | ![](entry/screenshots/defaultScan.png) | ![](entry/screenshots/defaultSingleScan.png) | ![](entry/screenshots/defaultMutiScan.png) | ![](entry/screenshots/defaultResult.png) |
+
 | **应用首页**               |                   **识别本地图片**                   |               **图片识码结果单码**               |               **图片识码结果多码**                |                    **图片识别结果**                    |
 | :------------------------: |:----------------------------------------------:|:----------------------------------------:|:---------------------------------------:|:------------------------------------------------:|
 | ![](entry/screenshots/homePage.png) | ![](entry/screenshots/detectBarcodepicker.png) | ![](entry/screenshots/detectBarcodeSingle.png) | ![](entry/screenshots/detectBarcodeMulti.png) | ![](entry/screenshots/customOrDetectBarcodeResult.png) |
@@ -38,17 +42,18 @@
 2. 点击“默认界面扫码能力”按钮，拉起默认扫码页面，扫描码图，返回结果。
 3. 点击“自定义界面扫码能力”按钮，进入二级界面，再次点击“自定义界面扫码能力”按钮，通过promise调用方式拉起自定义扫码界面，扫描码图，返回结果。
 4. 点击“自定义界面扫码能力”按钮，进入二级界面，点击“自定义界面扫码能力-YUV”按钮，通过callback调用方式拉起自定义扫码界面，扫描码图，实时显示码图位置。 
-5. 点击“图片识码能力”按钮，进入二级界面，点击“识别本地图片”按钮，拉起picker从图库中选择图片，进行图片识码，返回结果。 
-6. 点击“图片识码能力”按钮，进入二级界面，点击“识别图像数据”按钮，返回示例结果。 
-7. 点击“码图生成能力”按钮，调用码图生成接口，生成不同类型的码图。
+5. 点击“自定义界面扫码能力”按钮，进入二级界面，点击“自定义界面扫码能力-推荐样例”按钮，通过推荐方式构建自定义扫码界面，扫描码图，返回结果。
+6. 点击“图片识码能力”按钮，进入二级界面，点击“识别本地图片”按钮，拉起picker从图库中选择图片，进行图片识码，返回结果。 
+7. 点击“图片识码能力”按钮，进入二级界面，点击“识别图像数据”按钮，返回示例结果。 
+8. 点击“码图生成能力”按钮，调用码图生成接口，生成不同类型的码图。
 
 ## 工程目录
 
 ├─entry/src/main/ets         // 代码区  
 │ ├─common  
-│ │ ├─CommonComponents.ets          // 公共组件              
-│ │ ├─GlobalThisUtil.ts           // globalThis封装类              
-│ │ ├─StatusBar.ets          // 状态栏组件              
+│ │ ├─CommonComponents.ets          // 公共组件  
+│ │ ├─GlobalThisUtil.ts           // globalThis封装类  
+│ │ ├─StatusBar.ets          // 状态栏组件  
 │ │ ├─Utils.ts          // 公共方法  
 │ ├─entryability                
 │ │ └─EntryAbility.ets          // 程序入口类  
@@ -58,15 +63,39 @@
 │ │ │ ├─CustomPage.ets          // 自定义扫码按钮入口页面  
 │ │ │ ├─CustomScan.ets          // 自定义扫码页面  
 │ │ │ ├─CustomYuv.ets         // 自定义扫码YUV页面  
-│ │ │ ├─PermissionsUtil.ets         // 相机授权类           
+│ │ │ ├─PermissionsUtil.ets         // 相机授权类  
+│ │ │ ├─customScanDefault         // 自定义界面扫码能力-推荐样例  
+│ │ │ │ ├─constants         // 常量  
+│ │ │ │ │ ├─BreakpointConstants         // 断点常量  
+│ │ │ │ │ ├─CommonConstants         // 公共常量  
+│ │ │ │ ├─model        
+│ │ │ │ │ ├─BreakpointType         // 断点  
+│ │ │ │ │ ├─openPhoto         // 图库  
+│ │ │ │ │ ├─PromptTone         // 提示音  
+│ │ │ │ │ ├─ScanPreferences         // 隐私声明弹窗  
+│ │ │ │ │ ├─ScanService         // 自定义扫码  
+│ │ │ │ │ ├─ScanSize         // 扫面界面尺寸  
+│ │ │ │ ├─pages         // 页面  
+│ │ │ │ │ ├─ScanPage         // 扫码页面  
+│ │ │ │ ├─view         // 组件  
+│ │ │ │ │ ├─CommonCodeLayout         // 蓝点组件  
+│ │ │ │ │ ├─IconPress         // 图片按压效果组件  
+│ │ │ │ │ ├─MaskLayer         // 遮罩  
+│ │ │ │ │ ├─pickerDialog         // 模态框组件  
+│ │ │ │ │ ├─ScanBottom         // 底部组件  
+│ │ │ │ │ ├─ScanLine         // 扫描线组件  
+│ │ │ │ │ ├─ScanLoading         // 加载组件  
+│ │ │ │ │ ├─ScanTitle         // 标题组件  
+│ │ │ │ │ ├─ScanTopTool         // 顶部组件  
+│ │ │ │ │ ├─ScanXComponent         // Xcomponent组件  
 │ │ ├─detectBarcode         // 图片识码  
 │ │ │ ├─CommonCodeLayout.ets          // 蓝点组件   
 │ │ │ ├─DecodeBarcode.ets         // 图片识码按钮入口页面  
-│ │ │ ├─DecodeCameraYuv.ets         // 识别图像数据页面           
+│ │ │ ├─DecodeCameraYuv.ets         // 识别图像数据页面
 │ │ ├─generateBarcode         // 码图生成  
-│ │ │ ├─CreateBarcode.ets          // 码图生成页面           
-│ │ ├─resultPage           // 扫码结果
-│ │ │ ├─ResultPage.ets          // 扫码结果页面                
+│ │ │ ├─CreateBarcode.ets          // 码图生成页面  
+│ │ ├─resultPage           // 扫码结果  
+│ │ │ ├─ResultPage.ets          // 扫码结果页面  
 │ │ └─Index.ets          // 统一扫码入口页面  
 └─entry/src/main/resources          // 资源文件目录
 

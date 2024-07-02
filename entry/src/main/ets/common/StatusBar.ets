@@ -15,8 +15,8 @@ export struct StatusBar {
   @State sysStatusH: number = 39
 
   aboutToAppear() {
-    if (GlobalThisUtil.getProperty('getStatusHeight')) {
-      this.sysStatusH = px2vp(GlobalThisUtil.getProperty('getStatusHeight'))
+    if (GlobalThisUtil.getProperty('scan_topRect_height')) {
+      this.sysStatusH = px2vp(GlobalThisUtil.getProperty('scan_topRect_height'))
     }
   }
 

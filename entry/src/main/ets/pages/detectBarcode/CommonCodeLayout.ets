@@ -23,8 +23,8 @@ struct CodeLayout {
 
   aboutToAppear() {
     this.codeLocation = [];
-    if (GlobalThisUtil.getProperty('getStatusHeight')) {
-      this.statusHeight = px2vp(GlobalThisUtil.getProperty('getStatusHeight'));
+    if (GlobalThisUtil.getProperty('scan_topRect_height')) {
+      this.statusHeight = px2vp(GlobalThisUtil.getProperty('scan_topRect_height'));
     }
     let isFold: boolean = display.isFoldable();
     this.setDisplay();

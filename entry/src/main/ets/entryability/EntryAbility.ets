@@ -1,18 +1,20 @@
-import { AbilityConstant, UIAbility, Want } from '@kit.AbilityKit';
+import { AbilityConstant, common, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import deviceInfo from '@ohos.deviceInfo';
 import { display, window } from '@kit.ArkUI';
 import { emitter } from '@kit.BasicServicesKit';
-import { ScanEventId } from '../common/Utils';
 import { GlobalThisUtil } from '../common/GlobalThisUtil';
+import { CommonConstants } from '../pages/customScanDefault/constants/CommonConstants';
 
 const TAG = 'Scan SampleCode EntryAbility';
 
 export default class EntryAbility extends UIAbility {
   private windowObj?: window.Window;
 
-  onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
+  onCreate(_: Want, __: AbilityConstant.LaunchParam): void {
     hilog.info(0x0000, TAG, '%{public}s', 'Ability onCreate');
-    GlobalThisUtil.setProperty('abilityContext', this.context);
+    GlobalThisUtil.setProperty<common.UIAbilityContext>('scan_context', this.context);
+    GlobalThisUtil.setProperty('hmsCore_scan_device_type', deviceInfo.deviceType);
     GlobalThisUtil.setProperty('hmsCore_scan_isFoldable', display.isFoldable());
     if (GlobalThisUtil.getProperty('hmsCore_scan_isFoldable')) {
       GlobalThisUtil.setProperty('hmsCore_scan_foldStatus', display.getFoldStatus());
@@ -21,6 +23,28 @@ export default class EntryAbility extends UIAbility {
 
   onDestroy(): void {
     hilog.info(0x0000, TAG, '%{public}s', 'Ability onDestroy');
+  }
+
+  // Visual Window Size Monitoring
+  private updateWindowSize(windowSize: window.Size | window.Rect): void {
+    try {
+      let appWindowSize: window.Size | undefined = AppStorage.get('windowSize');
+      if (!appWindowSize || appWindowSize.width !== windowSize.width || appWindowSize.height !== windowSize.height) {
+        AppStorage.setOrCreate('windowSize', windowSize);
+        AppStorage.setOrCreate('windowWidthPx', windowSize.width);
+        let eventData: emitter.EventData = {
+          data: {
+            "width": windowSize.width,
+            "height": windowSize.height,
+          }
+        }
+        emitter.emit({
+          eventId: CommonConstants.WINDOW_SIZE_CHANGE
+        }, eventData)
+      }
+    } catch (error) {
+      hilog.error(0x0000, TAG, '%{public}s', 'Failed to emit WINDOW_SIZE_CHANGE.');
+    }
   }
 
   onWindowStageCreate(windowStage: window.WindowStage): void {
@@ -32,30 +56,38 @@ export default class EntryAbility extends UIAbility {
       if (displayClass !== null) {
         AppStorage.setOrCreate('windowWidthPx', displayClass.width);
       }
-    } catch (exception) {
-      hilog.error(0x0001, TAG, 'Failed to obtain the default display object. Code: %{public}s ', JSON.stringify(exception));
+    } catch (error) {
+      hilog.error(0x0001, TAG, 'Failed to obtain the default display object. Code: %{public}s, message: %{public}s.',
+        error.code, error.message);
     }
-    AppStorage.setOrCreate<window.WindowStage>('winStage', windowStage)
     windowStage.getMainWindow().then((windowObj: window.Window) => {
-      this.windowObj = windowObj;
-      this.windowObj.on('windowSizeChange', (windowSize) => {
-        AppStorage.setOrCreate('windowWidthPx', windowSize.width);
-        emitter.emit({
-          eventId: ScanEventId.WINDOW_SIZE_CHANGE
-        })
-      })
-      let area = windowObj.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM);
       windowObj.setWindowLayoutFullScreen(true, () => {
         hilog.info(0x0000, TAG, 'setWindowLayoutFullScreen Succeed!');
       });
-      GlobalThisUtil.setProperty('getStatusHeight', area.topRect.height)
-      windowStage.loadContent('pages/Index', (error, data) => {
+
+      let avoidArea = windowObj.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM);
+      GlobalThisUtil.setProperty('scan_topRect_height', avoidArea.topRect.height);
+      windowStage.loadContent('pages/Index', (error, _) => {
         if (error.code) {
-          hilog.error(0x0000, TAG, 'Failed to load the content. Cause: %{public}s', JSON.stringify(error) ?? '');
+          hilog.error(0x0000, TAG, 'Failed to load the content. Code: %{public}s, message: %{public}s.', error.code,
+            error.message);
           return;
         }
-        hilog.info(0x0000, TAG, 'Succeeded in loading the content. Data: %{public}s', JSON.stringify(data) ?? '');
+        hilog.info(0x0000, TAG, 'Succeeded in loading the content.');
       });
+
+      try {
+        this.windowObj = windowObj;
+        // Obtains the window size when the application is started.
+        this.updateWindowSize(windowObj.getWindowProperties().windowRect)
+
+        // Register a callback function to monitor the window size change.
+        this.windowObj.on('windowSizeChange', (windowSize) => {
+          this.updateWindowSize(windowSize);
+        })
+      } catch (error) {
+        hilog.error(0x0000, TAG, '%{public}s', 'Failed to listen window size change.');
+      }
     })
   }
 

@@ -1,11 +1,12 @@
 import { image } from '@kit.ImageKit';
-import { router } from '@kit.ArkUI';
+import { promptAction, router } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { scanCore, generateBarcode } from '@kit.ScanKit';
 import { StatusBar, routerParams } from '../../common/StatusBar';
 import { CustomLabel, CustomButton, ScanConstant } from '../../common/CommonComponents';
 import { showError, getColorType, getTypeNum, getLevelType } from '../../common/Utils';
+import { buffer } from '@kit.ArkTS';
 
 const TAG: string = 'Scan SampleCode CreateBarcode';
 
@@ -53,7 +54,7 @@ function FlexRow() {
 @Component
 struct GenerateBarcode {
   @State pixelMap: image.PixelMap | undefined = undefined
-  @State mInputContext: string = 'huawei'
+  @State mInputContext: string = 'huawei';
   @State mWidth: string = '800'
   @State mHeight: string = '800'
   @State mCodeType: number = scanCore.ScanType.QR_CODE
@@ -193,8 +194,8 @@ struct GenerateBarcode {
             Select(ScanConstant.errorLevelItems)
               .align(Alignment.Center)
               .width(px2vp(this.windowWidth) <= 480 ? '60%' : '80%')
-              .selected(0)
-              .value('LEVEL_L')
+              .selected(3)
+              .value('LEVEL_H')
               .demoSelect()
               .onSelect((_: number, value?: string) => {
                 this.mLevel = getLevelType(value)
@@ -227,13 +228,14 @@ struct GenerateBarcode {
               try {
                 generateBarcode.createBarcode(content, options).then((result: image.PixelMap) => {
                   this.pixelMap = result;
-                  hilog.info(0x0001, TAG, 'createBarCode Success');
+                  hilog.info(0x0001, TAG, 'Succeeded in creating barCode.');
                 }).catch((error: BusinessError) => {
                   showError(error);
-                  hilog.error(0x0001, TAG, 'createBarCode failed, error: %{public}s', JSON.stringify(error));
+                  hilog.error(0x0001, TAG, `Failed to create barCode. Code: ${error.code}, message: ${error.message}`);
                 })
               } catch (error) {
-                hilog.error(0x0001, TAG, 'try catch failed, error: %{public}s', JSON.stringify(error));
+                showError(error);
+                hilog.error(0x0001, TAG, `Failed to create barCode. Code: ${error.code}, message: ${error.message}`);
               }
             }
           })

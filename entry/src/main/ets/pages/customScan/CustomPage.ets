@@ -26,6 +26,13 @@ struct CustomPage {
             })
           }
         })
+        CustomButton({
+          mText: $r('app.string.customized_view_decode_default'), mOnClick: () => {
+            router.pushUrl({
+              url: "pages/customScanDefault/pages/ScanPage"
+            })
+          }
+        })
       }.margin({
         top: 50,
         bottom: 50

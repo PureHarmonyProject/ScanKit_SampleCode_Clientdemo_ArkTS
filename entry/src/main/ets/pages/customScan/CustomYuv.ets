@@ -5,9 +5,10 @@ import { AsyncCallback, BusinessError } from '@kit.BasicServicesKit';
 import { scanCore, scanBarcode, customScan } from '@kit.ScanKit';
 import { common, abilityAccessCtrl, Permissions, Want } from '@kit.AbilityKit';
 import { emitter } from '@kit.BasicServicesKit';
-import { ScanEventId, WindowSize } from '../../common/Utils';
+import { WindowSize } from '../../common/Utils';
 import { PermissionsUtil } from './PermissionsUtil';
 import { GlobalThisUtil } from '../../common/GlobalThisUtil';
+import { CommonConstants } from '../customScanDefault/constants/CommonConstants';
 
 const TAG = 'Scan SampleCode CustomYuv';
 const DOMAIN: number = 0x0001;
@@ -326,7 +327,7 @@ struct YUVScan {
 
   existApp() {
     this.isDialogShow = false;
-    hilog.info(0x0001, TAG, 'reqPermissionsFromUser, existApp ---------- %{public}s', this.isDialogShow);
+    hilog.info(0x0001, TAG, 'Succeeded in exit app. isDialogShow: %{public}s', this.isDialogShow);
   }
 
   async requestCameraPermission() {
@@ -441,7 +442,7 @@ struct YUVScan {
   }
 
   windowSizeSubscribe(): void {
-    emitter.on({ eventId: ScanEventId.WINDOW_SIZE_CHANGE }, async () => {
+    emitter.on({ eventId: CommonConstants.WINDOW_SIZE_CHANGE }, async () => {
       if (GlobalThisUtil.getProperty('hmsCore_scan_foldStatus') === 1 ||
         GlobalThisUtil.getProperty('hmsCore_scan_foldStatus') === 2) {
         await this.releaseCamera();
@@ -452,9 +453,9 @@ struct YUVScan {
 
   aboutToAppear() {
     this.result = [];
-    this.statusHeight = GlobalThisUtil.getProperty('getStatusHeight');
-    if (GlobalThisUtil.getProperty('getStatusHeight')) {
-      this.statusHeight = px2vp(GlobalThisUtil.getProperty('getStatusHeight'));
+    this.statusHeight = GlobalThisUtil.getProperty('scan_topRect_height');
+    if (GlobalThisUtil.getProperty('scan_topRect_height')) {
+      this.statusHeight = px2vp(GlobalThisUtil.getProperty('scan_topRect_height'));
     }
     this.setDisplay();
     if (GlobalThisUtil.getProperty('hmsCore_scan_isFoldable')) {
@@ -468,9 +469,9 @@ struct YUVScan {
   }
 
   aboutToDisappear() {
-    hilog.info(0x0001, TAG, ' aboutToDisappear ----------')
+    hilog.info(0x0001, TAG, ' AboutToDisappear lifecycle start.')
     if (GlobalThisUtil.getProperty('hmsCore_scan_isFoldable')) {
-      emitter.off(ScanEventId.WINDOW_SIZE_CHANGE);
+      emitter.off(CommonConstants.WINDOW_SIZE_CHANGE);
       display.off('foldStatusChange');
     }
   }
@@ -549,7 +550,7 @@ struct YUVScan {
   }
 
   async onPageHide() {
-    hilog.info(0x0001, TAG, ' onPageHide ----------');
+    hilog.info(0x0001, TAG, ' OnPageHide lifecycle start.');
     this.dialogController.close();
     this.isDialogShow = false;
     this.isOnPageShow = false;

@@ -23,7 +23,7 @@ struct CameraHome {
   @State scanResultPoints: Array<scanBarcode.ScanCodeRect> = [];
   @State cornerPoints: Array<Array<scanBarcode.Point>> = [];
   // CameraKit
-  private cameraManager: camera.CameraManager = camera.getCameraManager(GlobalThisUtil.getProperty('abilityContext'));
+  private cameraManager: camera.CameraManager = camera.getCameraManager(GlobalThisUtil.getProperty<common.UIAbilityContext>('scan_context'));
   private photoSession: camera.PhotoSession | undefined = undefined;
   private cameraInput: camera.CameraInput | undefined = undefined;
   private previewOutput: camera.PreviewOutput | undefined = undefined;

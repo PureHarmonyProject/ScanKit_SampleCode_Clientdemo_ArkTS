@@ -3,10 +3,6 @@ import { promptAction } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { type BusinessError } from '@kit.BasicServicesKit';
 
-export enum ScanEventId {
-  WINDOW_SIZE_CHANGE = 1
-}
-
 export function checkResults(result: scanBarcode.ScanResult[]): boolean {
   if (result === undefined || result === null) {
     return false;
