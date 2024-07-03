@@ -20,9 +20,9 @@ The **import { scanCore, scanBarcode, customScan, detectBarcode, generateBarcode
 | :-----------------------------------: | :----------------------------------------: |
 | ![](entry/screenshots/homePageEs.png) | ![](entry/screenshots/customScanYUVEs.png) |
 
-|          **App Home Screen**          | **Barcode Scan by Custom UI – Recommended Example**           |        **Scan Result (Single Barcode)**        |     **Scan Result (Multiple Barcodes)**      |    **Barcode Scan Result (Recommended Example)**    |
-|:-------------------------------------:| ---------------------------------------- |:----------------------------------------------:| :------------------------------------------: | :----------------------------------------: |
-| ![](entry/screenshots/homePageEs.png) | ![](entry/screenshots/defaultScanEs.png) | ![](entry/screenshots/defaultSingleScanEs.png) | ![](entry/screenshots/defaultMutiScanEs.png) | ![](entry/screenshots/defaultResultEs.png) |
+|          **App Home Screen**          | **Barcode Scan by Custom UI – Recommended Example**           |       **Scan Result (Single Barcode)**        |     **Scan Result (Multiple Barcodes)**     |    **Barcode Scan Result (Recommended Example)**    |
+|:-------------------------------------:| ---------------------------------------- |:---------------------------------------------:|:-------------------------------------------:| :----------------------------------------: |
+| ![](entry/screenshots/homePageEs.png) | ![](entry/screenshots/defaultScanEs.png) |         ![](entry/screenshots/customScanSingleEs.png)         | ![](entry/screenshots/customScanMutiEs.png) | ![](entry/screenshots/defaultResultEs.png) |
 
 |          **App Home Screen**          |            **Recognize Local Images**            | **Image-Based Barcode Recognition Result (Single Barcode)** | **Image-Based Barcode Recognition Result (Multiple Barcodes)** |        **Image-Based Barcode Recognition Result**        |
 | :-----------------------------------: | :----------------------------------------------: | :---------------------------------------------------------: | :----------------------------------------------------------: | :------------------------------------------------------: |
@@ -120,6 +120,7 @@ Define the barcode image generation API in **import { generateBarcode } from '@k
 
 * createBarcode(content: string, options: CreateOptions): Promise<image.PixelMap>
 * createBarcode(content: string, options: CreateOptions, callback: AsyncCallback<image.PixelMap>): void
+* createBarcode(content: ArrayBuffer, options: CreateOptions): Promise<image.PixelMap>;
 
 **Barcode Scan by Custom UI**: provides scanning capabilities and supports rendering the camera preview stream on the specified control. You need to implement the scanning UI and apply for camera permissions. This is suitable for scenarios that require a personalized scanning UI.
 Define the custom barcode scan API in **import { customScan } from '@kit.ScanKit';**.

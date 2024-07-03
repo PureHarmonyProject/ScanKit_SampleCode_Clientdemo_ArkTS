@@ -9,6 +9,7 @@ import { WindowSize } from '../../common/Utils';
 import { PermissionsUtil } from './PermissionsUtil';
 import { GlobalThisUtil } from '../../common/GlobalThisUtil';
 import { CommonConstants } from '../customScanDefault/constants/CommonConstants';
+import { CustomDialogExample } from './CustomScan';
 
 const TAG = 'Scan SampleCode CustomYuv';
 const DOMAIN: number = 0x0001;
@@ -61,78 +62,12 @@ function scanTips() {
   .textAlign(TextAlign.Center)
 }
 
-@Extend(Text)
-function disLogTitle() {
-  .fontColor(Color.Black)
-  .fontSize(12)
-  .alignSelf(ItemAlign.Start)
-  .padding({ left: 20 })
-}
-
-@Extend(Text)
-function disLogTips() {
-  .textAlign(TextAlign.Start)
-  .fontColor(Color.Black)
-  .fontSize(14)
-  .padding({ left: 20, top: 20, right: 20 })
-}
-
-@Extend(Text)
-function btn() {
-  .width('50%')
-  .height(20)
-  .fontSize(14)
-  .textAlign(TextAlign.Center)
-  .fontColor(Color.Black)
-}
-
-@Extend(Flex)
-function box() {
-  .width(320)
-  .height(140)
-  .padding(15)
-  .backgroundColor(Color.White)
-  .borderRadius(24)
-}
-
 @Extend(Row)
 function angleSizes(position: Position, borderOption: BorderOptions) {
   .width(20)
   .height(20)
   .border(borderOption)
   .position(position)
-}
-
-@CustomDialog
-export struct CustomDialogExample {
-  controller: CustomDialogController = new CustomDialogController({
-    builder: null
-  });
-  cancel: () => void = () => {
-  };
-  action: () => void = () => {
-  };
-
-  build() {
-    Flex({ direction: FlexDirection.Column, justifyContent: FlexAlign.SpaceBetween }) {
-      Flex({ direction: FlexDirection.Column, justifyContent: FlexAlign.SpaceBetween, alignItems: ItemAlign.Center }) {
-        Text($r('app.string.Scan_access_not_enabled')).disLogTitle()
-        Text($r('app.string.Scan_access_tips')).disLogTips()
-      }.height(105)
-
-      Flex({ justifyContent: FlexAlign.SpaceAround, alignItems: ItemAlign.Center }) {
-        Text($r('app.string.Scan_got_it')).btn()
-          .onClick(() => {
-            this.controller.close();
-            this.cancel();
-          })
-        Text($r('app.string.Scan_settings')).btn()
-          .onClick(() => {
-            this.action();
-          })
-      }.height(35)
-    }.box()
-  }
 }
 
 @Component

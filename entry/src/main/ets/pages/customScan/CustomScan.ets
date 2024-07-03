@@ -81,7 +81,6 @@ function disLogTitle() {
   .fontColor(Color.Black)
   .fontSize(12)
   .alignSelf(ItemAlign.Start)
-  .padding({ left: 20 })
 }
 
 @Extend(Text)
@@ -89,7 +88,15 @@ function disLogTips() {
   .textAlign(TextAlign.Start)
   .fontColor(Color.Black)
   .fontSize(14)
-  .padding({ left: 20, top: 20, right: 20 })
+  .padding({ top: 15,  bottom: 8 })
+}
+
+@Extend(Column)
+function box() {
+  .width(320)
+  .padding({ left: 35, right: 20, top: 15, bottom: 15 })
+  .backgroundColor(Color.White)
+  .borderRadius(24)
 }
 
 @Extend(Text)
@@ -99,15 +106,6 @@ function btn() {
   .fontSize(14)
   .textAlign(TextAlign.Center)
   .fontColor(Color.Black)
-}
-
-@Extend(Flex)
-function box() {
-  .width(320)
-  .height(140)
-  .padding(15)
-  .backgroundColor(Color.White)
-  .borderRadius(24)
 }
 
 @Extend(Column)
@@ -144,23 +142,22 @@ export struct CustomDialogExample {
   }
 
   build() {
-    Flex({ direction: FlexDirection.Column, justifyContent: FlexAlign.SpaceBetween }) {
-      Flex({ direction: FlexDirection.Column, justifyContent: FlexAlign.SpaceBetween, alignItems: ItemAlign.Center }) {
+    Column() {
+      Column() {
         Text($r('app.string.Scan_access_not_enabled')).disLogTitle()
         Text($r('app.string.Scan_access_tips')).disLogTips()
-      }.height(105)
-
-      Flex({ justifyContent: FlexAlign.SpaceAround, alignItems: ItemAlign.Center }) {
-        Text($r('app.string.Scan_got_it')).btn()
-          .onClick(() => {
-            this.controller.close();
-            this.cancel();
-          })
-        Text($r('app.string.Scan_settings')).btn()
-          .onClick(() => {
-            this.action();
-          })
-      }.height(35)
+        Row() {
+          Text($r('app.string.Scan_got_it')).btn()
+            .onClick(() => {
+              this.controller.close();
+              this.cancel();
+            })
+          Text($r('app.string.Scan_settings')).btn()
+            .onClick(() => {
+              this.action();
+            })
+        }
+      }
     }.box()
   }
 }

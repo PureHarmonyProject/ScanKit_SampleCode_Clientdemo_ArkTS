@@ -30,20 +30,6 @@ function scanTitle(fontSize: ResourceColor, color: ResourceColor, fontWeight: Fo
   })
 }
 
-@Extend(Row)
-function secureAccessContainer() {
-  .height(20)
-  .margin({
-    top: 16
-  })
-  .padding({
-    left: 4,
-    right: 4
-  })
-  .backgroundColor(Color.White)
-  .borderRadius(4)
-}
-
 @Component
 export struct ScanTitle {
   @StorageLink('currentBreakpoint') currentBreakpoint: string = BreakpointConstants.BREAKPOINT_SM;
@@ -57,18 +43,6 @@ export struct ScanTitle {
         .scanTitle($r('sys.float.ohos_id_text_size_headline9'), $r('sys.color.ohos_id_color_primary_contrary'),
           FontWeight.Regular)
         .lineHeight(CommonConstants.TITLE_MAIN_LINE_HEIGHT)
-      if (!this.scanService.preferenceDialog) {
-        Row() {
-          Image($rawfile('secure_access.png'))
-            .width(14).height(14)
-          Text($r('app.string.Scan_preference_tip'))
-            .fontSize(12)
-            .margin({ left: 4 })
-            .fontFamily('HarmonyHeiTi')
-            .fontColor($r('sys.color.ohos_id_color_text_primary'))
-        }
-        .secureAccessContainer()
-      }
     }
     .alignItems(HorizontalAlign.Center)
     .margin({

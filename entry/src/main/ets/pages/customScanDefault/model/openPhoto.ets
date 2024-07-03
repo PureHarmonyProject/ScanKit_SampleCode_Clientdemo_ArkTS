@@ -28,7 +28,7 @@ function decodeAlbum(option: scanBarcode.ScanOptions, uri: string, callback: Asy
   let options: scanBarcode.ScanOptions = {
     scanTypes: option.scanTypes,
     enableMultiMode: false,
-    enableAlbum: option.enableAlbum ? true : false
+    enableAlbum: true
   };
   detectBarcode.decode(inputImage, options)
     .then((result: Array<scanBarcode.ScanResult>) => {

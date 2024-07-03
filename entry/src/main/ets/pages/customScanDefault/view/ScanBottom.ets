@@ -80,7 +80,7 @@ export struct FlashLight {
 
   build() {
     Column() {
-      Image(this.scanService.isFlashlight ? $rawfile('scan_light_on.svg') : $rawfile('scan_light_off.svg'))
+      Image(this.scanService.isFlashlight ? $rawfile('light_on.svg') : $rawfile('light_off.svg'))
         .lightIcon()
         .margin({ bottom: 6 })
         .stateStyles({

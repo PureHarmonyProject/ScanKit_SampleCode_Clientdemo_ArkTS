@@ -18,7 +18,6 @@ import { BreakpointConstants } from '../constants/BreakpointConstants';
 import { DeviceStatus, ScanLayout, ScanSize, XComponentSize, NewArea } from '../model/ScanSize';
 import { ScanXComponent } from '../view/ScanXComponent';
 import { pickerDialog } from '../view/pickerDialog';
-import { ScanPreferences } from '../model/ScanPreferences';
 import { ScanLoading } from '../view/ScanLoading';
 import { PermissionsUtil } from '../../customScan/PermissionsUtil';
 import { CustomDialogExample } from '../../customScan/CustomScan';
@@ -37,10 +36,8 @@ struct ScanPage {
   @State scanLayout: ScanLayout = this.scanSize.scanLayout;
   @State scanService: ScanService = ScanService.getInstance();
   @State scanResult: ScanResult = this.scanService.scanResult;
-  @State scanPreferences: null | ScanPreferences = ScanPreferences.getInstance();
   @State darkMode: ConfigurationConstant.ColorMode | undefined = undefined;
   @State surfaceId: string = '';
-  @State dialogShow: boolean = false;
   @State densityDPI: number = 0;
   @State newArea: NewArea = this.scanSize.newArea;
   @State viewControl: customScan.ViewControl = {
@@ -115,8 +112,6 @@ struct ScanPage {
     GlobalThisUtil.setProperty('hmsCore_scan_isPickerDecode', false);
     this.scanService.isOpenAlbum = false;
 
-    this.setPreferenceDialog();
-
     if (GlobalThisUtil.getProperty('scan_topRect_height')) {
       this.scanSize.navHeight = px2vp(GlobalThisUtil.getProperty('scan_topRect_height'));
     }
@@ -138,9 +133,7 @@ struct ScanPage {
     this.scanService.isReleaseCamera = false;
     this.scanService.isStopCamera = false;
 
-    if(!this.scanService.preferenceDialog) {
-      await this.empowerment();
-    }
+    await this.empowerment();
 
     this.darkMode = (getContext(this) as common.UIAbilityContext).config.colorMode;
   }
@@ -267,24 +260,6 @@ struct ScanPage {
     }
   }
 
-  @Builder
-  PickerDialogBuilder() {
-    // Privacy preference pop-up window
-    if (this.dialogShow) {
-      pickerDialog({
-        isPreference: true,
-        darkMode: this.darkMode,
-        text: $r('app.string.Scan_preference_text'),
-        cancel: (() => {
-          this.dialogShow = false;
-          this.scanService.preferenceDialog = false;
-          this.scanPreferences?.putPreference();
-          this.empowerment();
-        })
-      })
-    }
-  }
-
   build() {
     Stack({ alignContent: Alignment.TopStart }) {
       if (this.userGrant) {
@@ -306,19 +281,10 @@ struct ScanPage {
           this.backToScanCamera();
         })
       })
-
-      this.PickerDialogBuilder()
     }
     .width('100%')
     .height('100%')
     .backgroundColor(this.userGrant ? Color.Transparent : Color.Black)
-    .onAppear(() => {
-      if (this.scanService.preferenceDialog) {
-        setTimeout(() => {
-          this.dialogShow = true;
-        }, 300)
-      }
-    })
   }
 
   async empowerment() {
@@ -379,12 +345,6 @@ struct ScanPage {
           this.isDialogShow = true;
         }
       }
-    }
-  }
-
-  setPreferenceDialog() {
-    if (this.scanPreferences && !this.scanPreferences.getPreference()) {
-      this.scanService.preferenceDialog = true;
     }
   }
 

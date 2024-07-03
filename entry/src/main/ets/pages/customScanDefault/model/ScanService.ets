@@ -29,7 +29,6 @@ export class ScanService {
   isOnPageShow: boolean = true;
   isReleaseCamera: boolean = false;
   isStopCamera: boolean = false;
-  preferenceDialog: boolean = false;
   scanResult: ScanResult = new ScanResult();
   isFlashlight: boolean = false;
   private static instance: ScanService | null = null;
@@ -43,7 +42,7 @@ export class ScanService {
 
   initCamera(options: scanBarcode.ScanOptions, viewControl: customScan.ViewControl,
     callback: AsyncCallback<Array<scanBarcode.ScanResult>>) {
-    if (!this.preferenceDialog && this.isOnPageShow && !this.isScanLine && !GlobalThisUtil.getProperty('hmsCore_scan_isPickerDecode')) {
+    if (this.isOnPageShow && !this.isScanLine && !GlobalThisUtil.getProperty('hmsCore_scan_isPickerDecode')) {
       Logger.info(TAG, `initCamera start. width: ${viewControl.width}, height: ${viewControl.height}`);
       try {
         Logger.info(TAG, 'customScan init start');

@@ -185,14 +185,6 @@
       "value": "Enter a zoom ratio."
     },
     {
-      "name":"Scan_preference_text",
-      "value":"The camera is being accessed by the system. The app you're using can't access the camera directly."
-    },
-    {
-      "name":"Scan_preference_title",
-      "value":"Secure camera access"
-    },
-    {
       "name":"Scan_gallery",
       "value":"Gallery"
     },
@@ -203,10 +195,6 @@
     {
       "name":"Scan_barcode_tips_callback",
       "value":"Select a code to open"
-    },
-    {
-      "name":"Scan_preference_tip",
-      "value":"Secure access"
     }
   ]
 }

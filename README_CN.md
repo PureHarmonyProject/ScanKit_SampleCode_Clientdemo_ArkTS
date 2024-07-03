@@ -22,7 +22,7 @@
 
 |         **应用首页**          | **自定义界面扫码能力-推荐样例**                 |            **扫码结果单码**            |           **扫码结果多码**           |        **推荐样例扫码结果**        |
 | :---------------------------: | -------------------------------- | :------------------------------------: | :----------------------------------: | :--------------------------------: |
-| ![](entry/screenshots/homePage.png) | ![](entry/screenshots/defaultScan.png) | ![](entry/screenshots/defaultSingleScan.png) | ![](entry/screenshots/defaultMutiScan.png) | ![](entry/screenshots/defaultResult.png) |
+| ![](entry/screenshots/homePage.png) | ![](entry/screenshots/defaultScan.png) | ![](entry/screenshots/customScanSingle.png) | ![](entry/screenshots/customScanMuti.png) | ![](entry/screenshots/defaultResult.png) |
 
 | **应用首页**               |                   **识别本地图片**                   |               **图片识码结果单码**               |               **图片识码结果多码**                |                    **图片识别结果**                    |
 | :------------------------: |:----------------------------------------------:|:----------------------------------------:|:---------------------------------------:|:------------------------------------------------:|
@@ -121,6 +121,7 @@
 
 * createBarcode(content: string, options: CreateOptions): Promise<image.PixelMap>
 * createBarcode(content: string, options: CreateOptions, callback: AsyncCallback<image.PixelMap>): void
+* createBarcode(content: ArrayBuffer, options: CreateOptions): Promise<image.PixelMap>;
 
 自定义界面扫码：提供扫码能力并支持在指定控件上渲染相机预览流，需要开发者实现扫码界面，申请相机权限，适用于对扫码界面有个性化定制的场景。
 在import { customScan } from '@kit.ScanKit';定义了自定义扫码API：

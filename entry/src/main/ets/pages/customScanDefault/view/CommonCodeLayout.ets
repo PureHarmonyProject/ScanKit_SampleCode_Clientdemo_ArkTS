@@ -175,7 +175,6 @@ export struct CodeLayout {
       if (this.isPickerDialogShow) {
         pickerDialog({
           darkMode: this.darkMode,
-          isPreference: false,
           text: $r('app.string.Scan_diaLog_not_found'),
           cancel: (() => {
             this.isPickerDialogShow = false;

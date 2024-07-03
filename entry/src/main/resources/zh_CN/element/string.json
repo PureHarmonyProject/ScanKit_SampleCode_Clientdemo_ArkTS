@@ -185,14 +185,6 @@
       "value": "输入缩放倍数"
     },
     {
-      "name":"Scan_preference_text",
-      "value":"系统正在调用摄像头，当前应用不会获取您的取景内容。"
-    },
-    {
-      "name":"Scan_preference_title",
-      "value":"安全访问摄像头"
-    },
-    {
       "name":"Scan_gallery",
       "value":"图库"
     },
@@ -203,10 +195,6 @@
     {
       "name":"Scan_barcode_tips_callback",
       "value":"扫描到多个码，请选择一个打开"
-    },
-    {
-      "name":"Scan_preference_tip",
-      "value":"安全访问"
     }
   ]
 }

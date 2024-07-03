@@ -1,29 +1,6 @@
-import common from '@ohos.app.ability.common';
-import ConfigurationConstant from '@ohos.app.ability.ConfigurationConstant';
-import { BreakpointConstants } from '../constants/BreakpointConstants';
+import { common, ConfigurationConstant } from '@kit.AbilityKit';
 import { curves } from '@kit.ArkUI';
-
-@Extend(Text)
-function titleClass(color: ResourceColor) {
-  .fontWeight(FontWeight.Bold)
-  .fontSize($r('sys.float.ohos_id_text_size_headline8'))
-  .fontColor(color)
-  .fontFamily('HarmonyHeiTi')
-  .textAlign(TextAlign.Center)
-  .maxLines(2)
-  .textOverflow({ overflow: TextOverflow.Ellipsis })
-  .lineHeight(26)
-  .margin({
-    top: 15,
-    bottom: 15
-  })
-}
-
-@Extend(Image)
-function iconContainer() {
-  .width(48)
-  .height(48)
-}
+import { BreakpointConstants } from '../constants/BreakpointConstants';
 
 @Extend(Text)
 function textClass(color: ResourceColor, textAlign: TextAlign) {
@@ -91,7 +68,6 @@ export struct pickerDialog {
   @State context: common.UIAbilityContext = getContext(this) as common.UIAbilityContext;
   @Prop darkMode: ConfigurationConstant.ColorMode;
   @Prop text: Resource;
-  @Prop isPreference: boolean = false;
   @State dialogWidth: number = 368;
   @Prop dialogScale: number = 0.85;
   cancel: () => void = () => {
@@ -118,14 +94,8 @@ export struct pickerDialog {
       }) {
         Column() {
           Column() {
-            if (this.isPreference) {
-              Image(this.darkMode === ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT ? $rawfile('preference_light@3x.png') : $rawfile('preference_dark@3x.png'))
-                .iconContainer()
-              Text($r('app.string.Scan_preference_title'))
-                .titleClass(this.darkMode === ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT ? $r('sys.color.ohos_id_color_text_primary') : $r('sys.color.ohos_id_color_text_primary_dark'))
-            }
             Text(this.text)
-              .textClass(this.darkMode === ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT ? $r('sys.color.ohos_id_color_text_primary') : $r('sys.color.ohos_id_color_text_primary_dark'), this.isPreference ? TextAlign.Start : TextAlign.Center)
+              .textClass(this.darkMode === ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT ? $r('sys.color.ohos_id_color_text_primary') : $r('sys.color.ohos_id_color_text_primary_dark'), TextAlign.Center)
           }.dialogContentContainer()
           Button($r('app.string.Scan_diaLog_got_it'))
             .buttonClass()
