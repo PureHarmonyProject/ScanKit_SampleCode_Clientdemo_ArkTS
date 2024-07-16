@@ -1,4 +1,5 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { BusinessError } from '@kit.BasicServicesKit';
 import { router } from '@kit.ArkUI';
 import { scanCore, scanBarcode } from '@kit.ScanKit';
 import { showError, checkResult } from '../common/Utils';
@@ -66,11 +67,15 @@ struct Index {
                     scanType: result.scanType
                   }
                 })
-              }).catch((failResult: Error) => {
-                hilog.error(0x0001, TAG, 'Promise error: %{public}s', JSON.stringify(failResult));
+              }).catch((error: BusinessError) => {
+                if(error.code == scanCore.ScanErrorCode.SCAN_SERVICE_CANCELED) {
+                  hilog.info(0x0001, TAG, `Disabling the Scanning Service.`);
+                } else {
+                  hilog.error(0x0001, TAG, `Failed to start the scanning service. Code: ${error.code}, message: ${error.message}.`);
+                }
               });
             } catch (error) {
-              hilog.error(0x0001, TAG, 'failReason: %{public}s', JSON.stringify(error));
+              hilog.error(0x0001, TAG, `Failed to start the scanning service. Code: ${error.code}, message: ${error.message}.`);
               showError(error);
             }
           }

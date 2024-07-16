@@ -54,7 +54,7 @@ function FlexRow() {
 @Component
 struct GenerateBarcode {
   @State pixelMap: image.PixelMap | undefined = undefined
-  @State mInputContext: string = 'huawei';
+  @State mInputContext: string = '';
   @State mWidth: string = '800'
   @State mHeight: string = '800'
   @State mCodeType: number = scanCore.ScanType.QR_CODE
@@ -91,7 +91,7 @@ struct GenerateBarcode {
             })
               .margin({ left: 5 })
 
-            TextArea({ placeholder: 'huawei' })
+            TextArea()
               .demoTextArea()
               .onChange((value: string) => {
                 this.mInputContext = value
@@ -227,6 +227,47 @@ struct GenerateBarcode {
               hilog.info(0x0001, TAG, 'createBarCode cp: %{public}s', (this.mBackgroundColor === this.mPixelMapColor));
               try {
                 generateBarcode.createBarcode(content, options).then((result: image.PixelMap) => {
+                  this.pixelMap = result;
+                  hilog.info(0x0001, TAG, 'Succeeded in creating barCode.');
+                }).catch((error: BusinessError) => {
+                  showError(error);
+                  hilog.error(0x0001, TAG, `Failed to create barCode. Code: ${error.code}, message: ${error.message}`);
+                })
+              } catch (error) {
+                showError(error);
+                hilog.error(0x0001, TAG, `Failed to create barCode. Code: ${error.code}, message: ${error.message}`);
+              }
+            }
+          })
+
+          CustomButton({
+            mText: $r('app.string.generate_trip_barcode'), mOnClick: () => {
+              this.pixelMap = undefined;
+              let content = this.mInputContext;
+              let pattern = /^[0-9a-fA-F]+$/;
+              if (content && !pattern.test(content)) {
+                promptAction.showToast({
+                  message: $r('app.string.trip_barcode_tip'),
+                  duration: 2000
+                });
+                return;
+              }
+              if (content.length % 2 !== 0) {
+                content = '0' + content;
+              }
+              let contentBuffer: ArrayBuffer = buffer.from(content, 'hex').buffer;
+              let options: generateBarcode.CreateOptions = {
+                scanType: this.mCodeType,
+                height: Number(this.mHeight),
+                width: Number(this.mWidth),
+                margin: Number(this.mMargin),
+                level: this.mLevel,
+                backgroundColor: this.mBackgroundColor,
+                pixelMapColor: this.mPixelMapColor,
+              }
+
+              try {
+                generateBarcode.createBarcode(contentBuffer, options).then((result: image.PixelMap) => {
                   this.pixelMap = result;
                   hilog.info(0x0001, TAG, 'Succeeded in creating barCode.');
                 }).catch((error: BusinessError) => {

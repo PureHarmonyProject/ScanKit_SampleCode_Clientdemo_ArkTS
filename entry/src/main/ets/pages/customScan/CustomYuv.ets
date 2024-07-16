@@ -1,5 +1,5 @@
 import { fileIo } from '@kit.CoreFileKit';
-import { router, display } from '@kit.ArkUI';
+import { router, display, TipsDialog } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AsyncCallback, BusinessError } from '@kit.BasicServicesKit';
 import { scanCore, scanBarcode, customScan } from '@kit.ScanKit';
@@ -9,7 +9,6 @@ import { WindowSize } from '../../common/Utils';
 import { PermissionsUtil } from './PermissionsUtil';
 import { GlobalThisUtil } from '../../common/GlobalThisUtil';
 import { CommonConstants } from '../customScanDefault/constants/CommonConstants';
-import { CustomDialogExample } from './CustomScan';
 
 const TAG = 'Scan SampleCode CustomYuv';
 const DOMAIN: number = 0x0001;
@@ -233,12 +232,24 @@ struct YUVScan {
       }
     };
   dialogController: CustomDialogController = new CustomDialogController({
-    builder: CustomDialogExample({
-      action: this.openPermissionsInSystemSettings,
-      cancel: this.existApp,
+    builder: TipsDialog({
+      title: $r('app.string.Scan_access_not_enabled'),
+      content: $r('app.string.Scan_access_tips'),
+      primaryButton: {
+        value: $r('app.string.Scan_got_it'),
+        action: () => {
+          this.existApp();
+        },
+      },
+      secondaryButton: {
+        value: $r('app.string.Scan_settings'),
+        action: () => {
+          this.openPermissionsInSystemSettings();
+        }
+      },
     }),
     autoCancel: false,
-    customStyle: true,
+    customStyle: false,
     alignment: DialogAlignment.Center
   });
 
@@ -262,6 +273,7 @@ struct YUVScan {
 
   existApp() {
     this.isDialogShow = false;
+    this.dialogController.close();
     hilog.info(0x0001, TAG, 'Succeeded in exit app. isDialogShow: %{public}s', this.isDialogShow);
   }
 

@@ -20,13 +20,39 @@ The **import { scanCore, scanBarcode, customScan, detectBarcode, generateBarcode
 | :-----------------------------------: | :----------------------------------------: |
 | ![](entry/screenshots/homePageEs.png) | ![](entry/screenshots/customScanYUVEs.png) |
 
-|          **App Home Screen**          | **Barcode Scan by Custom UI – Recommended Example**           |       **Scan Result (Single Barcode)**        |     **Scan Result (Multiple Barcodes)**     |    **Barcode Scan Result (Recommended Example)**    |
-|:-------------------------------------:| ---------------------------------------- |:---------------------------------------------:|:-------------------------------------------:| :----------------------------------------: |
-| ![](entry/screenshots/homePageEs.png) | ![](entry/screenshots/defaultScanEs.png) |         ![](entry/screenshots/customScanSingleEs.png)         | ![](entry/screenshots/customScanMutiEs.png) | ![](entry/screenshots/defaultResultEs.png) |
+<table>
+  <tr>
+    <th width=20%>App Home Screen</th>
+    <th width=20%>Barcode Scan by Custom UI – Recommended Example</th>
+    <th width=20%>Scan Result (Single Barcode)</th>
+    <th width=20%>Scan Result (Multiple Barcodes)</th>
+    <th width=20%>Barcode Scan Result (Recommended Example)</th>
+  </tr>
+  <tr>
+    <td><img src='entry/screenshots/homePageEs.png'></td>
+    <td><img src='entry/screenshots/customScanNewEs.png'></td>
+    <td><img src='entry/screenshots/customScanSingleEs.png'></td>
+    <td><img src='entry/screenshots/customScanMutiEs.png'></td>
+    <td><img src='entry/screenshots/defaultResultEs.png'></td>
+  </tr>
+</table>
 
-|          **App Home Screen**          |            **Recognize Local Images**            | **Image-Based Barcode Recognition Result (Single Barcode)** | **Image-Based Barcode Recognition Result (Multiple Barcodes)** |        **Image-Based Barcode Recognition Result**        |
-| :-----------------------------------: | :----------------------------------------------: | :---------------------------------------------------------: | :----------------------------------------------------------: | :------------------------------------------------------: |
-| ![](entry/screenshots/homePageEs.png) | ![](entry/screenshots/detectBarcodepickerEs.png) |      ![](entry/screenshots/detectBarcodeSingleEs.png)       |       ![](entry/screenshots/detectBarcodeMultiEs.png)        | ![](entry/screenshots/customOrDetectBarcodeResultEs.png) |
+<table>
+  <tr>
+    <th width=20%>App Home Screen</th>
+    <th width=20%>Recognize Local Images</th>
+    <th width=20%>Image-Based Barcode Recognition Result (Single Barcode)</th>
+    <th width=20%>Image-Based Barcode Recognition Result (Multiple Barcodes)</th>
+    <th width=20%>Image-Based Barcode Recognition Result</th>
+  </tr>
+  <tr>
+    <td><img src='entry/screenshots/homePageEs.png'></td>
+    <td><img src='entry/screenshots/detectBarcodepickerEs.png'></td>
+    <td><img src='entry/screenshots/detectBarcodeSingle.png'></td>
+    <td><img src='entry/screenshots/detectBarcodeMulti.png'></td>
+    <td><img src='entry/screenshots/customOrDetectBarcodeResultEs.png'></td>
+  </tr>
+</table>
 
 |          **App Home Screen**          |        **Recognize Image Data**        |
 | :-----------------------------------: | :------------------------------------: |
@@ -71,7 +97,6 @@ The **import { scanCore, scanBarcode, customScan, detectBarcode, generateBarcode
 │ │ │ │ │ ├─BreakpointType         // Breakpoint.    
 │ │ │ │ │ ├─openPhoto         // Gallery.    
 │ │ │ │ │ ├─PromptTone         // Prompt tone.    
-│ │ │ │ │ ├─ScanPreferences         // Privacy statement pop-up.    
 │ │ │ │ │ ├─ScanService         // Barcode scanning customization.    
 │ │ │ │ │ ├─ScanSize         // Barcode scanning UI layout.    
 │ │ │ │ ├─pages         // Pages.    
@@ -153,6 +178,6 @@ The device where the sample app runs must be equipped with a camera.
 ## Constraints
 
 1. This sample can only be run on standard-system Huawei phones and tablets.
-2. HarmonyOS: HarmonyOS NEXT Developer Beta1 or later.
-3. DevEco Studio: DevEco Studio NEXT Developer Beta1 or later.
-4. HarmonyOS SDK: HarmonyOS NEXT Developer Beta1 SDK or later.
+2. HarmonyOS: HarmonyOS NEXT Developer Beta2 or later.
+3. DevEco Studio: DevEco Studio NEXT Developer Beta2 or later.
+4. HarmonyOS SDK: HarmonyOS NEXT Developer Beta2 SDK or later.

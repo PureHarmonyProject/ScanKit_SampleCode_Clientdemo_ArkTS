@@ -34,7 +34,7 @@
     },
     {
       "name": "Scan_access_tips",
-      "value": "Grant the Camera permission in Settings > Apps > testclient > Permissions to enable the Camera permission."
+      "value": "Grant the Camera permission in Settings > Apps & services > Scan Kit Demo > Permissions to enable the Camera permission."
     },
     {
       "name": "Scan_got_it",

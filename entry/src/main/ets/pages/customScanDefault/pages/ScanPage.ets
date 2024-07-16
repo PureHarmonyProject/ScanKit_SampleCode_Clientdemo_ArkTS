@@ -1,4 +1,4 @@
-import { display, window } from '@kit.ArkUI';
+import { display, window, TipsDialog } from '@kit.ArkUI';
 import { customScan, scanBarcode, scanCore } from '@kit.ScanKit';
 import { abilityAccessCtrl, common, ConfigurationConstant, Permissions, Want } from '@kit.AbilityKit';
 import { AsyncCallback, BusinessError, emitter } from '@kit.BasicServicesKit';
@@ -17,19 +17,29 @@ import { ScanService, ScanResult } from '../model/ScanService';
 import { BreakpointConstants } from '../constants/BreakpointConstants';
 import { DeviceStatus, ScanLayout, ScanSize, XComponentSize, NewArea } from '../model/ScanSize';
 import { ScanXComponent } from '../view/ScanXComponent';
-import { pickerDialog } from '../view/pickerDialog';
 import { ScanLoading } from '../view/ScanLoading';
 import { PermissionsUtil } from '../../customScan/PermissionsUtil';
-import { CustomDialogExample } from '../../customScan/CustomScan';
 
 export const TAG = 'ScanPage';
 
 let storage = LocalStorage.getShared();
+let timerId: number;
+
+@Extend(Row)
+function tipContainer() {
+  .margin({
+    top: 16
+  })
+  .padding(8)
+  .backgroundColor($r('sys.color.ohos_id_blur_style_component_ultra_thick_color'))
+  .borderRadius($r('sys.float.corner_radius_level10'))
+}
 
 @Entry(storage)
 @Component
 struct ScanPage {
   @StorageLink('currentBreakpoint') currentBreakpoint: string = BreakpointConstants.BREAKPOINT_SM;
+  @State tipShow:boolean = false;
   @State scanSize: ScanSize = ScanSize.getInstance();
   @State deviceStatus: DeviceStatus = this.scanSize.deviceStatus;
   @State xComponentSize: XComponentSize = this.scanSize.xComponentSize;
@@ -54,12 +64,24 @@ struct ScanPage {
   };
   public avPlayer: PromptTone | null = null // Audio control after successful code scanning.
   dialogController: CustomDialogController = new CustomDialogController({
-    builder: CustomDialogExample({
-      action: this.openPermissionsInSystemSettings,
-      cancel: this.existApp,
+    builder: TipsDialog({
+      title: $r('app.string.Scan_access_not_enabled'),
+      content: $r('app.string.Scan_access_tips'),
+      primaryButton: {
+        value: $r('app.string.Scan_got_it'),
+        action: () => {
+          this.existApp();
+        },
+      },
+      secondaryButton: {
+        value: $r('app.string.Scan_settings'),
+        action: () => {
+          this.openPermissionsInSystemSettings();
+        }
+      },
     }),
     autoCancel: false,
-    customStyle: true,
+    customStyle: false,
     alignment: DialogAlignment.Center
   });
   customCallbackScan: AsyncCallback<scanBarcode.ScanResult[]> =
@@ -74,6 +96,7 @@ struct ScanPage {
         let resultLength: number = result ? result.length : 0;
         if (GlobalThisUtil.getProperty('hmsCore_scan_pickerUri') || resultLength) {
           this.scanService.stopCamera();
+          this.clearTimer();
           this.scanService.isScanned = true; // The result has been scanned.
           this.scanResult.uri = GlobalThisUtil.getProperty('hmsCore_scan_pickerUri');
           this.scanResult.size = resultLength;
@@ -129,18 +152,20 @@ struct ScanPage {
   }
 
   async onPageShow(): Promise<void> {
+    await this.empowerment();
     this.scanService.isOnPageShow = true;
     this.scanService.isReleaseCamera = false;
     this.scanService.isStopCamera = false;
-
-    await this.empowerment();
 
     this.darkMode = (getContext(this) as common.UIAbilityContext).config.colorMode;
   }
 
   onPageHide(): void {
     this.scanService.scanDestroy();
+    this.clearTimer();
+    this.userGrant = false;
     this.isDialogShow = false;
+    this.dialogController.close();
   }
 
   async aboutToDisappear(): Promise<void> {
@@ -176,14 +201,25 @@ struct ScanPage {
   @Builder
   ScanTitleBuilder() {
     //Top title
-    ScanTitle({
-      scanResultSize: this.scanResult.size,
-      navHeight: this.scanSize.navHeight,
-    }).width('100%')
-      .onAreaChange((_: Area, newArea: Area) => {
-        this.scanLayout.topHeight = Number(newArea.height);
-      })
-      .visibility(this.scanResult.size > 0 ? Visibility.Hidden : Visibility.Visible)
+    Column(){
+      ScanTitle({
+        scanResultSize: this.scanResult.size,
+        navHeight: this.scanSize.navHeight,
+      }).width('100%')
+        .onAreaChange((_: Area, newArea: Area) => {
+          this.scanLayout.topHeight = Number(newArea.height);
+        })
+        .visibility(this.scanResult.size > 0 ? Visibility.Hidden : Visibility.Visible)
+      if(this.tipShow) {
+        Row() {
+          Text($r('app.string.Scan_diaLog_not_found'))
+            .fontSize($r('sys.float.ohos_id_text_size_body2'))
+            .fontFamily('HarmonyHeiTi')
+            .fontColor($r('sys.color.ohos_id_color_text_secondary'))
+        }
+        .tipContainer()
+      }
+    }
   }
 
   @Builder
@@ -229,6 +265,7 @@ struct ScanPage {
           this.scanService.isScanned = false;
           this.scanService.isScanLine = false;
           await this.scanService.releaseCamera();
+          this.clearTimer();
           openAlbum(this.options, this.customCallbackScan, () => {
             this.scanService.isAlbumLoading = true;
             this.scanService.isOpenAlbum = false;
@@ -320,6 +357,7 @@ struct ScanPage {
 
   existApp() {
     this.isDialogShow = false;
+    this.dialogController.close();
     Logger.info(TAG, 'Succeeded in exiting app.');
   }
 
@@ -392,8 +430,25 @@ struct ScanPage {
     if (this.surfaceId) {
       Logger.info(TAG, `startScan`)
       this.scanService.initCamera(this.options, this.viewControl, this.customCallbackScan);
+      this.startTimer()
       this.avPlayer = PromptTone.getInstance(getContext(this) as common.UIAbilityContext);
     }
+  }
+
+  clearTimer() {
+    if(timerId) {
+      clearTimeout(timerId);
+      this.tipShow = false;
+    }
+  }
+
+  startTimer() {
+    this.clearTimer();
+    timerId = setTimeout(() => {
+      if (this.userGrant && this.scanResult.size === 0) {
+        this.tipShow = true;
+      }
+    }, 5000);
   }
 
   windowSizeSubscribe(): void {
@@ -427,10 +482,13 @@ struct ScanPage {
 
   async releaseUI(): Promise<void> {
     this.scanService.resetScanData();
+    this.clearTimer();
     await this.scanService.releaseCamera();
   }
 
   async backToScanCamera() {
+    this.clearTimer();
     this.scanService.backToScan(this.options, this.viewControl, this.customCallbackScan);
+    this.startTimer()
   }
 }

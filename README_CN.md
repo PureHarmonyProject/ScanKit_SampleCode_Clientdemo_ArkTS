@@ -22,7 +22,7 @@
 
 |         **应用首页**          | **自定义界面扫码能力-推荐样例**                 |            **扫码结果单码**            |           **扫码结果多码**           |        **推荐样例扫码结果**        |
 | :---------------------------: | -------------------------------- | :------------------------------------: | :----------------------------------: | :--------------------------------: |
-| ![](entry/screenshots/homePage.png) | ![](entry/screenshots/defaultScan.png) | ![](entry/screenshots/customScanSingle.png) | ![](entry/screenshots/customScanMuti.png) | ![](entry/screenshots/defaultResult.png) |
+| ![](entry/screenshots/homePage.png) | ![](entry/screenshots/customScanNew.png) | ![](entry/screenshots/customScanSingle.png) | ![](entry/screenshots/customScanMuti.png) | ![](entry/screenshots/defaultResult.png) |
 
 | **应用首页**               |                   **识别本地图片**                   |               **图片识码结果单码**               |               **图片识码结果多码**                |                    **图片识别结果**                    |
 | :------------------------: |:----------------------------------------------:|:----------------------------------------:|:---------------------------------------:|:------------------------------------------------:|
@@ -72,7 +72,6 @@
 │ │ │ │ │ ├─BreakpointType         // 断点  
 │ │ │ │ │ ├─openPhoto         // 图库  
 │ │ │ │ │ ├─PromptTone         // 提示音  
-│ │ │ │ │ ├─ScanPreferences         // 隐私声明弹窗  
 │ │ │ │ │ ├─ScanService         // 自定义扫码  
 │ │ │ │ │ ├─ScanSize         // 扫面界面尺寸  
 │ │ │ │ ├─pages         // 页面  
@@ -154,6 +153,6 @@
 ## 约束与限制
 
 1. 本实例仅支持标准系统上运行，支持设备：华为手机、华为平板。
-2. HarmonyOS系统：HarmonyOS NEXT Developer Beta1及以上。
-3. DevEco Studio版本：DevEco Studio NEXT Developer Beta1及以上。
-4. HarmonyOS SDK版本：HarmonyOS NEXT Developer Beta1 SDK及以上。
+2. HarmonyOS系统：HarmonyOS NEXT Developer Beta2及以上。
+3. DevEco Studio版本：DevEco Studio NEXT Developer Beta2及以上。
+4. HarmonyOS SDK版本：HarmonyOS NEXT Developer Beta2 SDK及以上。

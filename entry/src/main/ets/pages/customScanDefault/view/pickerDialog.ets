@@ -1,6 +1,5 @@
 import { common, ConfigurationConstant } from '@kit.AbilityKit';
 import { curves } from '@kit.ArkUI';
-import { BreakpointConstants } from '../constants/BreakpointConstants';
 
 @Extend(Text)
 function textClass(color: ResourceColor, textAlign: TextAlign) {
@@ -64,7 +63,6 @@ function dialogContentContainer() {
 
 @Component
 export struct pickerDialog {
-  @StorageLink('currentBreakpoint') currentBreakpoint: string = BreakpointConstants.BREAKPOINT_SM;
   @State context: common.UIAbilityContext = getContext(this) as common.UIAbilityContext;
   @Prop darkMode: ConfigurationConstant.ColorMode;
   @Prop text: Resource;

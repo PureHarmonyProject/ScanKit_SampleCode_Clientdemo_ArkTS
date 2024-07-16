@@ -1,7 +1,7 @@
 import { image } from '@kit.ImageKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { picker, fileIo } from '@kit.CoreFileKit';
-import { router, display, curves } from '@kit.ArkUI';
+import { router, display, curves, TipsDialog } from '@kit.ArkUI';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { scanBarcode, customScan, scanCore, detectBarcode } from '@kit.ScanKit';
 import { common, abilityAccessCtrl, Permissions, Want } from '@kit.AbilityKit';
@@ -76,38 +76,6 @@ function lightText() {
   .fontSize(14)
 }
 
-@Extend(Text)
-function disLogTitle() {
-  .fontColor(Color.Black)
-  .fontSize(12)
-  .alignSelf(ItemAlign.Start)
-}
-
-@Extend(Text)
-function disLogTips() {
-  .textAlign(TextAlign.Start)
-  .fontColor(Color.Black)
-  .fontSize(14)
-  .padding({ top: 15,  bottom: 8 })
-}
-
-@Extend(Column)
-function box() {
-  .width(320)
-  .padding({ left: 35, right: 20, top: 15, bottom: 15 })
-  .backgroundColor(Color.White)
-  .borderRadius(24)
-}
-
-@Extend(Text)
-function btn() {
-  .width('50%')
-  .height(20)
-  .fontSize(14)
-  .textAlign(TextAlign.Center)
-  .fontColor(Color.Black)
-}
-
 @Extend(Column)
 function mainStyle() {
   .width('100%')
@@ -131,36 +99,6 @@ function maskStyle() {
 
 const TAG = 'Scan SampleCode CustomScan';
 
-@CustomDialog
-export struct CustomDialogExample {
-  controller: CustomDialogController = new CustomDialogController({
-    builder: null
-  })
-  cancel: () => void = () => {
-  }
-  action: () => void = () => {
-  }
-
-  build() {
-    Column() {
-      Column() {
-        Text($r('app.string.Scan_access_not_enabled')).disLogTitle()
-        Text($r('app.string.Scan_access_tips')).disLogTips()
-        Row() {
-          Text($r('app.string.Scan_got_it')).btn()
-            .onClick(() => {
-              this.controller.close();
-              this.cancel();
-            })
-          Text($r('app.string.Scan_settings')).btn()
-            .onClick(() => {
-              this.action();
-            })
-        }
-      }
-    }.box()
-  }
-}
 
 @Component
 struct closeImage {
@@ -214,12 +152,24 @@ struct ScanPage {
     enableAlbum: true
   }
   dialogController: CustomDialogController = new CustomDialogController({
-    builder: CustomDialogExample({
-      action: this.openPermissionsInSystemSettings,
-      cancel: this.existApp,
+    builder: TipsDialog({
+      title: $r('app.string.Scan_access_not_enabled'),
+      content: $r('app.string.Scan_access_tips'),
+      primaryButton: {
+        value: $r('app.string.Scan_got_it'),
+        action: () => {
+          this.existApp();
+        },
+      },
+      secondaryButton: {
+        value: $r('app.string.Scan_settings'),
+        action: () => {
+          this.openPermissionsInSystemSettings();
+        }
+      },
     }),
     autoCancel: false,
-    customStyle: true,
+    customStyle: false,
     alignment: DialogAlignment.Center
   })
 
@@ -243,6 +193,7 @@ struct ScanPage {
 
   existApp() {
     this.isDialogShow = false;
+    this.dialogController.close();
     hilog.info(0x0001, TAG, 'Start to permissionUsedRecord. isDialogShow: %{public}s', this.isDialogShow);
   }
 
