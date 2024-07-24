@@ -54,7 +54,7 @@ function FlexRow() {
 @Component
 struct GenerateBarcode {
   @State pixelMap: image.PixelMap | undefined = undefined
-  @State mInputContext: string = '';
+  @State mInputContext: string = '123';
   @State mWidth: string = '800'
   @State mHeight: string = '800'
   @State mCodeType: number = scanCore.ScanType.QR_CODE
@@ -91,7 +91,7 @@ struct GenerateBarcode {
             })
               .margin({ left: 5 })
 
-            TextArea()
+            TextArea({ placeholder: this.mInputContext })
               .demoTextArea()
               .onChange((value: string) => {
                 this.mInputContext = value
@@ -174,7 +174,7 @@ struct GenerateBarcode {
 
           Row() {
             CustomLabel({
-              text: $r('app.string.barcode_backgroundcolor')
+              text: $r('app.string.barcode_background_color')
             })
             Select(ScanConstant.colorItems)
               .selected(7)

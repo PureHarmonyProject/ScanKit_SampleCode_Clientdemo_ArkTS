@@ -61,7 +61,7 @@ export function getColorType(type: string): number {
 export function showError(businessError: BusinessError): void {
   try {
     promptAction.showToast({
-      message: `Error Code :' ${businessError.code} ${businessError.message}`,
+      message: `Error Code: ${businessError.code} ${businessError.message}`,
       duration: 2000
     });
   } catch (error) {

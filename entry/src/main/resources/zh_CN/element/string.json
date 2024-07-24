@@ -62,10 +62,10 @@
     },
     {
       "name": "demo_detail",
-      "value": "软硬协同的系统级扫码服务，帮助您快速构建面向各种场景的码识别和生成能力。"
+      "value": "软硬协同的系统级扫码服务和“扫码直达”服务，帮助您快速构建面向各种场景的码识别和生成能力。"
     },
     {
-      "name": "default_view_decoe",
+      "name": "default_view_decode",
       "value": "默认界面扫码能力"
     },
     {
@@ -82,7 +82,7 @@
     },
     {
       "name": "bitmap_api_decode",
-      "value": "图片识码能力"
+      "value": "图像识码能力"
     },
     {
       "name": "bitmap_api_decode_image",
@@ -121,7 +121,7 @@
       "value": "颜色："
     },
     {
-      "name": "barcode_backgroundcolor",
+      "name": "barcode_background_color",
       "value": "背景色："
     },
     {
@@ -185,16 +185,76 @@
       "value": "输入缩放倍数"
     },
     {
-      "name":"Scan_gallery",
-      "value":"图库"
+      "name": "Scan_gallery",
+      "value": "图库"
     },
     {
-      "name":"Scan_album_loading",
-      "value":"正在处理…"
+      "name": "Scan_album_loading",
+      "value": "正在处理…"
     },
     {
-      "name":"Scan_barcode_tips_callback",
-      "value":"扫描到多个码，请选择一个打开"
+      "name": "Scan_barcode_tips_callback",
+      "value": "扫描到多个码，请选择一个打开"
+    },
+    {
+      "name": "scan_to_access",
+      "value": "扫码直达"
+    },
+    {
+      "name": "welcome_to_access",
+      "value": "欢迎接入“扫码直达”服务"
+    },
+    {
+      "name": "access_integration_process",
+      "value": "扫码直达接入流程"
+    },
+    {
+      "name": "access_detail_title",
+      "value": "扫码直达"
+    },
+    {
+      "name": "access_detail_info_f",
+      "value": "在日常生活中，人们会使用各种应用扫各式各样的码，而“扫码直达”服务则为用户带来一种全新的扫码体验。"
+    },
+    {
+      "name": "access_detail_info_t",
+      "value": "开发者将域名注册到“扫码直达”服务后，用户可通过控制中心等系统级的常驻入口，扫应用的二维码、条形码并跳转到应用对应服务页，实现一步直达服务的体验。"
+    },
+    {
+      "name": "access_detail_example",
+      "value": "开发示例："
+    },
+    {
+      "name": "access_detail_example_f",
+      "value": "1、开发者参考App Linking集成指导完成域名注册，并生成应用发行二维码。"
+    },
+    {
+      "name": "access_detail_example_t",
+      "value": "2、通过控制中心扫码入口，扫描该二维码。"
+    },
+    {
+      "name": "access_detail_procedure",
+      "value": "开发步骤："
+    },
+    {
+      "name": "access_detail_procedure1",
+      "value": "1、参考App Linking集成指导完成域名注册。"
+    },
+    {
+      "name": "access_detail_procedure2",
+      "value": "2、创建的包名，配置好的域名映射关系，应用签名配置到应用项目中（项目创建的名称和应用包名bundleName一致）。"
+    },
+    {
+      "name": "access_detail_procedure3",
+      "value": "3、打开HarmonyOS扫码入口（控制中心扫码入口），扫描应用发行的二维码（已注册域名生成的二维码）。"
+    },
+    {
+      "name": "access_detail_procedure4",
+      "value": "4、扫码拉起已安装的应用并直达目标服务页。"
+    },
+    {
+      "name": "access_detail_th",
+      "value": "扫码流程示例"
     }
   ]
 }

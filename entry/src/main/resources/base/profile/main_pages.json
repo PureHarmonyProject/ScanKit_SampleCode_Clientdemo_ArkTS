@@ -9,6 +9,8 @@
     "pages/customScan/CustomPage",
     "pages/customScan/CustomYuv",
     "pages/resultPage/ResultPage",
-    "pages/customScanDefault/pages/ScanPage"
+    "pages/customScanDefault/pages/ScanPage",
+    "pages/access/ScanAccess",
+    "pages/access/ScanDetail"
   ]
 }

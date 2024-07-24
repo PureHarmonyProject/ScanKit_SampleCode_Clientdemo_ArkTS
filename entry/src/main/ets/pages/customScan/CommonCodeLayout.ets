@@ -17,17 +17,17 @@ const TAG: string = 'Scan SampleCode codeLayout';
 export struct CodeLayout {
   @State multiCodeScanLocation: Array<Array<number>> = []; // Multi-code display position
   @State multiCodeScanResult: Array<object> = [];
-  @State resultCode: number = -1;
+  @State resultCode: number = -1; // Scan result code.
   @State cameraScreenOffsetX: number = 0;
   @State cameraScreenOffsetY: number = 0;
   @State cameraHeight: number = 640;
   @State cameraWidth: number = 360;
-  @State isMultiSelected: boolean = false;
-  @State multiSelectedIndex: number = -1;
-  @State singleCodeX: string = '0lpx';
-  @State singleCodeY: string = '0lpx';
+  @State isMultiSelected: boolean = false; // Whether the scanning result has been selected
+  @State multiSelectedIndex: number = -1;  // Index selected in multi-code mode
+  @State singleCodeX: string = '0lpx'; // Single-code x-axis position
+  @State singleCodeY: string = '0lpx'; // Single-code y-axis position
   @State multiCodeScale: number = 0.3; // Multi-code icon scaling ratio
-  @State multiCodeOpacity: number = 0;
+  @State multiCodeOpacity: number = 0; // Multi-code Icon Opacity
   @State singleCodeScale: number = 0.3;
   @State singleCodeOpacity: number = 0;
   @State fadeOutScale: number = 1;
@@ -189,9 +189,10 @@ export struct CodeLayout {
       })
 
       if (this.codeScanSize === 1) {
-        // 单码
+        // Single-code identification success. Directly jump to the page.
         this.SingleCodeLayout()
       } else {
+        // Multi-code identification is successful. You need to click the blue dot to go to the next page.
         ForEach(this.multiCodeScanLocation, (item: Array<number>, index: number) => {
           this.MultiCodeLayout(item, index)
         })
@@ -279,7 +280,7 @@ export struct CodeLayout {
   }
 
   multiCodeBreathe() {
-    // Multicode Scan Breathing Animation
+    // Multi-code Scan Breathing Animation
     this.multiCodeScale = 1;
     animateTo({
       duration: 300,

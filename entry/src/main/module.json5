@@ -24,11 +24,17 @@
         "skills": [
           {
             "entities": [
-              "entity.system.home"
+              "entity.system.home",
+              "entity.system.browsable"
             ],
             "actions": [
-              "action.system.home"
-            ]
+              "action.system.home",
+              "ohos.want.action.viewData"
+            ],
+            "uris": [
+            ],
+            // domainVerify须设置为true
+            "domainVerify": true
           }
         ]
       }
@@ -41,7 +47,7 @@
           "abilities": [
             "EntryAbility"
           ],
-          "when":"always"
+          "when": "always"
         }
       },
       {

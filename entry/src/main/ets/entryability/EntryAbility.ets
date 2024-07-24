@@ -1,7 +1,7 @@
 import { AbilityConstant, common, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import deviceInfo from '@ohos.deviceInfo';
-import { display, window } from '@kit.ArkUI';
+import { display, router, window } from '@kit.ArkUI';
 import { emitter } from '@kit.BasicServicesKit';
 import { GlobalThisUtil } from '../common/GlobalThisUtil';
 import { CommonConstants } from '../pages/customScanDefault/constants/CommonConstants';
@@ -10,14 +10,20 @@ const TAG = 'Scan SampleCode EntryAbility';
 
 export default class EntryAbility extends UIAbility {
   private windowObj?: window.Window;
+  private page: string = 'pages/Index';
 
-  onCreate(_: Want, __: AbilityConstant.LaunchParam): void {
+  onCreate(want: Want, __: AbilityConstant.LaunchParam): void {
     hilog.info(0x0000, TAG, '%{public}s', 'Ability onCreate');
     GlobalThisUtil.setProperty<common.UIAbilityContext>('scan_context', this.context);
     GlobalThisUtil.setProperty('hmsCore_scan_device_type', deviceInfo.deviceType);
     GlobalThisUtil.setProperty('hmsCore_scan_isFoldable', display.isFoldable());
     if (GlobalThisUtil.getProperty('hmsCore_scan_isFoldable')) {
       GlobalThisUtil.setProperty('hmsCore_scan_foldStatus', display.getFoldStatus());
+    }
+    let uri = want?.uri;
+    if (uri) {
+      // “扫码直达”服务，根据uri参数做业务处理
+      this.page = 'pages/access/ScanAccess';
     }
   }
 
@@ -67,7 +73,7 @@ export default class EntryAbility extends UIAbility {
 
       let avoidArea = windowObj.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM);
       GlobalThisUtil.setProperty('scan_topRect_height', avoidArea.topRect.height);
-      windowStage.loadContent('pages/Index', (error, _) => {
+      windowStage.loadContent(this.page, (error, _) => {
         if (error.code) {
           hilog.error(0x0000, TAG, 'Failed to load the content. Code: %{public}s, message: %{public}s.', error.code,
             error.message);
@@ -89,6 +95,19 @@ export default class EntryAbility extends UIAbility {
         hilog.error(0x0000, TAG, '%{public}s', 'Failed to listen window size change.');
       }
     })
+  }
+
+  onNewWant(want: Want, launchParam: AbilityConstant.LaunchParam): void {
+    hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onNewWant');
+    // 从want中获取传入的参数
+    let uri = want?.uri;
+    let status: router.RouterState = router.getState();
+    if (status && status.name !== 'ScanAccess' && uri) {
+      // “扫码直达”服务，根据uri参数做业务处理
+      router.pushUrl({
+        url: 'pages/access/ScanAccess'
+      });
+    }
   }
 
   onWindowStageDestroy(): void {

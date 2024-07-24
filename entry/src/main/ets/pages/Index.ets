@@ -52,8 +52,17 @@ struct Index {
       })
 
       Column() {
+
         CustomButton({
-          mText: $r('app.string.default_view_decoe'), mOnClick: () => {
+          mText: $r('app.string.scan_to_access'), mOnClick: () => {
+            router.pushUrl({
+              url: 'pages/access/ScanAccess'
+            })
+          }
+        })
+
+        CustomButton({
+          mText: $r('app.string.default_view_decode'), mOnClick: () => {
             try {
               scanBarcode.startScanForResult(getContext(this), this.options).then((result: scanBarcode.ScanResult) => {
                 if (!checkResult(result)) {
@@ -68,14 +77,16 @@ struct Index {
                   }
                 })
               }).catch((error: BusinessError) => {
-                if(error.code == scanCore.ScanErrorCode.SCAN_SERVICE_CANCELED) {
+                if (error.code == scanCore.ScanErrorCode.SCAN_SERVICE_CANCELED) {
                   hilog.info(0x0001, TAG, `Disabling the Scanning Service.`);
                 } else {
-                  hilog.error(0x0001, TAG, `Failed to start the scanning service. Code: ${error.code}, message: ${error.message}.`);
+                  hilog.error(0x0001, TAG,
+                    `Failed to start the scanning service. Code: ${error.code}, message: ${error.message}.`);
                 }
               });
             } catch (error) {
-              hilog.error(0x0001, TAG, `Failed to start the scanning service. Code: ${error.code}, message: ${error.message}.`);
+              hilog.error(0x0001, TAG,
+                `Failed to start the scanning service. Code: ${error.code}, message: ${error.message}.`);
               showError(error);
             }
           }
@@ -109,6 +120,7 @@ struct Index {
             })
           }
         })
+
       }.margin({
         top: 50,
         bottom: 50

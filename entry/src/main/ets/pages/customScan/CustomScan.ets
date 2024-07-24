@@ -148,7 +148,7 @@ struct ScanPage {
   private viewControl: customScan.ViewControl = { width: 1920, height: 1080, surfaceId: this.surfaceId };
   options: scanBarcode.ScanOptions = {
     scanTypes: [scanCore.ScanType.ALL],
-    enableMultiMode: true,
+    enableMultiMode: true, // Multi-code scanning, enableMultiMode: true; Single-code scanning, enableMultiMode: false.
     enableAlbum: true
   }
   dialogController: CustomDialogController = new CustomDialogController({
