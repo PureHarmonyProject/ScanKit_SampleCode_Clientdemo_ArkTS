@@ -110,19 +110,19 @@
 默认界面扫码：提供系统级体验一致的扫码界面，包含相机预览流，相册扫码入口，暗光环境闪光灯开启提示，具备相机预授权，集成简单，适用于通用扫码场景。
 在import { scanCore, scanBarcode } from '@kit.ScanKit';定义了默认扫码服务接口API：
 
-* startScanForResult(context: common.Context, options?: ScanOptions): Promise<ScanResult>
-* startScanForResult(context: common.Context, options: ScanOptions, callback: AsyncCallback<ScanResult>): void
-* startScanForResult(context: common.Context, callback: AsyncCallback<ScanResult>): void
+* startScanForResult(context: common.Context, options?: ScanOptions): Promise&lt;ScanResult&gt;
+* startScanForResult(context: common.Context, options: ScanOptions, callback: AsyncCallback&lt;ScanResult&gt;): void
+* startScanForResult(context: common.Context, callback: AsyncCallback&lt;ScanResult&gt;): void
 
 自定义界面扫码：提供扫码能力并支持在指定控件上渲染相机预览流，需要开发者实现扫码界面，申请相机权限，适用于对扫码界面有个性化定制的场景。
 在import { customScan } from '@kit.ScanKit';定义了自定义扫码API：
 
 * init(options?: scanBarcode.ScanOptions): void
-* start(viewControl: ViewControl): Promise<Array<scanBarcode.ScanResult>>
-* stop(): Promise<void>
-* release(): Promise<void>
-* start(viewControl: ViewControl, callback: AsyncCallback<Array<scanBarcode.ScanResult>>, frameCallback?:
-  AsyncCallback<ScanFrame>): void
+* start(viewControl: ViewControl): Promise&lt;Array&lt;scanBarcode.ScanResult&gt;&gt;
+* stop(): Promise&lt;void&gt;
+* release(): Promise&lt;void&gt;
+* start(viewControl: ViewControl, callback: AsyncCallback&lt;Array&lt;scanBarcode.ScanResult&gt;&gt;, frameCallback?:
+  AsyncCallback&lt;ScanFrame&gt;): void
 * getFlashLightStatus(): boolean
 * openFlashLight(): void
 * closeFlashLight(): void
@@ -131,26 +131,26 @@
 * setFocusPoint(point: scanBarcode.Point): void
 * resetFocus(): void
 * rescan(): void
-* stop(callback: AsyncCallback<void>): void
-* release(callback: AsyncCallback<void>): void
-* on(type: 'lightingFlash', callback: AsyncCallback<boolean>): void
-* off(type: 'lightingFlash', callback?: AsyncCallback<boolean>): void
+* stop(callback: AsyncCallback&lt;void&gt;): void
+* release(callback: AsyncCallback&lt;void&gt;): void
+* on(type: 'lightingFlash', callback: AsyncCallback&lt;boolean&gt;): void
+* off(type: 'lightingFlash', callback?: AsyncCallback&lt;boolean&gt;): void
 
 图像识码：对图库中的码图或图像数据进行扫描识别。
 在import { detectBarcode } from '@kit.ScanKit';定义了图像识码API：
 
-* decode(inputImage: InputImage, options?: scanBarcode.ScanOptions): Promise<Array<scanBarcode.ScanResult>>
-* decode(inputImage: InputImage, options: scanBarcode.ScanOptions, callback: AsyncCallback<Array<
-  scanBarcode.ScanResult>>): void
-* decode(inputImage: InputImage, callback: AsyncCallback<Array<scanBarcode.ScanResult>>): void
-* decodeImage(image: ByteImage, options?: scanBarcode.ScanOptions): Promise<DetectResult>
+* decode(inputImage: InputImage, options?: scanBarcode.ScanOptions): Promise&lt;Array&lt;scanBarcode.ScanResult&gt;&gt;
+* decode(inputImage: InputImage, options: scanBarcode.ScanOptions, callback: AsyncCallback&lt;Array&lt;
+  scanBarcode.ScanResult&gt;&gt;): void
+* decode(inputImage: InputImage, callback: AsyncCallback&lt;Array&lt;scanBarcode.ScanResult&gt;&gt;): void
+* decodeImage(image: ByteImage, options?: scanBarcode.ScanOptions): Promise&lt;DetectResult&gt;
 
 码图生成：将字符串或字节数组转换为自定义格式的码图。
 在import { generateBarcode } from '@kit.ScanKit';定义了码图生成API：
 
-* createBarcode(content: string, options: CreateOptions): Promise<image.PixelMap>
-* createBarcode(content: string, options: CreateOptions, callback: AsyncCallback<image.PixelMap>): void
-* createBarcode(content: ArrayBuffer, options: CreateOptions): Promise<image.PixelMap>;
+* createBarcode(content: string, options: CreateOptions): Promise&lt;image.PixelMap&gt;
+* createBarcode(content: string, options: CreateOptions, callback: AsyncCallback&lt;image.PixelMap&gt;): void
+* createBarcode(content: ArrayBuffer, options: CreateOptions): Promise&lt;image.PixelMap&gt;;
 
 ## 相关权限
 
