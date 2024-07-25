@@ -146,9 +146,9 @@ stream, a scanning entry for the photo gallery, a prompt to turn on the flashlig
 pre-authorization for the camera. This function is easy to be integrated and is suitable for general scanning scenarios.
 Define the default barcode scan API in **import { scanCore, scanBarcode } from '@kit.ScanKit';**.
 
-* startScanForResult(context: common.Context, options?: ScanOptions): Promise<ScanResult>
-* startScanForResult(context: common.Context, options: ScanOptions, callback: AsyncCallback<ScanResult>): void
-* startScanForResult(context: common.Context, callback: AsyncCallback<ScanResult>): void
+* startScanForResult(context: common.Context, options?: ScanOptions): Promise&lt;ScanResult&gt;
+* startScanForResult(context: common.Context, options: ScanOptions, callback: AsyncCallback&lt;ScanResult&gt;): void
+* startScanForResult(context: common.Context, callback: AsyncCallback&lt;ScanResult&gt;): void
 
 **Barcode Scan by Custom UI**: provides scanning capabilities and supports rendering the camera preview stream on the
 specified control. You need to implement the scanning UI and apply for camera permissions. This is suitable for
@@ -156,11 +156,11 @@ scenarios that require a personalized scanning UI.
 Define the custom barcode scan API in **import { customScan } from '@kit.ScanKit';**.
 
 * init(options?: scanBarcode.ScanOptions): void
-* start(viewControl: ViewControl): Promise<Array<scanBarcode.ScanResult>>
-* stop(): Promise<void>
-* release(): Promise<void>
-* start(viewControl: ViewControl, callback: AsyncCallback<Array<scanBarcode.ScanResult>>, frameCallback?:
-  AsyncCallback<ScanFrame>): void
+* start(viewControl: ViewControl): Promise&lt;Array&lt;scanBarcode.ScanResult&gt;&gt;
+* stop(): Promise&lt;void&gt;
+* release(): Promise&lt;void&gt;
+* start(viewControl: ViewControl, callback: AsyncCallback&lt;Array&lt;scanBarcode.ScanResult&gt;&gt;, frameCallback?:
+  AsyncCallback&lt;ScanFrame&gt;): void
 * getFlashLightStatus(): boolean
 * openFlashLight(): void
 * closeFlashLight(): void
@@ -169,26 +169,26 @@ Define the custom barcode scan API in **import { customScan } from '@kit.ScanKit
 * setFocusPoint(point: scanBarcode.Point): void
 * resetFocus(): void
 * rescan(): void
-* stop(callback: AsyncCallback<void>): void
-* release(callback: AsyncCallback<void>): void
-* on(type: 'lightingFlash', callback: AsyncCallback<boolean>): void
-* off(type: 'lightingFlash', callback?: AsyncCallback<boolean>): void
+* stop(callback: AsyncCallback&lt;void&gt;): void
+* release(callback: AsyncCallback&lt;void&gt;): void
+* on(type: 'lightingFlash', callback: AsyncCallback&lt;boolean&gt;): void
+* off(type: 'lightingFlash', callback?: AsyncCallback&lt;boolean&gt;): void
 
 **Image-Based Barcode Recognition**: scans and recognizes barcode images or images in the photo gallery.
   Define the image-based barcode recognition API in **import { detectBarcode } from '@kit.ScanKit';**.
 
-* decode(inputImage: InputImage, options?: scanBarcode.ScanOptions): Promise<Array<scanBarcode.ScanResult>>
-* decode(inputImage: InputImage, options: scanBarcode.ScanOptions, callback: AsyncCallback<Array<
-  scanBarcode.ScanResult>>): void
-* decode(inputImage: InputImage, callback: AsyncCallback<Array<scanBarcode.ScanResult>>): void
-* decodeImage(image: ByteImage, options?: scanBarcode.ScanOptions): Promise<DetectResult>
+* decode(inputImage: InputImage, options?: scanBarcode.ScanOptions): Promise&lt;Array&lt;scanBarcode.ScanResult&gt;&gt;
+* decode(inputImage: InputImage, options: scanBarcode.ScanOptions, callback: AsyncCallback&lt;Array&lt;
+  scanBarcode.ScanResult&gt;&gt;): void
+* decode(inputImage: InputImage, callback: AsyncCallback&lt;Array&lt;scanBarcode.ScanResult&gt;&gt;): void
+* decodeImage(image: ByteImage, options?: scanBarcode.ScanOptions): Promise&lt;DetectResult&gt;
 
 **Barcode Image Generation**: converts character strings into barcode images in a custom format.
 Define the barcode image generation API in **import { generateBarcode } from '@kit.ScanKit';**.
 
-* createBarcode(content: string, options: CreateOptions): Promise<image.PixelMap>
-* createBarcode(content: string, options: CreateOptions, callback: AsyncCallback<image.PixelMap>): void
-* createBarcode(content: ArrayBuffer, options: CreateOptions): Promise<image.PixelMap>;
+* createBarcode(content: string, options: CreateOptions): Promise&lt;image.PixelMap&gt;
+* createBarcode(content: string, options: CreateOptions, callback: AsyncCallback&lt;image.PixelMap&gt;): void
+* createBarcode(content: ArrayBuffer, options: CreateOptions): Promise&lt;image.PixelMap&gt;;
 
 
 ## Required Permissions
