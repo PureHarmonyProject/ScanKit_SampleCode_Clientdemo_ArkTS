@@ -1,4 +1,6 @@
 import { BreakpointConstants } from '../constants/BreakpointConstants';
+import { CommonConstants } from '../constants/CommonConstants';
+import { FontSizeScale } from '../model/FontSizeScale';
 
 @Extend(Column)
 function iconContainerMaskLayer() {
@@ -34,40 +36,23 @@ function iconContainer() {
   .alignItems(HorizontalAlign.Center)
   .justifyContent(FlexAlign.Center)
   .backgroundColor($r('sys.color.ohos_id_color_button_normal_transparent'))
-  .shadow({
-    radius: 4,
-    type: ShadowType.BLUR,
-    color: 'rgba(0,0,0,0.30)',
-    offsetX: 0,
-    offsetY: 2
-  })
 }
 
-@Extend(Image)
+@Extend(SymbolGlyph)
 function icon() {
-  .width(24)
-  .height(24)
-  .objectFit(ImageFit.Contain)
-  .draggable(false)
-  .responseRegion({ x: '-50%', y: '-50%', width: '200%', height: '200%' })
+  .fontColor([$r('sys.color.font_on_primary')])
+  .fontWeight(FontWeight.Regular)
+  .fontSize('24vp')
 }
 
 @Extend(Text)
 function iconText() {
-  .fontSize($r('sys.float.ohos_id_text_size_body3'))
   .fontColor($r('sys.color.ohos_id_color_primary_contrary'))
   .textAlign(TextAlign.Center)
   .fontFamily('HarmonyHeiTi')
   .lineHeight(16)
   .maxLines(2)
   .textOverflow({ overflow: TextOverflow.Ellipsis })
-  .textShadow({
-    radius: 4,
-    type: ShadowType.BLUR,
-    color: 'rgba(0,0,0,0.30)',
-    offsetX: 0,
-    offsetY: 2
-  })
 }
 
 @Component
@@ -81,7 +66,7 @@ export struct IconPressExcludeText {
   build() {
     Column() {
       Column() {
-        Image(this.url)
+        SymbolGlyph(this.url)
           .icon()
           .id(this.iconId)
           .onClick(() => {
@@ -106,10 +91,11 @@ export struct IconPressExcludeText {
 @Component
 export struct IconPress {
   @StorageLink('currentBreakpoint') currentBreakpoint: string = BreakpointConstants.BREAKPOINT_LG;
+  @StorageLink('scanFontSizeScale') fontSizeScale: number = AppStorage.get('scanFontSizeScale') as number;
   @Prop url: Resource;
   @Prop text: Resource;
   @Prop iconId: string;
-  @Link isAblumOffset: boolean;
+  @Link isAlbumOffset: boolean;
   public imageClick: () => void = () => {
   }
 
@@ -117,13 +103,15 @@ export struct IconPress {
     if (this.currentBreakpoint === BreakpointConstants.BREAKPOINT_SM) {
       Stack({ alignContent: Alignment.Top }) {
         Text(this.text).iconText()
+          .fontSize(FontSizeScale.getLimitFontSize(this.fontSizeScale,
+            CommonConstants.SCAN_FONT_SIZE_SCALE_limit_symbol_text, $r('sys.float.Body_S')))
           .offset({
-            y: this.isAblumOffset ? 48 : 64
+            y: this.isAlbumOffset ? 48 : 64
           })
           .onAreaChange((_: Area, newArea: Area) => {
             let lineHeight = newArea['height'] as number;
-            if (!this.isAblumOffset && lineHeight > 16) {
-              this.isAblumOffset = true;
+            if (!this.isAlbumOffset && lineHeight > 16) {
+              this.isAlbumOffset = true;
             }
           })
 
@@ -140,7 +128,7 @@ export struct IconPress {
             bottom: 12
           })
           .offset({
-            y: this.isAblumOffset ? -16 : 0
+            y: this.isAlbumOffset ? -16 : 0
           })
       }
       .smContainer()

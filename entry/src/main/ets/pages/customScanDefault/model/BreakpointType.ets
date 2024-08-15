@@ -1,9 +1,9 @@
 import { BreakpointConstants } from '../constants/BreakpointConstants';
 
 export class BreakpointType<T> {
-  sm: T;
-  md: T;
-  lg: T;
+  private sm: T;
+  private md: T;
+  private lg: T;
 
   constructor(sm: T, md: T, lg: T) {
     this.sm = sm;
@@ -11,7 +11,7 @@ export class BreakpointType<T> {
     this.lg = lg;
   }
 
-  getValue(currentBreakpoint: string): T {
+  public getValue(currentBreakpoint: string): T {
     if (currentBreakpoint === BreakpointConstants.BREAKPOINT_MD) {
       return this.md;
     }

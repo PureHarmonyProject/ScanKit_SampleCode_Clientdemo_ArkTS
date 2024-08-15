@@ -129,7 +129,7 @@ struct CameraHome {
       if (this.isUserGrant) {
         Column() {
           XComponent({
-            id: 'xcomponent',
+            id: 'componentId',
             type: XComponentType.SURFACE,
             controller: this.mXComponentController
           })
@@ -292,7 +292,7 @@ struct CameraHome {
       }
 
       let options: scanBarcode.ScanOptions = {
-        scanTypes: [scanCore.ScanType.QR_CODE],
+        scanTypes: [scanCore.ScanType.ALL],
         enableMultiMode: true,
         enableAlbum: false
       }

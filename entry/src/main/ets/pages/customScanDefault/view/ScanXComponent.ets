@@ -1,5 +1,5 @@
 import { XComponentSize } from '../model/ScanSize';
-import Logger from '../../../common/logger';
+import Logger from '../../../common/Logger';
 
 const TAG = 'ScanXComponent';
 
@@ -14,7 +14,7 @@ export struct ScanXComponent {
   build() {
     XComponent({
       id: 'componentId',
-      type: 'surface',
+      type: XComponentType.SURFACE,
       controller: this.mXComponentController
     })
       .onLoad(async () => {

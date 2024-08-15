@@ -1,5 +1,5 @@
 import { AnimatorResult, curves, Animator } from '@kit.ArkUI';
-import Logger from '../../../common/logger';
+import Logger from '../../../common/Logger';
 import { BreakpointConstants } from '../constants/BreakpointConstants';
 
 const TAG = 'ScanLine';
@@ -43,13 +43,13 @@ export struct ScanLine {
     from: 0,
     to: 0.5,
     startMillis: 0,
-    endMillis: 100,
+    endMillis: 200,
     curve: Curve.Smooth
   }
   private particlePropertyAnimationUp: ParticlePropertyAnimation<number> = {
     from: 0.5,
     to: 0,
-    startMillis: 400,
+    startMillis: 300,
     endMillis: 500,
     curve: Curve.Smooth
   }
@@ -60,52 +60,52 @@ export struct ScanLine {
         radius: 2
       },
       count: -1,
-      lifetime: 2000
+      lifetime: 500
     },
     size: ['100%', '100%'],
-    emitRate: 80,
+    emitRate: 60,
     shape: ParticleEmitterShape.RECTANGLE
   }
-  private backAnimator: AnimatorResult = Animator.create({
+  private backAnimator: AnimatorResult | undefined = Animator.create({
     duration: 2000,
-    easing: "smooth",
+    easing: 'smooth',
     delay: 0,
-    fill: "none",
-    direction: "alternate",
+    fill: 'none',
+    direction: 'alternate',
     iterations: -1,
     begin: 0,
     end: 100
   }); // Scan line dynamic effect
 
   async backAnimatorCreate(): Promise<void> {
+    if (this.backAnimator) {
+      this.backAnimator.onRepeat = () => {
+        this.reverse = !this.reverse;
+        if (this.reverse) {
+          this.allAngle = 0;
+        } else {
+          this.allAngle = 180;
+        }
+      }
+      this.backAnimator.onCancel = () => {
+        this.isScanMotion = false;
+      }
+      this.backAnimator.onFrame = (value) => {
 
-    this.backAnimator.onRepeat = () => {
-      this.reverse = !this.reverse;
-      if (this.reverse) {
-        this.allAngle = 0;
-      } else {
-        this.allAngle = 180;
+        if (!this.isScanMotion) {
+          this.isScanMotion = true;
+        }
+        this.isOpenAlbum = false;
+        value = value / 100;
+
+        if (value < 0.389) {
+          this.speed = curves.cubicBezierCurve(0.4, 0.0, 0.7, 1.0).interpolate(value / 0.389);
+        } else {
+          this.speed = 1.0 - curves.cubicBezierCurve(0.25, 0.0, 0.4, 1.0).interpolate((value - 0.389) / 0.611);
+        }
+        this.linePosition = 100 * value;
       }
     }
-    this.backAnimator.onCancel = () => {
-      this.isScanMotion = false;
-    }
-    this.backAnimator.onFrame = (value) => {
-
-      if (!this.isScanMotion) {
-        this.isScanMotion = true;
-      }
-      this.isOpenAlbum = false;
-      value = value / 100;
-
-      if (value < 0.389) {
-        this.speed = curves.cubicBezierCurve(0.4, 0.0, 0.7, 1.0).interpolate(value / 0.389);
-      } else {
-        this.speed = 1.0 - curves.cubicBezierCurve(0.25, 0.0, 0.4, 1.0).interpolate((value - 0.389) / 0.611);
-      }
-      this.linePosition = 100 * value;
-    }
-
   }
 
   async aboutToAppear() {
@@ -115,7 +115,7 @@ export struct ScanLine {
         this.backAnimator.play();
       }
     } catch (error) {
-      Logger.error(TAG, `Failed to play backAnimator. Code: ${error.code}, message: ${error.message}`);
+      Logger.error(TAG, `Failed to play backAnimator. Code: ${error.code}`);
     }
   }
 
@@ -123,11 +123,12 @@ export struct ScanLine {
     if (this.backAnimator) {
       this.backAnimator.cancel();
     }
+    this.backAnimator = undefined;
   }
 
   build() {
     Stack() {
-      Image($rawfile('scan_light.png')).width('100%').height(2)
+      Image($rawfile('scan_line.png')).width('100%').height(2)
         .position({
           x: 0,
           y: this.linePosition + '%'
@@ -139,12 +140,20 @@ export struct ScanLine {
         particles: [
           {
             emitter: this.emitterOptions,
-            scale: { range: [1, 1.2] },
+            scale: {
+              range: [0.4, 1.1],
+              updater: {
+                type: ParticleUpdater.RANDOM,
+                config: [
+                  0.4, 1.1
+                ]
+              }
+            },
             color: {
               range: ['#0A8BF5', '#FFFFFF']
             },
             opacity: {
-              range: [0, 0.6],
+              range: [0, 0.5],
               updater: {
                 type: ParticleUpdater.CURVE,
                 config: [
@@ -158,7 +167,7 @@ export struct ScanLine {
       }).width('80%')
         .height('100%')
         .markAnchor({ y: this.allAngle == 180 ? (60 * this.speed) : 0 })
-        .mask(new Rect({ width: '100%', height: 60 * (this.speed) })
+        .maskShape(new Rect({ width: '100%', height: 60 * (this.speed) })
           .position({ y: this.linePosition + '%' })
           .fill(Color.White))
     }

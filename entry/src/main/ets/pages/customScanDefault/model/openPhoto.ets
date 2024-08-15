@@ -1,10 +1,11 @@
 import { AsyncCallback, BusinessError } from '@kit.BasicServicesKit';
 import { detectBarcode, scanBarcode } from '@kit.ScanKit';
 import { photoAccessHelper } from '@kit.MediaLibraryKit';
-import Logger from '../../../common/logger';
+import Logger from '../../../common/Logger';
 import { GlobalThisUtil } from '../../../common/GlobalThisUtil';
+import { CommonConstants } from '../constants/CommonConstants';
 
-const TAG = 'openPhoto';
+const TAG = 'OpenPhoto';
 
 enum ScanErrorCode {
   SCAN_SUCCEED = 0,
@@ -13,7 +14,7 @@ enum ScanErrorCode {
 }
 
 class ScanError extends Error {
-  code: ScanErrorCode;
+  public code: ScanErrorCode;
 
   constructor(code: ScanErrorCode, message: string) {
     super(message);
@@ -21,8 +22,9 @@ class ScanError extends Error {
   }
 }
 
-function decodeAlbum(option: scanBarcode.ScanOptions, uri: string, callback: AsyncCallback<Array<scanBarcode.ScanResult>>): void {
-  GlobalThisUtil.setProperty('hmsCore_scan_pickerUri', uri);
+function decodeAlbum(option: scanBarcode.ScanOptions, uri: string,
+  callback: AsyncCallback<Array<scanBarcode.ScanResult>>): void {
+  GlobalThisUtil.setProperty(CommonConstants.GLOBAL_SCAN_SELECT_A_PICTURE, true);
   // Image recognition parameters. The default value is Single Code.
   let inputImage: detectBarcode.InputImage = { uri: uri };
   let options: scanBarcode.ScanOptions = {
@@ -30,66 +32,71 @@ function decodeAlbum(option: scanBarcode.ScanOptions, uri: string, callback: Asy
     enableMultiMode: false,
     enableAlbum: true
   };
-  detectBarcode.decode(inputImage, options)
-    .then((result: Array<scanBarcode.ScanResult>) => {
-      // If no value is identified, the system returns without assigning a value.
-      if (!result || result.length === 0) {
-        noResultCallBack(callback);
-        return;
-      }
-      let scanResult: scanBarcode.ScanResult = {
-        scanType: result[0].scanType,
-        originalValue: result[0].originalValue,
-        scanCodeRect: result[0].scanCodeRect
-      };
-      callback((new ScanError(ScanErrorCode.SCAN_SUCCEED, "")), [scanResult]);
-    })
-    .catch((error: BusinessError) => {
-      Logger.error(TAG, `Failed to detectBarcode. Code: ${error.code}, message: ${error.message}`);
-      noResultCallBack(callback);
-    });
-}
-
-function noResultCallBack(callback: AsyncCallback<scanBarcode.ScanResult[]>): void {
-  callback((new ScanError(ScanErrorCode.SCAN_INVALID_PARAM, "")), []);
-}
-
-export async function openAlbum(option: scanBarcode.ScanOptions, callback: AsyncCallback<Array<scanBarcode.ScanResult>>, callBackFn: CallableFunction): Promise<void> {
-
   try {
-    let PhotoSelectOptions = new photoAccessHelper.PhotoSelectOptions();
-    PhotoSelectOptions.MIMEType = photoAccessHelper.PhotoViewMIMETypes.IMAGE_TYPE;
-    PhotoSelectOptions.maxSelectNumber = 1;
-    PhotoSelectOptions.isPhotoTakingSupported = false;
-    PhotoSelectOptions.isEditSupported = false;
-    let photoPicker = new photoAccessHelper.PhotoViewPicker();
-
-    try {
-      await photoPicker.select(PhotoSelectOptions).then((result: photoAccessHelper.PhotoSelectResult) => {
-        callBackFn();
-        if (!result || (result.photoUris && result.photoUris.length === 0) ) {
-          Logger.info(TAG, `Failed to get photoUris. IsOriginalPhoto: ${result.isOriginalPhoto}`);
-          GlobalThisUtil.setProperty('hmsCore_scan_isPickerDecode', false);
+    detectBarcode.decode(inputImage, options)
+      .then((result: Array<scanBarcode.ScanResult>) => {
+        // If no value is identified, the system returns without assigning a value.
+        if (!result || result.length === 0) {
           noResultCallBack(callback);
           return;
         }
+        let scanResult: scanBarcode.ScanResult = {
+          scanType: result[0].scanType,
+          originalValue: result[0].originalValue,
+          scanCodeRect: result[0].scanCodeRect
+        };
+        callback((new ScanError(ScanErrorCode.SCAN_SUCCEED, '')), [scanResult]);
+      })
+      .catch((error: BusinessError) => {
+        Logger.error(TAG, `Failed to detectBarcode. Code: ${error.code}`);
+        noResultCallBack(callback);
+      });
+  } catch (error) {
+    Logger.error(TAG, `Failed to detectBarcode.decode. Code: ${error.code}`);
+  }
+}
+
+function noResultCallBack(callback: AsyncCallback<scanBarcode.ScanResult[]>): void {
+  callback((new ScanError(ScanErrorCode.SCAN_INVALID_PARAM, '')), []);
+}
+
+export async function openAlbum(option: scanBarcode.ScanOptions, callback: AsyncCallback<Array<scanBarcode.ScanResult>>,
+  callBackFn: CallableFunction): Promise<void> {
+
+  try {
+    let photoSelectOptions = new photoAccessHelper.PhotoSelectOptions();
+    photoSelectOptions.MIMEType = photoAccessHelper.PhotoViewMIMETypes.IMAGE_TYPE;
+    photoSelectOptions.maxSelectNumber = 1;
+    // 流水线暂不支持
+    photoSelectOptions.isPhotoTakingSupported = false;
+    photoSelectOptions.isEditSupported = false;
+    let photoPicker = new photoAccessHelper.PhotoViewPicker();
+
+    try {
+      await photoPicker.select(photoSelectOptions).then((result: photoAccessHelper.PhotoSelectResult) => {
+        callBackFn();
+        if (!result || (result.photoUris && result.photoUris.length === 0) ) {
+          callBackFailed(`Failed to get photoPicker result.`, callback);
+          return;
+        }
+        Logger.info(TAG, `Succeed in getting photoUris. IsOriginalPhoto: ${result.isOriginalPhoto}`);
         let uri = result.photoUris[0];
         try {
           decodeAlbum(option, uri, callback);
         } catch (error) {
-          Logger.error(TAG, `Failed to decodeAlbum. Code: ${error.code}, message: ${error.message}`);
-          GlobalThisUtil.setProperty('hmsCore_scan_isPickerDecode', false);
-          noResultCallBack(callback);
+          callBackFailed(`Failed to decodeAlbum. Code: ${error.code}`, callback);
         }
       });
     } catch (error) {
-      Logger.error(TAG, `Failed to select a picture. Code: ${error.code}, message: ${error.message}`);
-      GlobalThisUtil.setProperty('hmsCore_scan_isPickerDecode', false);
-      noResultCallBack(callback);
+      callBackFailed(`Failed to select a picture. Code: ${error.code}`, callback);
     }
   } catch (error) {
-    Logger.error(TAG, `Failed to get photoPicker. Code: ${error.code}, message: ${error.message}`);
-    GlobalThisUtil.setProperty('hmsCore_scan_isPickerDecode', false);
-    noResultCallBack(callback);
+    callBackFailed(`Failed to get photoPicker. Code: ${error.code}`, callback);
   }
+}
+
+function callBackFailed(msg: string, callback: AsyncCallback<Array<scanBarcode.ScanResult>>): void {
+  Logger.error(TAG, msg);
+  GlobalThisUtil.setProperty(CommonConstants.GLOBAL_SCAN_IS_DECODING_GALLERY, false);
+  noResultCallBack(callback);
 }

@@ -1,12 +1,13 @@
 import { customScan } from '@kit.ScanKit';
 import { sensor } from '@kit.SensorServiceKit';
 import { IconPress } from './IconPress'
-import Logger from '../../../common/logger';
+import Logger from '../../../common/Logger';
 import { BreakpointConstants } from '../constants/BreakpointConstants';
 import { CommonConstants } from '../constants/CommonConstants';
 import { ScanSize } from '../model/ScanSize';
 import { BreakpointType } from '../model/BreakpointType';
 import { ScanService } from '../model/ScanService';
+import { FontSizeScale } from '../model/FontSizeScale';
 
 const TAG: string = 'ScanBottom';
 
@@ -42,29 +43,15 @@ function componentRowContainer(currentBreakpoint: string) {
   })
 }
 
-@Extend(Image)
+@Extend(SymbolGlyph)
 function lightIcon() {
-  .width(24)
-  .height(24)
-  .draggable(false)
-  .responseRegion({
-    x: '-50%',
-    y: '-50%',
-    width: '200%',
-    height: '200%'
-  })
-  .shadow({
-    radius: 4,
-    type: ShadowType.BLUR,
-    color: 'rgba(0,0,0,0.30)',
-    offsetX: 0,
-    offsetY: 2
-  })
+  .fontColor([$r('sys.color.font_on_primary')])
+  .fontWeight(FontWeight.Regular)
+  .fontSize('24vp')
 }
 
 @Extend(Text)
 function lightText() {
-  .fontSize($r('sys.float.ohos_id_text_size_button3'))
   .fontColor($r('sys.color.ohos_id_color_primary_contrary'))
   .textAlign(TextAlign.Center)
   .fontFamily('HarmonyHeiTi')
@@ -74,13 +61,14 @@ function lightText() {
 
 @Component
 export struct FlashLight {
+  @StorageLink('scanFontSizeScale') fontSizeScale: number = AppStorage.get('scanFontSizeScale') as number;
   @State scanService: ScanService = ScanService.getInstance();
   @Link isSensorLight: boolean
   @Prop isLargeScreen: boolean
 
   build() {
     Column() {
-      Image(this.scanService.isFlashlight ? $rawfile('light_on.svg') : $rawfile('light_off.svg'))
+      SymbolGlyph(this.scanService.isFlashlight ? $r('sys.symbol.flashlight_on') : $r('sys.symbol.flashlight_off'))
         .lightIcon()
         .margin({ bottom: 6 })
         .stateStyles({
@@ -93,9 +81,10 @@ export struct FlashLight {
         })
       Text(this.scanService.isFlashlight ? $r('app.string.Scan_light_to_off') : $r('app.string.Scan_light_to_on'))
         .lightText()
+        .fontSize(FontSizeScale.getLimitFontSize(this.fontSizeScale,
+          CommonConstants.SCAN_FONT_SIZE_SCALE_limit_symbol_text, $r('sys.float.Body_S')))
     }
     .height(CommonConstants.FLASH_HEIGHT)
-    .width(CommonConstants.FLASH_WIDTH)
     .padding({
       top: 3,
       bottom: 3
@@ -111,7 +100,7 @@ export struct FlashLight {
           }
           this.scanService.isFlashlight = customScan.getFlashLightStatus();
         } catch (error) {
-          Logger.error(TAG, `Failed to set flashLight. Code: ${error.code}, message: ${error.message}`);
+          Logger.error(TAG, `Failed to set flashLight. Code: ${error.code}`);
         }
       }
     })
@@ -123,7 +112,7 @@ export struct ScanBottom {
   @StorageLink('currentBreakpoint') currentBreakpoint: string = BreakpointConstants.BREAKPOINT_LG;
   @State scanService: ScanService = ScanService.getInstance();
   @State isSensorLight: boolean = false; // Whether to display the flashlight.
-  @State isAblumOffset: boolean = false; // When the gallery text is displayed in two lines, the gallery is offset internally.
+  @State isAlbumOffset: boolean = false; // When the gallery text is displayed in two lines, the gallery is offset internally.
   @Prop isScanned: boolean = false; // Scanned
   @Prop enableAlbum: boolean = false;
   @Prop @Watch('watchIsOnPageShow') isScanLine: boolean = false;
@@ -142,7 +131,7 @@ export struct ScanBottom {
       this.scanService.isFlashlight = false;
     } catch (error) {
       Logger.error(TAG,
-        `Failed to set watchFoldStatus, this.foldStatus is ${this.foldStatus}. Code: ${error.code}, message: ${error.message}`);
+        `Failed to set watchFoldStatus, this.foldStatus is ${this.foldStatus}. Code: ${error.code}`);
     }
   }
 
@@ -155,7 +144,7 @@ export struct ScanBottom {
       try {
         sensor.off(sensor.SensorId.AMBIENT_LIGHT);
       } catch (error) {
-        Logger.error(TAG, `Failed to sensor off. Code: ${error.code}, message: ${error.message}`);
+        Logger.error(TAG, `Failed to sensor off. Code: ${error.code}`);
       }
     }
   }
@@ -178,10 +167,10 @@ export struct ScanBottom {
       Row() {
         if (this.enableAlbum) {
           IconPress({
-            url: $rawfile('scan_photo.svg'),
+            url: $r('sys.symbol.picture'),
             text: $r('app.string.Scan_gallery'),
             iconId: 'scan_page_openPicker',
-            isAblumOffset: this.isAblumOffset,
+            isAlbumOffset: this.isAlbumOffset,
             imageClick: (() => {
               this.openPicker();
             })
@@ -215,10 +204,10 @@ export struct ScanBottom {
       Column() {
         if (this.enableAlbum) {
           IconPress({
-            url: $rawfile('scan_photo.svg'),
+            url: $r('sys.symbol.picture'),
             text: $r('app.string.Scan_gallery'),
             iconId: 'scan_page_openPicker',
-            isAblumOffset: this.isAblumOffset,
+            isAlbumOffset: this.isAlbumOffset,
             imageClick: (() => {
               this.openPicker();
             })
@@ -256,7 +245,7 @@ export struct ScanBottom {
         }
       }, { interval: 300000000 }); // 0.3s
     } catch (error) {
-      Logger.error(TAG, `Failed to create sensor. Code: ${error.code}, message: ${error.message}`);
+      Logger.error(TAG, `Failed to create sensor. Code: ${error.code}`);
     }
   }
 }

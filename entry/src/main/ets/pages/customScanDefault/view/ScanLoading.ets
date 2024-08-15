@@ -1,5 +1,7 @@
 import { BreakpointConstants } from '../constants/BreakpointConstants';
+import { CommonConstants } from '../constants/CommonConstants';
 import { BreakpointType } from '../model/BreakpointType';
+import { FontSizeScale } from '../model/FontSizeScale';
 
 @Extend(LoadingProgress)
 function loadingIcon() {
@@ -11,11 +13,10 @@ function loadingIcon() {
 @Extend(Text)
 function loadingText() {
   .fontFamily('HarmonyHeiTi')
-  .fontSize($r('sys.float.ohos_id_text_size_body2'))
+  .fontSize($r('sys.float.Body_M'))
   .fontWeight(FontWeight.Regular)
   .textAlign(TextAlign.Center)
   .fontColor($r('sys.color.ohos_id_color_text_secondary_dark'))
-  .fontSize(14)
   .lineHeight(19)
   .margin({
     top: 16
@@ -25,12 +26,15 @@ function loadingText() {
 @Component
 export struct ScanLoading {
   @StorageLink('currentBreakpoint') currentBreakpoint: string = BreakpointConstants.BREAKPOINT_SM;
+  @StorageLink('scanFontSizeScale') fontSizeScale: number = AppStorage.get('scanFontSizeScale') as number;
 
   build() {
     Column() {
       Column() {
         LoadingProgress().loadingIcon()
         Text($r('app.string.Scan_album_loading')).loadingText()
+          .fontSize(FontSizeScale.getLimitFontSize(this.fontSizeScale,
+            CommonConstants.SCAN_FONT_SIZE_SCALE_limit_symbol_text, $r('sys.float.Body_M')))
       }
       .height(new BreakpointType(BreakpointConstants.LOADING_HEIGHT_SM,
         BreakpointConstants.LOADING_HEIGHT_MD, BreakpointConstants.LOADING_HEIGHT_LG).getValue(this.currentBreakpoint))

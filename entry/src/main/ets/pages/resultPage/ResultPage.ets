@@ -1,4 +1,4 @@
-import { router } from '@kit.ArkUI';
+import { LengthMetrics, router } from '@kit.ArkUI';
 import { scanBarcode } from '@kit.ScanKit';
 import { StatusBar } from '../../common/StatusBar';
 import { getTypeStr } from '../../common/Utils'
@@ -23,6 +23,8 @@ function valueText() {
 @Entry
 @Component
 struct ResultPage {
+  @State translateWidth: number = 1;
+  @State translateHeight: number = 1;
   @State result: scanBarcode.ScanResult = router.getParams() as scanBarcode.ScanResult
   @StorageLink('windowWidthPx') windowWidth: number = 1;
 
@@ -70,7 +72,14 @@ struct ResultPage {
         top: { anchor: '__container__', align: VerticalAlign.Center },
         left: { anchor: '__container__', align: HorizontalAlign.Center }
       })
-      .translate({ x: '-50%', y: '-50%' })
+      .markAnchor({
+        top: LengthMetrics.vp(this.translateHeight),
+        start: LengthMetrics.vp(this.translateWidth),
+      })
+      .onAreaChange((_: Area, newArea: Area) => {
+        this.translateWidth = Number(newArea.width) / 2;
+        this.translateHeight = Number(newArea.height) / 2;
+      })
       .id('row3')
     }
     .width('100%')

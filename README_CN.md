@@ -41,20 +41,21 @@
 
 使用说明：
 1. 在手机的主屏幕，点击“统一扫码示例”，启动应用，在主界面可见“扫码直达”、“默认界面扫码能力”、“自定义界面扫码能力”、“图像识码能力”、“码图生成能力”按钮。
-2. 点击“扫码直达”按钮，进入扫码直达服务界面。点击“扫码直达接入流程”介绍了开发流程和步骤说明。
-3. 点击“默认界面扫码能力”按钮，拉起默认扫码页面，扫描码图，返回结果。
+2. 点击“扫码直达”按钮，进入二级界面，点击“扫码直达接入流程”介绍了开发流程和步骤说明。
+3. 点击“默认界面扫码能力”按钮，进入二级界面，点击“默认界面扫码能力”按钮，拉起默认扫码页面，扫描码图，返回结果。
 4. 点击“自定义界面扫码能力”按钮，进入二级界面，再次点击“自定义界面扫码能力”按钮，通过promise调用方式拉起自定义扫码界面，扫描码图，返回结果。
 5. 点击“自定义界面扫码能力”按钮，进入二级界面，点击“自定义界面扫码能力-YUV”按钮，通过callback调用方式拉起自定义扫码界面，扫描码图，实时显示码图位置。
 6. 点击“自定义界面扫码能力”按钮，进入二级界面，点击“自定义界面扫码能力-推荐样例”按钮，通过推荐方式构建自定义扫码界面，扫描码图，返回结果。
 7. 点击“图像识码能力”按钮，进入二级界面，点击“识别本地图片”按钮，拉起picker从图库中选择图片，进行图像识码，返回结果。
 8. 点击“图像识码能力”按钮，进入二级界面，点击“识别图像数据”按钮，返回示例结果。
-9. 点击“码图生成能力”按钮，调用码图生成接口，生成不同类型的码图。
+9. 点击“码图生成能力”按钮，进入二级界面，调用码图生成接口，生成不同类型的码图。
 
 ## 工程目录
 
 ├─entry/src/main/ets // 代码区  
 │ ├─common  
 │ │ ├─CommonComponents.ets // 公共组件  
+│ │ ├─CommonTipsDialog.ts // 公共提示弹窗  
 │ │ ├─GlobalThisUtil.ts // globalThis封装类  
 │ │ ├─logger.ts // 日志打印方法  
 │ │ ├─StatusBar.ets // 状态栏组件  
@@ -77,6 +78,7 @@
 │ │ │ │ ├─CommonConstants.ts // 公共常量  
 │ │ │ ├─model        
 │ │ │ │ ├─BreakpointType.ets // 断点  
+│ │ │ │ ├─CommonEventManager.ets // 公共事件管理  
 │ │ │ │ ├─openPhoto.ets // 图库  
 │ │ │ │ ├─PromptTone.ts // 提示音  
 │ │ │ │ ├─ScanService.ets // 自定义扫码  
@@ -94,6 +96,8 @@
 │ │ │ │ ├─ScanTitle.ets // 标题组件  
 │ │ │ │ ├─ScanTopTool.ets // 顶部组件  
 │ │ │ │ ├─ScanXComponent.ets // XComponent组件  
+│ │ ├─defaultScan //默认界面扫码  
+│ │ │ ├─DefaultScan.ets //默认界面扫码  
 │ │ ├─detectBarcode // 图像识码  
 │ │ │ ├─CommonCodeLayout.ets // 蓝点组件   
 │ │ │ ├─DecodeBarcode.ets // 图像识码按钮入口页面  
@@ -150,11 +154,12 @@
 
 * createBarcode(content: string, options: CreateOptions): Promise&lt;image.PixelMap&gt;
 * createBarcode(content: string, options: CreateOptions, callback: AsyncCallback&lt;image.PixelMap&gt;): void
-* createBarcode(content: ArrayBuffer, options: CreateOptions): Promise&lt;image.PixelMap&gt;;
+* createBarcode(content: ArrayBuffer, options: CreateOptions): Promise&lt;image.PixelMap&gt;
 
 ## 相关权限
 
-自定义扫码功能获取相机权限: ohos.permission.CAMERA。
+自定义扫码功能获取相机权限: ohos.permission.CAMERA。   
+自定义扫码功能获取震动权限: ohos.permission.VIBRATE。
 
 ## 依赖
 

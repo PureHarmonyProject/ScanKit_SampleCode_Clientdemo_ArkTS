@@ -12,10 +12,6 @@ struct CustomPage {
           mText: $r('app.string.customized_view_decode'), mOnClick: () => {
             router.pushUrl({
               url: 'pages/customScan/CustomScan',
-              params: {
-                hasOptions: true,
-                isCallback: false
-              }
             })
           }
         })

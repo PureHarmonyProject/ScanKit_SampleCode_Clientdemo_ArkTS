@@ -67,6 +67,7 @@ struct DecodeBarcode {
                   }
                   hilog.info(0x0001, TAG, "Promise scan result: %{public}s", JSON.stringify(result));
                   if (result && result.length > 0) {
+                    // Image Decoding Result Processing.
                     router.pushUrl({
                       url: 'pages/detectBarcode/CommonCodeLayout',
                       params: {
@@ -106,9 +107,6 @@ struct DecodeBarcode {
         mText: $r('app.string.bitmap_api_decode_pixel'), mOnClick: () => {
           router.pushUrl({
             url: 'pages/detectBarcode/DecodeCameraYuv',
-            params: {
-              title: $r('app.string.bitmap_api_decode_pixel')
-            }
           })
         }
       })

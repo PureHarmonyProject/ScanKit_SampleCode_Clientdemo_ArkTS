@@ -1,16 +1,18 @@
 import { image } from '@kit.ImageKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { picker, fileIo } from '@kit.CoreFileKit';
-import { router, display, curves, TipsDialog } from '@kit.ArkUI';
+import { photoAccessHelper } from '@kit.MediaLibraryKit';
+import { fileIo } from '@kit.CoreFileKit';
+import { router, display, curves } from '@kit.ArkUI';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { scanBarcode, customScan, scanCore, detectBarcode } from '@kit.ScanKit';
-import { common, abilityAccessCtrl, Permissions, Want } from '@kit.AbilityKit';
+import { abilityAccessCtrl, Permissions } from '@kit.AbilityKit';
 import { emitter } from '@kit.BasicServicesKit';
 import { WindowSize } from '../../common/Utils';
 import { CodeLayout } from './CommonCodeLayout';
 import { PermissionsUtil } from './PermissionsUtil'
 import { GlobalThisUtil } from '../../common/GlobalThisUtil';
 import { CommonConstants } from '../customScanDefault/constants/CommonConstants';
+import { CommonTipsDialog } from '../../common/CommonTipsDialog';
 
 let maxPaddingStart = 24;
 let maxPaddingEnd = 24;
@@ -133,7 +135,7 @@ struct ScanPage {
   @State cameraScreenOffsetY: number = 0;
   @State maskOpacity: number = 0;
   @State isStop: boolean = false;
-  @State hasOptions: boolean = false;
+  @State hasOptions: boolean = true;
   @State result: Array<object> = [];
   @State isVertical: boolean = true;
   @State orientation: display.Orientation = 0;
@@ -152,50 +154,13 @@ struct ScanPage {
     enableAlbum: true
   }
   dialogController: CustomDialogController = new CustomDialogController({
-    builder: TipsDialog({
-      title: $r('app.string.Scan_access_not_enabled'),
-      content: $r('app.string.Scan_access_tips'),
-      primaryButton: {
-        value: $r('app.string.Scan_got_it'),
-        action: () => {
-          this.existApp();
-        },
-      },
-      secondaryButton: {
-        value: $r('app.string.Scan_settings'),
-        action: () => {
-          this.openPermissionsInSystemSettings();
-        }
-      },
+    builder: CommonTipsDialog({
+      isDialogShow: this.isDialogShow
     }),
     autoCancel: false,
     customStyle: false,
     alignment: DialogAlignment.Center
-  })
-
-  openPermissionsInSystemSettings(): void {
-    hilog.error(0x0001, TAG, `openPermissionsInSystemSettings`);
-    let context = getContext(this) as common.UIAbilityContext;
-    let wantInfo: Want = {
-      bundleName: 'com.huawei.hmos.settings',
-      abilityName: 'com.huawei.hmos.settings.MainAbility',
-      uri: 'application_info_entry',
-      parameters: {
-        settingsParamBundleName: 'com.example.testclient' // Open the details page of a specified application.
-      }
-    }
-    context.startAbility(wantInfo).then(() => {
-      hilog.info(0x0001, TAG, 'startAbility Success');
-    }).catch((error: Error) => {
-      hilog.info(0x0001, TAG, 'startAbility error: %{public}s', error);
-    })
-  }
-
-  existApp() {
-    this.isDialogShow = false;
-    this.dialogController.close();
-    hilog.info(0x0001, TAG, 'Start to permissionUsedRecord. isDialogShow: %{public}s', this.isDialogShow);
-  }
+  });
 
   async requestCameraPermission() {
     let grantStatus = await PermissionsUtil.reqPermissionsFromUser();
@@ -332,7 +297,7 @@ struct ScanPage {
   }
 
   windowSizeSubscribe(): void {
-    // 订阅WINDOW_SIZE
+    // subscribe WINDOW_SIZE
     emitter.on({ eventId: CommonConstants.WINDOW_SIZE_CHANGE }, async () => {
       if (GlobalThisUtil.getProperty('hmsCore_scan_foldStatus') === 1 ||
         GlobalThisUtil.getProperty('hmsCore_scan_foldStatus') === 2) {
@@ -343,8 +308,6 @@ struct ScanPage {
   }
 
   aboutToAppear() {
-    let params = router.getParams() as Record<string, string | boolean>;
-    this.hasOptions = params.hasOptions as boolean;
     this.result = [];
     this.statusHeight = GlobalThisUtil.getProperty('scan_topRect_height');
     if (GlobalThisUtil.getProperty('scan_topRect_height')) {
@@ -362,6 +325,7 @@ struct ScanPage {
         }
       });
     }
+    this.onScreenEvent();
   }
 
   aboutToDisappear() {
@@ -370,6 +334,7 @@ struct ScanPage {
       emitter.off(CommonConstants.WINDOW_SIZE_CHANGE);
       display.off('foldStatusChange');
     }
+    this.offScreenEvent();
   }
 
   async onPageShow() {
@@ -402,6 +367,22 @@ struct ScanPage {
       // Applying for Camera Permissions
       this.requestCameraPermission();
     }
+  }
+
+  onScreenEvent(): void {
+    // subscribe COMMON_EVENT_SCREEN_CHANGE
+    emitter.on({ eventId: CommonConstants.COMMON_EVENT_SCREEN_CHANGE }, (eventData: emitter.EventData) => {
+      hilog.info(0x0001, TAG, 'screenEventChange enter');
+      if (eventData.data && eventData.data.screenEventChange === CommonConstants.EVENT_SCREEN_OFF) {
+        this.onPageHide();
+      } else if (eventData.data && eventData.data.screenEventChange === CommonConstants.EVENT_SCREEN_ON) {
+        this.onPageShow();
+      }
+    });
+  }
+
+  offScreenEvent(): void {
+    emitter.off(CommonConstants.COMMON_EVENT_SCREEN_CHANGE);
   }
 
   // Start the camera to scan the code
@@ -530,16 +511,16 @@ struct ScanPage {
           .opacity(this.isScanned ? 0.4 : 1)
           .onClick(async () => {
             try {
-              let photoOption = new picker.PhotoSelectOptions();
-              photoOption.MIMEType = picker.PhotoViewMIMETypes.IMAGE_TYPE;
+              let photoOption = new photoAccessHelper.PhotoSelectOptions();
+              photoOption.MIMEType = photoAccessHelper.PhotoViewMIMETypes.IMAGE_TYPE;
               photoOption.maxSelectNumber = 1;
               let options: scanBarcode.ScanOptions = {
-                scanTypes: [scanCore.ScanType.QR_CODE],
+                scanTypes: [scanCore.ScanType.ALL],
                 enableMultiMode: true,
                 enableAlbum: true
               }
-              let photoPicker = new picker.PhotoViewPicker();
-              photoPicker.select(photoOption).then((photoResult) => {
+              let photoPicker = new photoAccessHelper.PhotoViewPicker();
+              photoPicker.select(photoOption).then((photoResult: photoAccessHelper.PhotoSelectResult) => {
                 hilog.info(0x0001, TAG, 'photoResult: %{public}s', JSON.stringify(photoResult));
                 let infoW: number = 0;
                 let infoH: number = 0;
@@ -670,14 +651,14 @@ struct ScanPage {
         Column() {
           XComponent({
             id: 'componentId',
-            type: 'surface',
+            type: XComponentType.SURFACE,
             controller: this.mXComponentController
           })
             .onLoad(() => {
               hilog.info(0x0001, TAG, 'onLoad is called');
 
               this.surfaceId = this.mXComponentController.getXComponentSurfaceId();
-              hilog.info(0x0001, TAG, 'onLoad surfaceId unreboot: %{public}s', this.surfaceId);
+              hilog.info(0x0001, TAG, `onLoad surfaceId: ${this.surfaceId}`, );
               this.startCustomScan();
             })
             .height(this.cameraHeight + 'lpx')

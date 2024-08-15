@@ -33,7 +33,7 @@ export class PermissionsUtil {
     try {
       grantStatus = await atManager.requestPermissionsFromUser(context, ['ohos.permission.CAMERA']);
     } catch (error) {
-      hilog.error(0x0001, TAG, 'Failed to check access token. error: %{public}s', JSON.stringify(error));
+      hilog.error(0x0001, TAG, 'Failed to request permissions from user. error: %{public}s', JSON.stringify(error));
     }
     return grantStatus.authResults;
   }

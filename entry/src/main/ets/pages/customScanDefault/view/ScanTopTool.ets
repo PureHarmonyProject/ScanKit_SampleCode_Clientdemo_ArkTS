@@ -1,7 +1,7 @@
-import { router } from '@kit.ArkUI';
+import { LengthMetrics, router } from '@kit.ArkUI';
+import Logger from '../../../common/Logger';
 import { BreakpointConstants } from '../constants/BreakpointConstants';
 import { BreakpointType } from '../model/BreakpointType';
-import Logger from '../../../common/logger';
 
 const TAG = 'ScanTopTool';
 
@@ -36,7 +36,7 @@ export struct ScanTopTool {
 
   build() {
     Image($rawfile('scan_close.svg')).topIcon()
-      .id('scan_page_goBack')
+      .id('scan_page_goBack_default')
       .onClick(async () => {
         if (this.scanResultSize > 1) {
           Logger.info(TAG, 'Start to backToScan.');
@@ -46,10 +46,10 @@ export struct ScanTopTool {
         }
       })
       .margin({
-        top: this.navHeight + 8,
-        left: new BreakpointType($r('app.float.container_horizontal_padding_sm'),
-          $r('app.float.container_horizontal_padding_md'),
-          $r('app.float.container_horizontal_padding_lg')).getValue(this.currentBreakpoint),
+        top: LengthMetrics.vp(this.navHeight + 8),
+        start: LengthMetrics.vp(new BreakpointType(16,
+          24,
+          32).getValue(this.currentBreakpoint))
       })
   }
 }

@@ -1,15 +1,15 @@
 import { curves, display, router } from '@kit.ArkUI';
-import { ConfigurationConstant } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
-import { common } from '@kit.AbilityKit';
 import { vibrator } from '@kit.SensorServiceKit';
 import Logger from '../../../common/logger';
 import { GlobalThisUtil } from '../../../common/GlobalThisUtil';
-import { ScanResult } from '../model/ScanService'
+import { ScanResults } from '../model/ScanService'
 import { XComponentSize } from '../model/ScanSize'
 import { CommonConstants } from '../constants/CommonConstants';
-import { pickerDialog } from './pickerDialog';
+import { PickerDialog } from './PickerDialog';
 import { ScanTitle } from './ScanTitle';
+import { funcDelayer } from '../../../common/Utils';
+import { scanBarcode } from '@kit.ScanKit';
 
 @Extend(Image)
 function selected(scanState: boolean, x: number, y: number) {
@@ -21,16 +21,14 @@ function selected(scanState: boolean, x: number, y: number) {
   .draggable(false)
 }
 
-let breathTimeSet: number;
 const TAG: string = 'CommonCodeLayout';
 
 @Component
 export struct CodeLayout {
   @ObjectLink xComponentSize: XComponentSize;
-  @Prop darkMode: ConfigurationConstant.ColorMode;
   @Prop navHeight: number;
   @Prop orientation: display.Orientation;
-  @State scanResult: ScanResult = {
+  @State scanResults: ScanResults = {
     code: 0,
     data: [],
     size: 0,
@@ -53,36 +51,39 @@ export struct CodeLayout {
   @State isShowCode: boolean = true;
   public backToScan: () => void = () => {
   };
-  @State context: common.UIAbilityContext = getContext(this) as common.UIAbilityContext;
 
   aboutToAppear() {
-    if (this.scanResult.uri) {
+    if (this.scanResults.uri) {
       // Gallery data. Do not display the blue dot.
-      if (this.scanResult.size === 0) {
+      if (this.scanResults.size === 0) {
         // The image code is not identified.
         this.isPickerDialogShow = true;
       } else {
         this.vibratorPlay();
         this.isShowCode = false;
-        setTimeout(() => {
+        funcDelayer(() => {
           this.terminateSelfPage();
-        }, 200)
+        }, 200);
       }
     } else {
       this.vibratorPlay();
       // Scan the QR code in real time and display the blue dot.
-      for (let i = 0; i < this.scanResult.size; i++) {
+      for (let i = 0; i < this.scanResults.size; i++) {
         // Scanning result
-        this.multiCodeScanResult.push(this.scanResult.data[i]);
-        this.multiCodeScanLocation.push(
-          [this.scanResult.data[i]['scanCodeRect'].left,
-            this.scanResult.data[i]['scanCodeRect'].top,
-            this.scanResult.data[i]['scanCodeRect'].right,
-            this.scanResult.data[i]['scanCodeRect'].bottom]
-        );
+        let scanResult: scanBarcode.ScanResult = this.scanResults.data[i];
+        this.multiCodeScanResult.push(scanResult);
+        let scanCodeRect: scanBarcode.ScanCodeRect | undefined = scanResult.scanCodeRect;
+        if (scanCodeRect) {
+          this.multiCodeScanLocation.push(
+            [scanCodeRect.left,
+              scanCodeRect.top,
+              scanCodeRect.right,
+              scanCodeRect.bottom]
+          );
+        }
       }
 
-      if (this.scanResult.size === 1) {
+      if (this.scanResults.size === 1) {
         // Single-code result
         this.multiSelectedIndex = 0;
         let location = this.multiCodeScanLocation[0];
@@ -93,7 +94,7 @@ export struct CodeLayout {
   }
 
   aboutToDisappear() {
-    GlobalThisUtil.setProperty(('hmsCore_scan_pickerUri'), undefined);
+    GlobalThisUtil.setProperty((CommonConstants.GLOBAL_SCAN_SELECT_A_PICTURE), false);
     this.isPickerDialogShow = false;
   }
 
@@ -128,9 +129,7 @@ export struct CodeLayout {
           }
         })
         .onClick(() => {
-          clearTimeout(breathTimeSet);
           this.openMultiCode(arr, index);
-
         })
     }
     .position({
@@ -144,7 +143,7 @@ export struct CodeLayout {
     .opacity(this.fadeOutOpacity)
     .animation({
       duration: 200,
-      curve: curves.cubicBezierCurve(0.33, 0, 0.67, 1), // 动画曲线
+      curve: curves.cubicBezierCurve(0.33, 0, 0.67, 1),
       delay: 0,
       iterations: 1,
       playMode: PlayMode.Alternate,
@@ -154,11 +153,11 @@ export struct CodeLayout {
   build() {
     Stack() {
       ScanTitle({
-        scanResultSize: this.scanResult.size,
+        scanResultSize: this.scanResults.size,
         navHeight: this.navHeight,
       }).width('100%').height('100%')
 
-      if (this.scanResult.size === 1 && this.isShowCode) {
+      if (this.scanResults.size === 1 && this.isShowCode) {
         // single code
         this.SingleCodeLayout();
       } else {
@@ -173,8 +172,7 @@ export struct CodeLayout {
       }
 
       if (this.isPickerDialogShow) {
-        pickerDialog({
-          darkMode: this.darkMode,
+        PickerDialog({
           text: $r('app.string.Scan_diaLog_not_found'),
           cancel: (() => {
             this.isPickerDialogShow = false;
@@ -202,7 +200,7 @@ export struct CodeLayout {
         offset = (location[0] + location[2]) / 2 + this.xComponentSize.offsetX;
         break;
       case 1:
-        if (GlobalThisUtil.getProperty('hmsCore_scan_device_type') === CommonConstants.DEVICE_TYPES[1]) {
+        if (GlobalThisUtil.getProperty(CommonConstants.GLOBAL_SCAN_DEVICE_TYPE) === CommonConstants.DEVICE_TYPES[1]) {
           offset = (location[1] + location[3]) / 2 + this.xComponentSize.offsetX;
         } else {
           offset = this.xComponentSize.width - (location[1] + location[3]) / 2 + this.xComponentSize.offsetX;
@@ -212,7 +210,7 @@ export struct CodeLayout {
         offset = this.xComponentSize.width - (location[0] + location[2]) / 2 + this.xComponentSize.offsetX;
         break;
       case 3:
-        if (GlobalThisUtil.getProperty('hmsCore_scan_device_type') === CommonConstants.DEVICE_TYPES[1]) {
+        if (GlobalThisUtil.getProperty(CommonConstants.GLOBAL_SCAN_DEVICE_TYPE) === CommonConstants.DEVICE_TYPES[1]) {
           offset = this.xComponentSize.width - (location[1] + location[3]) / 2 + this.xComponentSize.offsetX;
         } else {
           offset = (location[1] + location[3]) / 2 + this.xComponentSize.offsetX;
@@ -231,7 +229,7 @@ export struct CodeLayout {
         offset = (location[3] + location[1]) / 2 + this.xComponentSize.offsetY;
         break;
       case 1:
-        if (GlobalThisUtil.getProperty('hmsCore_scan_device_type') === CommonConstants.DEVICE_TYPES[1]) {
+        if (GlobalThisUtil.getProperty(CommonConstants.GLOBAL_SCAN_DEVICE_TYPE) === CommonConstants.DEVICE_TYPES[1]) {
           offset = this.xComponentSize.height - (location[0] + location[2]) / 2 + this.xComponentSize.offsetY;
         } else {
           offset = (location[0] + location[2]) / 2 + this.xComponentSize.offsetY;
@@ -241,7 +239,7 @@ export struct CodeLayout {
         offset = this.xComponentSize.height - (location[3] + location[1]) / 2 + this.xComponentSize.offsetY;
         break;
       case 3:
-        if (GlobalThisUtil.getProperty('hmsCore_scan_device_type') === CommonConstants.DEVICE_TYPES[1]) {
+        if (GlobalThisUtil.getProperty(CommonConstants.GLOBAL_SCAN_DEVICE_TYPE) === CommonConstants.DEVICE_TYPES[1]) {
           offset = (location[0] + location[2]) / 2 + this.xComponentSize.offsetY;
         } else {
           offset = this.xComponentSize.height - (location[0] + location[2]) / 2 + this.xComponentSize.offsetY;
@@ -273,7 +271,7 @@ export struct CodeLayout {
     }
   }
 
-  openMultiCode(arr: Array<number>, index: number) {
+  openMultiCode(arr: Array<number>, index: number): void{
     // Click animation. Gallery does not support multi-code.
     this.singleCodeX = this.getOffset('x', arr);
     this.singleCodeY = this.getOffset('y', arr);
@@ -287,7 +285,7 @@ export struct CodeLayout {
     // Click to cover the image animation.
     animateTo({
       duration: 350,
-      curve: curves.cubicBezierCurve(0.33, 0, 0.67, 1), // 动画曲线
+      curve: curves.cubicBezierCurve(0.33, 0, 0.67, 1),
       delay: 100,
       iterations: 1,
       playMode: PlayMode.Alternate,
@@ -300,12 +298,12 @@ export struct CodeLayout {
     });
   }
 
-  terminateSelfPage() {
-    if (this.scanResult && this.scanResult.size > 0) {
+  terminateSelfPage(): void {
+    if (this.scanResults && this.scanResults.size > 0) {
       try {
         router.pushUrl({
           url: 'pages/resultPage/ResultPage',
-          params: this.scanResult.data[this.multiSelectedIndex]
+          params: this.scanResults.data[this.multiSelectedIndex]
         })
       } catch (error) {
         Logger.error(TAG, `Failed to terminateSelfPage. Code: ${error.code}, message: ${error.message}`);
@@ -320,7 +318,7 @@ export struct CodeLayout {
     router.back();
   }
 
-  singleCodeBreathe() {
+  singleCodeBreathe(): void {
     // Single-code scanning result
     this.singleCodeOpacity = 0.3;
     this.singleCodeScale = 0.3;
@@ -345,10 +343,10 @@ export struct CodeLayout {
    * 0 - 350ms  opacity:0-1 scale:0.3 - 1.1 multiAppear()
    * 350ms - 600ms scale: 1.1 - 1 multiAppearEnd()
    * */
-  multiAppear() {
+  multiAppear(): void {
     this.multiCodeScale = 0.3;
     animateTo({
-      duration: 350, // 动画时长
+      duration: 350,
       curve: curves.cubicBezierCurve(0.33, 0, 0.67, 1), // Animation Curves
       delay: 0,
       iterations: 1,
@@ -362,7 +360,7 @@ export struct CodeLayout {
     });
   }
 
-  multiAppearEnd() {
+  multiAppearEnd(): void {
     animateTo({
       duration: 250,
       curve: curves.cubicBezierCurve(0.33, 0, 0.67, 1), // Animation Curves
@@ -370,7 +368,7 @@ export struct CodeLayout {
       iterations: 1,
       playMode: PlayMode.Alternate,
       onFinish: () => {
-        setTimeout(() => {
+        funcDelayer(() => {
           this.multiCodeBreathe();
         }, 500);
       }
@@ -379,7 +377,7 @@ export struct CodeLayout {
     });
   }
 
-  multiCodeBreathe() {
+  multiCodeBreathe(): void {
     // Multi-code scan breathing animation.
     this.multiCodeScale = 1;
     animateTo({
@@ -389,7 +387,7 @@ export struct CodeLayout {
       iterations: 4,
       playMode: PlayMode.Alternate,
       onFinish: () => {
-        breathTimeSet = setTimeout(() => {
+        funcDelayer(() => {
           this.multiCodeBreathe();
         }, 400);
       }
@@ -398,7 +396,7 @@ export struct CodeLayout {
     });
   }
 
-  toRedirectPage() {
+  toRedirectPage(): void {
     animateTo({
       duration: 250,
       curve: curves.cubicBezierCurve(0.33, 0, 0.67, 1), // Animation Curves

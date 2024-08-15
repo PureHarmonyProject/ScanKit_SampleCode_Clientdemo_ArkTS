@@ -1,17 +1,12 @@
 import { BreakpointConstants } from '../constants/BreakpointConstants';
 import { CommonConstants } from '../constants/CommonConstants';
 import { BreakpointType } from '../model/BreakpointType';
+import { FontSizeScale } from '../model/FontSizeScale';
 import { ScanService } from '../model/ScanService';
 
-/**
- * @param fontSize
- * @param color
- * @param fontWeight
- */
 @Extend(Text)
-function scanTitle(fontSize: ResourceColor, color: ResourceColor, fontWeight: FontWeight) {
+function scanTitle(color: ResourceColor, fontWeight: FontWeight) {
   .width('100%')
-  .fontSize(fontSize)
   .textAlign(TextAlign.Center)
   .fontFamily('HarmonyHeiTi')
   .fontWeight(fontWeight)
@@ -21,17 +16,11 @@ function scanTitle(fontSize: ResourceColor, color: ResourceColor, fontWeight: Fo
   })
   .maxLines(2)
   .textOverflow({ overflow: TextOverflow.Ellipsis })
-  .textShadow({
-    radius: 4,
-    type: ShadowType.BLUR,
-    color: 'rgba(0,0,0,0.30)',
-    offsetX: 0,
-    offsetY: 2
-  })
 }
 
 @Component
 export struct ScanTitle {
+  @StorageLink('scanFontSizeScale') fontSizeScale: number = AppStorage.get('scanFontSizeScale') as number;
   @StorageLink('currentBreakpoint') currentBreakpoint: string = BreakpointConstants.BREAKPOINT_SM;
   @State scanService: ScanService = ScanService.getInstance();
   @Prop scanResultSize: number = 0
@@ -40,8 +29,10 @@ export struct ScanTitle {
   build() {
     Column() {
       Text(this.scanResultSize > 1 ? $r('app.string.Scan_barcode_tips_callback') : $r('app.string.Scan_barcode'))
-        .scanTitle($r('sys.float.ohos_id_text_size_headline9'), $r('sys.color.ohos_id_color_primary_contrary'),
+        .scanTitle($r('sys.color.ohos_id_color_primary_contrary'),
           FontWeight.Regular)
+        .fontSize(FontSizeScale.getLimitFontSize(this.fontSizeScale,
+          CommonConstants.SCAN_FONT_SIZE_SCALE_limit_title_text, $r('sys.float.Subtitle_L')))
         .lineHeight(CommonConstants.TITLE_MAIN_LINE_HEIGHT)
     }
     .alignItems(HorizontalAlign.Center)

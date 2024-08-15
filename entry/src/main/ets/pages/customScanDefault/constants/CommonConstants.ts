@@ -3,6 +3,10 @@
  */
 export class CommonConstants {
   /**
+   *  Screen Change Monitoring ID
+   */
+  static readonly COMMON_EVENT_SCREEN_CHANGE: number = 2;
+  /**
    * Resolution ratio of the expanded state of the folding screen
    */
   static readonly FOLD_DEVICE_EXPAND_RATIO: number = 1;
@@ -106,6 +110,20 @@ export class CommonConstants {
    *  Padding Lg
    */
   static readonly PADDING_LG: number = 32;
-}
+  /**
+   *  SCAN_FONT_SIZE_SCALE_LIMIT
+   */
+  static readonly SCAN_FONT_SIZE_SCALE_limit_symbol_text: number = 1.45;
+  static readonly SCAN_FONT_SIZE_SCALE_limit_title_text: number = 1.75;
+  static readonly SCAN_FONT_SIZE_SCALE_limit_2: number = 2;
+  static readonly SCAN_FONT_SIZE_SCALE_limit_dialog_text: number = 3.2;
 
+  static readonly GLOBAL_SCAN_DEVICE_IS_FOLDING: string = 'hmsCore_scan_isFoldable';
+  static readonly GLOBAL_SCAN_DEVICE_TYPE: string = 'hmsCore_scan_device_type';
+  static readonly GLOBAL_SCAN_TOP_RECT_HEIGHT: string = 'scan_topRect_height';
+  static readonly GLOBAL_SCAN_IS_DECODING_GALLERY: string = 'scan_is_decoding_gallery';
+  static readonly GLOBAL_SCAN_SELECT_A_PICTURE: string = 'scan_select_a_picture';
+  static readonly EVENT_SCREEN_OFF: boolean = false;
+  static readonly EVENT_SCREEN_ON: boolean = true;
+}
 

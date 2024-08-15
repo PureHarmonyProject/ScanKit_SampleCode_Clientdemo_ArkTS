@@ -11,6 +11,7 @@
     "pages/resultPage/ResultPage",
     "pages/customScanDefault/pages/ScanPage",
     "pages/access/ScanAccess",
-    "pages/access/ScanDetail"
+    "pages/access/ScanDetail",
+    "pages/defaultScan/DefaultScan"
   ]
 }

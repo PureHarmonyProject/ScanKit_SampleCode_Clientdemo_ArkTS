@@ -1,9 +1,9 @@
 import { image } from '@kit.ImageKit';
-import { promptAction, router } from '@kit.ArkUI';
+import { promptAction } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { scanCore, generateBarcode } from '@kit.ScanKit';
-import { StatusBar, routerParams } from '../../common/StatusBar';
+import { StatusBar } from '../../common/StatusBar';
 import { CustomLabel, CustomButton, ScanConstant } from '../../common/CommonComponents';
 import { showError, getColorType, getTypeNum, getLevelType } from '../../common/Utils';
 import { buffer } from '@kit.ArkTS';
@@ -67,7 +67,7 @@ struct GenerateBarcode {
   build() {
     Column() {
       RelativeContainer() {
-        StatusBar({ title: (router.getParams() as routerParams).title })
+        StatusBar({ title: $r('app.string.generate_QR_code') })
       }
       .height(60)
 

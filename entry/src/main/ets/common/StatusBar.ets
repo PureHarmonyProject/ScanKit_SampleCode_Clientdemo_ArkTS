@@ -1,4 +1,4 @@
-import { router } from '@kit.ArkUI';
+import { LengthMetrics, router } from '@kit.ArkUI';
 import { GlobalThisUtil } from './GlobalThisUtil';
 
 export class routerParams {
@@ -37,11 +37,11 @@ export struct StatusBar {
       Text(this.title)
         .fontSize(20)
         .fontColor('#000000')
-        .margin({ left: 15 })
+        .margin({ start: LengthMetrics.vp(15) })
     }
-    .margin({ left: 16 })
+    .margin({ start: LengthMetrics.vp(16) })
     .zIndex(10)
-    .position({ x: 15, y: 0 })
+    .position({ start: LengthMetrics.vp(15) })
     .onClick(async () => {
       router.back();
     })

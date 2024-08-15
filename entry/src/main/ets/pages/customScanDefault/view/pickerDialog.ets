@@ -1,27 +1,23 @@
-import { common, ConfigurationConstant } from '@kit.AbilityKit';
+import { ConfigurationConstant } from '@kit.AbilityKit';
 import { curves } from '@kit.ArkUI';
+import { funcDelayer } from '../../../common/Utils';
+import { CommonConstants } from '../constants/CommonConstants';
+import { FontSizeScale } from '../model/FontSizeScale';
 
 @Extend(Text)
 function textClass(color: ResourceColor, textAlign: TextAlign) {
   .fontWeight(FontWeight.Regular)
-  .fontSize($r('sys.float.ohos_id_text_size_body1'))
   .fontColor(color)
   .fontFamily('HarmonyHeiTi')
   .textAlign(textAlign)
-  .maxLines(3)
-  .textOverflow({ overflow: TextOverflow.Ellipsis })
   .lineHeight(22)
   .opacity(0.9)
 }
 
 @Extend(Button)
 function buttonClass() {
-  .fontWeight(FontWeight.Medium)
-  .fontColor($r('sys.color.ohos_id_color_text_primary_activated'))
-  .fontSize($r('sys.float.ohos_id_text_size_button1'))
   .width('100%')
   .height(40)
-  .backgroundColor('#00000000')
 }
 
 @Extend(Column)
@@ -37,15 +33,14 @@ function componentContainer() {
 }
 
 @Extend(Column)
-function dialogBoxContainer() {
+function dialogBoxContainer(color: ResourceColor) {
   .padding({
     left: 16,
     top: 24,
     right: 16,
     bottom: 16
   })
-  .backgroundColor($r('sys.color.ohos_id_blur_style_component_ultra_thick_color'))
-  .backgroundBlurStyle(BlurStyle.Regular)
+  .backgroundColor(color)
   .borderRadius($r('sys.float.ohos_id_corner_radius_dialog'))
   .constraintSize({
     maxWidth: 400
@@ -62,15 +57,44 @@ function dialogContentContainer() {
 }
 
 @Component
-export struct pickerDialog {
-  @State context: common.UIAbilityContext = getContext(this) as common.UIAbilityContext;
-  @Prop darkMode: ConfigurationConstant.ColorMode;
+export struct PickerDialog {
+  @StorageLink('scanFontSizeScale') fontSizeScale: number = AppStorage.get('scanFontSizeScale') as number;
+  @StorageLink('scanColorMode') darkMode: ConfigurationConstant.ColorMode | undefined = AppStorage.get('scanColorMode');
   @Prop text: Resource;
-  @State dialogWidth: number = 368;
   @Prop dialogScale: number = 0.85;
-  cancel: () => void = () => {
-
+  @State dialogWidth: number = 368;
+  public cancel: () => void = () => {
   };
+
+  @Builder
+  DialogText() {
+      Text(this.text)
+        .textClass(this.darkMode === ConfigurationConstant.ColorMode.COLOR_MODE_DARK ?
+        $r('sys.color.ohos_id_color_text_primary_dark') : $r('sys.color.ohos_id_color_text_primary'), TextAlign.Center)
+        .fontSize(FontSizeScale.getLimitFontSize(this.fontSizeScale,
+          CommonConstants.SCAN_FONT_SIZE_SCALE_limit_dialog_text, $r('sys.float.Body_L')))
+  }
+
+  @Builder
+  DialogButton() {
+    Button($r('app.string.Scan_diaLog_got_it'), { buttonStyle: ButtonStyleMode.TEXTUAL })
+      .buttonClass()
+      .width(this.dialogWidth - 32)
+      .onClick(() => {
+        animateTo({
+          duration: 250,
+          curve: Curve.Friction,
+          delay: 0,
+          iterations: 1,
+          playMode: PlayMode.Alternate,
+        }, () => {
+          this.dialogScale = 0.85;
+          funcDelayer(() => {
+            this.cancel();
+          }, 100);
+        });
+      })
+  }
 
   appearAnimation() {
     animateTo({
@@ -92,28 +116,21 @@ export struct pickerDialog {
       }) {
         Column() {
           Column() {
-            Text(this.text)
-              .textClass(this.darkMode === ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT ? $r('sys.color.ohos_id_color_text_primary') : $r('sys.color.ohos_id_color_text_primary_dark'), TextAlign.Center)
+            this.DialogText()
           }.dialogContentContainer()
-          Button($r('app.string.Scan_diaLog_got_it'))
-            .buttonClass()
-            .width(this.dialogWidth - 32)
-            .onClick(() => {
-              animateTo({
-                duration: 250,
-                curve: Curve.Friction,
-                delay: 0,
-                iterations: 1,
-                playMode: PlayMode.Alternate,
-              }, () => {
-                this.dialogScale = 0.85;
-                setTimeout(() => {
-                  this.cancel();
-                }, 100)
-              });
-            })
+
+          this.DialogButton()
         }
-        .dialogBoxContainer()
+        .dialogBoxContainer(
+          this.darkMode === ConfigurationConstant.ColorMode.COLOR_MODE_DARK ?
+          $r('sys.color.ohos_id_blur_style_component_ultra_thick_color_dark') :
+          $r('sys.color.ohos_id_blur_style_component_ultra_thick_color')
+        )
+        .backgroundBlurStyle(BlurStyle.COMPONENT_THICK, {
+          colorMode: this.darkMode === ConfigurationConstant.ColorMode.COLOR_MODE_DARK ? ThemeColorMode.DARK :
+          ThemeColorMode.LIGHT,
+          adaptiveColor: AdaptiveColor.DEFAULT,
+        })
         .onAreaChange((_: Area, newArea: Area) => {
           this.dialogWidth = Number(newArea.width);
         })
@@ -122,7 +139,7 @@ export struct pickerDialog {
     }
     .componentContainer()
     .onAppear(() => {
-      this.appearAnimation()
+      this.appearAnimation();
     })
   }
 }

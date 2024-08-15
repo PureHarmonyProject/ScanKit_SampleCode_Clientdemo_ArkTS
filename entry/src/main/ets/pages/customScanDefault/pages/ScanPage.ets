@@ -1,29 +1,31 @@
-import { display, window, TipsDialog } from '@kit.ArkUI';
+import { display, window } from '@kit.ArkUI';
 import { customScan, scanBarcode, scanCore } from '@kit.ScanKit';
-import { abilityAccessCtrl, common, ConfigurationConstant, Permissions, Want } from '@kit.AbilityKit';
+import { abilityAccessCtrl, common, Permissions } from '@kit.AbilityKit';
 import { AsyncCallback, BusinessError, emitter } from '@kit.BasicServicesKit';
-import Logger from '../../../common/logger';
+import Logger from '../../../common/Logger';
 import { ScanLine } from '../view/ScanLine';
 import { ScanBottom } from '../view/ScanBottom';
 import { ScanTopTool } from '../view/ScanTopTool';
 import { CodeLayout } from '../view/CommonCodeLayout';
 import { ScanTitle } from '../view/ScanTitle';
 import { PromptTone } from '../model/PromptTone';
-import { openAlbum } from '../model/openPhoto';
+import { openAlbum } from '../model/OpenPhoto';
 import { GlobalThisUtil } from '../../../common/GlobalThisUtil';
 import { CommonConstants } from '../constants/CommonConstants'
 import { MaskLayer } from '../view/MaskLayer';
-import { ScanService, ScanResult } from '../model/ScanService';
+import { ScanService, ScanResults } from '../model/ScanService';
 import { BreakpointConstants } from '../constants/BreakpointConstants';
 import { DeviceStatus, ScanLayout, ScanSize, XComponentSize, NewArea } from '../model/ScanSize';
 import { ScanXComponent } from '../view/ScanXComponent';
 import { ScanLoading } from '../view/ScanLoading';
 import { PermissionsUtil } from '../../customScan/PermissionsUtil';
+import { funcDelayer } from '../../../common/Utils';
+import { CommonTipsDialog } from '../../../common/CommonTipsDialog';
 
 export const TAG = 'ScanPage';
 
 let storage = LocalStorage.getShared();
-let timerId: number;
+let timerId: number | null;
 
 @Extend(Row)
 function tipContainer() {
@@ -39,14 +41,13 @@ function tipContainer() {
 @Component
 struct ScanPage {
   @StorageLink('currentBreakpoint') currentBreakpoint: string = BreakpointConstants.BREAKPOINT_SM;
-  @State tipShow:boolean = false;
+  @State tipShow: boolean = false;
   @State scanSize: ScanSize = ScanSize.getInstance();
   @State deviceStatus: DeviceStatus = this.scanSize.deviceStatus;
   @State xComponentSize: XComponentSize = this.scanSize.xComponentSize;
   @State scanLayout: ScanLayout = this.scanSize.scanLayout;
   @State scanService: ScanService = ScanService.getInstance();
-  @State scanResult: ScanResult = this.scanService.scanResult;
-  @State darkMode: ConfigurationConstant.ColorMode | undefined = undefined;
+  @State scanResult: ScanResults = this.scanService.scanResult;
   @State surfaceId: string = '';
   @State densityDPI: number = 0;
   @State newArea: NewArea = this.scanSize.newArea;
@@ -62,43 +63,30 @@ struct ScanPage {
     enableMultiMode: true,
     enableAlbum: true
   };
-  public avPlayer: PromptTone | null = null // Audio control after successful code scanning.
   dialogController: CustomDialogController = new CustomDialogController({
-    builder: TipsDialog({
-      title: $r('app.string.Scan_access_not_enabled'),
-      content: $r('app.string.Scan_access_tips'),
-      primaryButton: {
-        value: $r('app.string.Scan_got_it'),
-        action: () => {
-          this.existApp();
-        },
-      },
-      secondaryButton: {
-        value: $r('app.string.Scan_settings'),
-        action: () => {
-          this.openPermissionsInSystemSettings();
-        }
-      },
+    builder: CommonTipsDialog({
+      isDialogShow: this.isDialogShow
     }),
     autoCancel: false,
     customStyle: false,
     alignment: DialogAlignment.Center
   });
+  public avPlayer: PromptTone | null = null; // Audio control after successful code scanning.
   customCallbackScan: AsyncCallback<scanBarcode.ScanResult[]> =
     async (error: BusinessError, result: scanBarcode.ScanResult[]) => {
-      if(error) {
-        Logger.error(TAG, `An error is returned during customCallbackScan. Code: ${error.code}, message: ${error.message}`);
+      if (error) {
+        Logger.error(TAG, `An error is returned during customCallbackScan. Code: ${error.code}`);
       }
       if (!this.scanService.isScanned && !this.scanService.isOpenAlbum &&
       this.scanService.isOnPageShow) {
         this.scanResult.code = (error && error.code) ? error.code : 0;
         this.scanResult.data = result || [];
         let resultLength: number = result ? result.length : 0;
-        if (GlobalThisUtil.getProperty('hmsCore_scan_pickerUri') || resultLength) {
+        if (GlobalThisUtil.getProperty(CommonConstants.GLOBAL_SCAN_SELECT_A_PICTURE) || resultLength) {
           this.scanService.stopCamera();
           this.clearTimer();
           this.scanService.isScanned = true; // The result has been scanned.
-          this.scanResult.uri = GlobalThisUtil.getProperty('hmsCore_scan_pickerUri');
+          this.scanResult.uri = GlobalThisUtil.getProperty(CommonConstants.GLOBAL_SCAN_SELECT_A_PICTURE);
           this.scanResult.size = resultLength;
           // Display the mask layer.
           if (this.scanResult.uri) {
@@ -110,7 +98,7 @@ struct ScanPage {
               try {
                 this.avPlayer.playDrip();
               } catch (error) {
-                Logger.error(TAG, `avPlayer catch error. Code: ${error.code}, message: ${error.message}`);
+                Logger.error(TAG, `avPlayer catch error. Code: ${error.code}`);
               }
             }
           } else {
@@ -132,7 +120,7 @@ struct ScanPage {
   aboutToAppear() {
     this.scanSize.getOrientation();
 
-    GlobalThisUtil.setProperty('hmsCore_scan_isPickerDecode', false);
+    GlobalThisUtil.setProperty(CommonConstants.GLOBAL_SCAN_IS_DECODING_GALLERY, false);
     this.scanService.isOpenAlbum = false;
 
     if (GlobalThisUtil.getProperty('scan_topRect_height')) {
@@ -149,6 +137,8 @@ struct ScanPage {
     this.windowSizeSubscribe();
 
     this.onDensityDPI();
+
+    this.onScreenEvent();
   }
 
   async onPageShow(): Promise<void> {
@@ -156,8 +146,6 @@ struct ScanPage {
     this.scanService.isOnPageShow = true;
     this.scanService.isReleaseCamera = false;
     this.scanService.isStopCamera = false;
-
-    this.darkMode = (getContext(this) as common.UIAbilityContext).config.colorMode;
   }
 
   onPageHide(): void {
@@ -175,9 +163,10 @@ struct ScanPage {
         display.off('foldStatusChange');
       }
     } catch (error) {
-      Logger.error(TAG, `listener off catch error. Code: ${error.code}, message: ${error.message}`);
+      Logger.error(TAG, `listener off catch error. Code: ${error.code}`);
     }
     this.offDensityDPI();
+    this.offScreenEvent();
   }
 
   @Builder
@@ -201,7 +190,7 @@ struct ScanPage {
   @Builder
   ScanTitleBuilder() {
     //Top title
-    Column(){
+    Column() {
       ScanTitle({
         scanResultSize: this.scanResult.size,
         navHeight: this.scanSize.navHeight,
@@ -210,7 +199,7 @@ struct ScanPage {
           this.scanLayout.topHeight = Number(newArea.height);
         })
         .visibility(this.scanResult.size > 0 ? Visibility.Hidden : Visibility.Visible)
-      if(this.tipShow) {
+      if (this.tipShow) {
         Row() {
           Text($r('app.string.Scan_diaLog_not_found'))
             .fontSize($r('sys.float.ohos_id_text_size_body2'))
@@ -259,8 +248,8 @@ struct ScanPage {
       foldStatus: this.deviceStatus.foldStatus,
       openPicker: (async () => {
         if (!this.scanService.isScanned) {
-          GlobalThisUtil.setProperty('hmsCore_scan_pickerUri', undefined);
-          GlobalThisUtil.setProperty('hmsCore_scan_isPickerDecode', true);
+          GlobalThisUtil.setProperty(CommonConstants.GLOBAL_SCAN_SELECT_A_PICTURE, false);
+          GlobalThisUtil.setProperty(CommonConstants.GLOBAL_SCAN_IS_DECODING_GALLERY, true);
           this.scanService.isOpenAlbum = true;
           this.scanService.isScanned = false;
           this.scanService.isScanLine = false;
@@ -283,11 +272,10 @@ struct ScanPage {
       MaskLayer()
       Column() {
         CodeLayout({
-          darkMode: this.darkMode,
           orientation: this.deviceStatus.orientation,
           xComponentSize: this.xComponentSize,
           navHeight: this.scanSize.navHeight,
-          scanResult: this.scanResult,
+          scanResults: this.scanResult,
           foldStatus: this.deviceStatus.foldStatus,
           backToScan: (() => {
             this.backToScanCamera();
@@ -324,6 +312,22 @@ struct ScanPage {
     .backgroundColor(this.userGrant ? Color.Transparent : Color.Black)
   }
 
+  onScreenEvent(): void {
+    // subscribe COMMON_EVENT_SCREEN_CHANGE
+    emitter.on({ eventId: CommonConstants.COMMON_EVENT_SCREEN_CHANGE }, (eventData: emitter.EventData) => {
+      Logger.info(TAG, 'screenEventChange enter');
+      if (eventData.data && eventData.data.screenEventChange === CommonConstants.EVENT_SCREEN_OFF) {
+        this.onPageHide();
+      } else if (eventData.data && eventData.data.screenEventChange === CommonConstants.EVENT_SCREEN_ON) {
+        this.onPageShow();
+      }
+    });
+  }
+
+  offScreenEvent(): void {
+    emitter.off(CommonConstants.COMMON_EVENT_SCREEN_CHANGE);
+  }
+
   async empowerment() {
     const permissions: Array<Permissions> = ['ohos.permission.CAMERA'];
     let grantStatus = await PermissionsUtil.checkAccessToken(permissions[0]);
@@ -335,30 +339,6 @@ struct ScanPage {
       // Applying for Camera Permissions
       this.requestCameraPermission();
     }
-  }
-
-  openPermissionsInSystemSettings(): void {
-    Logger.info(TAG, 'Start to open permissions in system settings.');
-    let context = getContext(this) as common.UIAbilityContext;
-    let wantInfo: Want = {
-      bundleName: 'com.huawei.hmos.settings',
-      abilityName: 'com.huawei.hmos.settings.MainAbility',
-      uri: 'application_info_entry',
-      parameters: {
-        settingsParamBundleName: 'com.example.testclient' // Open the details page of a specified application.
-      }
-    }
-    context.startAbility(wantInfo).then(() => {
-      Logger.info(TAG, 'Succeeded in starting ability.');
-    }).catch((error: Error) => {
-      Logger.info(TAG,  `Failed to start ability. Message: ${error.message}`);
-    })
-  }
-
-  existApp() {
-    this.isDialogShow = false;
-    this.dialogController.close();
-    Logger.info(TAG, 'Succeeded in exiting app.');
   }
 
   async requestCameraPermission() {
@@ -376,7 +356,7 @@ struct ScanPage {
         this.initScan();
       } else {
         // The user rejects the authorization, prompts that the user must be authorized to access the functions of the current page, and guides the user to enable the corresponding permission in the system settings.
-        Logger.info(TAG,  `Failed to requesting permissions from user.`);
+        Logger.info(TAG, `Failed to requesting permissions from user.`);
         this.userGrant = false;
         if (!this.isDialogShow) {
           this.dialogController.open();
@@ -386,32 +366,40 @@ struct ScanPage {
     }
   }
 
-  onDensityDPI() {
-    display.on("change", () => {
-      let newDisplay = display.getDefaultDisplaySync();
-      if (newDisplay !== null && this.newArea.densityPixels !== newDisplay.densityPixels) {
-        Logger.info(TAG, 'densityPixels has changed.');
-        this.newArea.densityPixels = newDisplay.densityPixels;
-        let windowSize: window.Size | null = {
-          width: this.newArea.width / newDisplay.densityPixels,
-          height: this.newArea.height / newDisplay.densityPixels,
-        };
-        this.startScan(windowSize);
+  onDensityDPI(): void {
+    display.on('change', () => {
+      try {
+        let newDisplay = display.getDefaultDisplaySync();
+        if (newDisplay !== null && this.newArea.densityPixels !== newDisplay.densityPixels) {
+          Logger.info(TAG, 'densityPixels has changed.');
+          this.newArea.densityPixels = newDisplay.densityPixels;
+          if (newDisplay.densityPixels > 0) {
+            let windowSize: window.Size = {
+              width: this.newArea.width / newDisplay.densityPixels,
+              height: this.newArea.height / newDisplay.densityPixels,
+            };
+            this.startScan(windowSize);
+          } else {
+            Logger.error(TAG, `densityPixels less than or equal to 0`);
+          }
+        }
+      } catch (error) {
+        Logger.error(TAG, `Failed to invoke an API of getDefaultDisplaySync. Code: ${error.code}`);
       }
     })
   }
 
-  offDensityDPI() {
+  offDensityDPI(): void {
     try {
       display.off('change');
     } catch (error) {
-      Logger.error(TAG, `offDensityDPI off catch error. Code: ${error.code}, message: ${error.message}`);
+      Logger.error(TAG, `offDensityDPI off catch error. Code: ${error.code}`);
     }
   }
 
   setDisplay(): void {
-    let windowSize: window.Size | null = this.scanSize.setWindowSize()
-    this.startScan(windowSize)
+    let windowSize: window.Size | null = this.scanSize.setWindowSize();
+    this.startScan(windowSize);
   }
 
   startScan(windowSize: window.Size | null): void {
@@ -421,7 +409,7 @@ struct ScanPage {
     }
   }
 
-  initScan() {
+  initScan(): void {
     this.viewControl = {
       width: this.xComponentSize.width,
       height: this.xComponentSize.height,
@@ -436,8 +424,9 @@ struct ScanPage {
   }
 
   clearTimer() {
-    if(timerId) {
+    if (timerId !== null) {
       clearTimeout(timerId);
+      timerId = null;
       this.tipShow = false;
     }
   }
@@ -455,13 +444,14 @@ struct ScanPage {
     // Response window size change.
     emitter.on({ eventId: CommonConstants.WINDOW_SIZE_CHANGE }, (eventData: emitter.EventData) => {
       Logger.info(TAG, 'windowSizeChange enter');
-      this.releaseUI();
+      this.scanService.resetScanData();
+      this.clearTimer();
       if (eventData.data) {
         let windowSize: window.Size = {
           width: px2vp(eventData.data.width),
           height: px2vp(eventData.data.height)
         }
-        this.startScan(windowSize)
+        this.startScan(windowSize);
       }
     });
   }
@@ -469,14 +459,23 @@ struct ScanPage {
   foldStatusSubscribe(): void {
     try {
       display.on('foldStatusChange', async (foldStatus: display.FoldStatus) => {
+        // FOLD_STATUS_FOLDED => FOLD_STATUS_HALF_FOLDED; FOLD_STATUS_EXPANDED or FOLD_STATUS_HALF_FOLDED => FOLD_STATUS_FOLDED
+        if (this.isNeedReleaseCamera(this.deviceStatus.foldStatus, foldStatus)) {
+          Logger.info(TAG, `Fold status changed, status: ${foldStatus}`);
+          await this.releaseUI();
+          funcDelayer(() => {
+            Logger.info(TAG, 'Fold status changed, need to set display.');
+            this.setDisplay();
+          }, 300);
+        }
         if (foldStatus === display.FoldStatus.FOLD_STATUS_EXPANDED ||
           foldStatus === display.FoldStatus.FOLD_STATUS_FOLDED) {
-          Logger.info(TAG, 'Start to subscribe foldStatus, foldStatus has changed.');
+          Logger.info(TAG, 'Set fold status.');
           this.deviceStatus.foldStatus = foldStatus;
         }
       });
     } catch (error) {
-      Logger.error(TAG, `Failed to subscribe foldStatus. Code: ${error.code}, message: ${error.message}`);
+      Logger.error(TAG, `Failed to foldStatusListen. Code: ${error.code}`);
     }
   }
 
@@ -484,6 +483,17 @@ struct ScanPage {
     this.scanService.resetScanData();
     this.clearTimer();
     await this.scanService.releaseCamera();
+  }
+
+  isNeedReleaseCamera(preFoldStatus: display.FoldStatus, foldStatus: display.FoldStatus): boolean {
+    if (preFoldStatus === display.FoldStatus.FOLD_STATUS_FOLDED &&
+      foldStatus === display.FoldStatus.FOLD_STATUS_HALF_FOLDED) {
+      return true;
+    } else if (foldStatus === display.FoldStatus.FOLD_STATUS_FOLDED && preFoldStatus !== foldStatus) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   async backToScanCamera() {

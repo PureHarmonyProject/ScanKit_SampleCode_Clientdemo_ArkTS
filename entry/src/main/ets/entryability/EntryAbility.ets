@@ -1,10 +1,11 @@
-import { AbilityConstant, common, UIAbility, Want } from '@kit.AbilityKit';
+import { AbilityConstant, common, UIAbility, Want, Configuration } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import deviceInfo from '@ohos.deviceInfo';
 import { display, router, window } from '@kit.ArkUI';
-import { emitter } from '@kit.BasicServicesKit';
+import { BusinessError, emitter } from '@kit.BasicServicesKit';
 import { GlobalThisUtil } from '../common/GlobalThisUtil';
 import { CommonConstants } from '../pages/customScanDefault/constants/CommonConstants';
+import { CommonEventManager } from '../pages/customScanDefault/model/CommonEventManager';
 
 const TAG = 'Scan SampleCode EntryAbility';
 
@@ -24,6 +25,18 @@ export default class EntryAbility extends UIAbility {
     if (uri) {
       // “扫码直达”服务，根据uri参数做业务处理
       this.page = 'pages/access/ScanAccess';
+    }
+
+    AppStorage.setOrCreate<number>('scanFontSizeScale', this.context.config.fontSizeScale);
+    AppStorage.setOrCreate<number>('scanColorMode', this.context.config.colorMode);
+  }
+
+  onConfigurationUpdate(newConfig: Configuration): void {
+    if (newConfig.fontSizeScale && AppStorage.get('scanFontSizeScale') !== newConfig.fontSizeScale) {
+      AppStorage.setOrCreate<number>('scanFontSizeScale', newConfig.fontSizeScale);
+    }
+    if (newConfig.fontSizeScale && AppStorage.get('scanColorMode') !== newConfig.colorMode) {
+      AppStorage.setOrCreate<number>('scanColorMode', newConfig.colorMode);
     }
   }
 
@@ -67,9 +80,9 @@ export default class EntryAbility extends UIAbility {
         error.code, error.message);
     }
     windowStage.getMainWindow().then((windowObj: window.Window) => {
-      windowObj.setWindowLayoutFullScreen(true, () => {
-        hilog.info(0x0000, TAG, 'setWindowLayoutFullScreen Succeed!');
-      });
+      windowObj.setWindowLayoutFullScreen(true).catch((error: BusinessError) => {
+        hilog.error(0x0001, TAG, `Failed to setWindowLayoutFullScreen. Code: ${error.code}`);
+      })
 
       let avoidArea = windowObj.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM);
       GlobalThisUtil.setProperty('scan_topRect_height', avoidArea.topRect.height);
@@ -125,10 +138,12 @@ export default class EntryAbility extends UIAbility {
   onForeground(): void {
     // Ability has brought to foreground
     hilog.info(0x0000, TAG, '%{public}s', 'Ability onForeground');
+    CommonEventManager.getInstance().createSubscriber();
   }
 
   onBackground(): void {
     // Ability has back to background
     hilog.info(0x0000, TAG, '%{public}s', 'Ability onBackground');
+    CommonEventManager.getInstance().unsubscribe();
   }
 }

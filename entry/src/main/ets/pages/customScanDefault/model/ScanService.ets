@@ -1,16 +1,17 @@
 import { customScan, scanBarcode } from '@kit.ScanKit';
 import { AsyncCallback, BusinessError } from '@kit.BasicServicesKit';
 import { GlobalThisUtil } from '../../../common/GlobalThisUtil';
-import Logger from '../../../common/logger';
+import Logger from '../../../common/Logger';
+import { CommonConstants } from '../constants/CommonConstants';
 
 export const TAG = 'ScanService';
 
 @Observed
-export class ScanResult {
-  code: number;
-  data: Array<object>;
-  size: number;
-  uri: string;
+export class ScanResults {
+  public code: number;
+  public data: Array<scanBarcode.ScanResult>;
+  public size: number;
+  public uri: string;
 
   constructor() {
     this.code = 0;
@@ -22,27 +23,28 @@ export class ScanResult {
 
 @Observed
 export class ScanService {
-  isScanned: boolean = false;
-  isScanLine: boolean = false;
-  isAlbumLoading: boolean = false;
-  isOpenAlbum: boolean = false;
-  isOnPageShow: boolean = true;
-  isReleaseCamera: boolean = false;
-  isStopCamera: boolean = false;
-  scanResult: ScanResult = new ScanResult();
-  isFlashlight: boolean = false;
+  public isScanned: boolean = false;
+  public isScanLine: boolean = false;
+  public isAlbumLoading: boolean = false;
+  public isOpenAlbum: boolean = false;
+  public isOnPageShow: boolean = true;
+  public isReleaseCamera: boolean = false;
+  public isStopCamera: boolean = false;
+  public scanResult: ScanResults = new ScanResults();
+  public isFlashlight: boolean = false;
   private static instance: ScanService | null = null;
 
-  static getInstance(): ScanService {
+  public static getInstance(): ScanService {
     if (ScanService.instance === null) {
       ScanService.instance = new ScanService();
     }
     return ScanService.instance;
   }
 
-  initCamera(options: scanBarcode.ScanOptions, viewControl: customScan.ViewControl,
+  public initCamera(options: scanBarcode.ScanOptions, viewControl: customScan.ViewControl,
     callback: AsyncCallback<Array<scanBarcode.ScanResult>>) {
-    if (this.isOnPageShow && !this.isScanLine && !GlobalThisUtil.getProperty('hmsCore_scan_isPickerDecode')) {
+    if (this.isOnPageShow && !this.isScanLine &&
+      !GlobalThisUtil.getProperty(CommonConstants.GLOBAL_SCAN_IS_DECODING_GALLERY)) {
       Logger.info(TAG, `initCamera start. width: ${viewControl.width}, height: ${viewControl.height}`);
       try {
         Logger.info(TAG, 'customScan init start');
@@ -56,18 +58,19 @@ export class ScanService {
     }
   }
 
-  startCamera(viewControl: customScan.ViewControl, callback: AsyncCallback<Array<scanBarcode.ScanResult>>): void {
+  public startCamera(viewControl: customScan.ViewControl,
+    callback: AsyncCallback<Array<scanBarcode.ScanResult>>): void {
     try {
       Logger.info(TAG, 'Start to start camera.');
       this.isStopCamera = false;
       customScan.start(viewControl, callback);
     } catch (error) {
-      Logger.error(TAG, `Failed to start customScan. Code: ${error.code}, message: ${error.message}`);
+      Logger.error(TAG, `Failed to start customScan. Code: ${error.code}`);
     }
     this.isScanLine = true;
   }
 
-  stopCamera(): void {
+  public stopCamera(): void {
     if (!this.isStopCamera) {
       try {
         this.isScanLine = false;
@@ -75,15 +78,15 @@ export class ScanService {
         Logger.info(TAG, 'Start to stop camera.');
         this.closeFlashLight();
         customScan.stop().catch((error: BusinessError) => {
-          Logger.error(TAG, `Failed to stop customScan by promising. Code: ${error.code}, message: ${error.message}`);
+          Logger.error(TAG, `Failed to stop customScan by promising. Code: ${error.code}`);
         });
       } catch (error) {
-        Logger.error(TAG, `Failed to stop customScan by catching. Code: ${error.code}, message: ${error.message}`);
+        Logger.error(TAG, `Failed to stop customScan by catching. Code: ${error.code}`);
       }
     }
   }
 
-  async releaseCamera(): Promise<void> {
+  public async releaseCamera(): Promise<void> {
     if (!this.isReleaseCamera) {
       this.isReleaseCamera = true;
       this.stopCamera();
@@ -91,15 +94,15 @@ export class ScanService {
         Logger.info(TAG, 'Start to release camera.');
         customScan.release().catch((error: BusinessError) => {
           Logger.error(TAG,
-            `Failed to release customScan by promising. Code: ${error.code}, message: ${error.message}`);
+            `Failed to release customScan by promising. Code: ${error.code}`);
         });
       } catch (error) {
-        Logger.error(TAG, `Failed to release customScan by catching. Code: ${error.code}, message: ${error.message}`);
+        Logger.error(TAG, `Failed to release customScan by catching. Code: ${error.code}`);
       }
     }
   }
 
-  closeFlashLight() {
+  public closeFlashLight() {
     Logger.info(TAG, 'Start to close flashlight.');
     try {
       if (customScan.getFlashLightStatus()) {
@@ -107,37 +110,37 @@ export class ScanService {
         this.isFlashlight = false;
       }
     } catch (error) {
-      Logger.error(TAG, `Failed to closeFlashLight. Code: ${error.code}, message: ${error.message}`);
+      Logger.error(TAG, `Failed to closeFlashLight. Code: ${error.code}`);
     }
   }
 
-  resetScanData(): void {
+  public resetScanData(): void {
     Logger.info(TAG, 'Start to reset scan data.');
     this.isScanLine = false;
     this.initScanData();
   }
 
-  initScanData() {
+  public initScanData() {
     Logger.info(TAG, 'Start to init scan data.');
     this.isScanned = false;
-    GlobalThisUtil.setProperty('hmsCore_scan_pickerUri', undefined);
+    GlobalThisUtil.setProperty(CommonConstants.GLOBAL_SCAN_SELECT_A_PICTURE, false);
     if (!this.isOpenAlbum) {
       this.isAlbumLoading = false;
-      GlobalThisUtil.setProperty('hmsCore_scan_isPickerDecode', false);
+      GlobalThisUtil.setProperty(CommonConstants.GLOBAL_SCAN_IS_DECODING_GALLERY, false);
     }
     this.scanResult.uri = '';
     this.scanResult.data = [];
     this.scanResult.size = 0;
   }
 
-  scanDestroy(): void {
+  public scanDestroy(): void {
     Logger.info(TAG, 'Start to destroy scan.');
     this.isOnPageShow = false;
     this.resetScanData();
     this.releaseCamera();
   }
 
-  async backToScan(options: scanBarcode.ScanOptions, viewControl: customScan.ViewControl,
+  public async backToScan(options: scanBarcode.ScanOptions, viewControl: customScan.ViewControl,
     callback: AsyncCallback<Array<scanBarcode.ScanResult>>): Promise<void> {
     Logger.info(TAG, 'Start to back to scan.');
     this.resetScanData();

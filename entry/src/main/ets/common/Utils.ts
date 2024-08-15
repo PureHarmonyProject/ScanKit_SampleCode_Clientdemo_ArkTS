@@ -2,6 +2,9 @@ import { scanCore, type scanBarcode, generateBarcode } from '@kit.ScanKit';
 import { promptAction } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { type BusinessError } from '@kit.BasicServicesKit';
+import Logger from './Logger';
+
+const TAG = 'Utils';
 
 export function checkResults(result: scanBarcode.ScanResult[]): boolean {
   if (result === undefined || result === null) {
@@ -21,7 +24,7 @@ export function checkResult(result: scanBarcode.ScanResult): boolean {
   return true;
 }
 
-export function getColorType(type: string): number {
+export function getColorType(type: string | undefined): number {
   let color: number = 0x000000;
   switch (type) {
     case 'Black':
@@ -72,7 +75,7 @@ export function showError(businessError: BusinessError): void {
   }
 }
 
-export function getLevelType(type: string): generateBarcode.ErrorCorrectionLevel {
+export function getLevelType(type: string | undefined): generateBarcode.ErrorCorrectionLevel {
   let result: generateBarcode.ErrorCorrectionLevel = generateBarcode.ErrorCorrectionLevel.LEVEL_H;
   switch (type) {
     case 'LEVEL_L':
@@ -94,7 +97,7 @@ export function getLevelType(type: string): generateBarcode.ErrorCorrectionLevel
   return result;
 }
 
-export function getTypeNum(type: string): scanCore.ScanType {
+export function getTypeNum(type: string | undefined): scanCore.ScanType {
   let result: scanCore.ScanType = scanCore.ScanType.QR_CODE;
   switch (type) {
     case 'AZTEC_CODE':
@@ -210,4 +213,15 @@ export function getTypeStr(type: number): string {
 export interface WindowSize {
   width: number,
   height: number
+}
+
+export function funcDelayer(func: Function, time: number): void {
+  let timerId = setTimeout(() => {
+    try {
+      func();
+    } catch (error) {
+      Logger.error(TAG, `Failed to execute func in timer. Code: ${error.code}`);
+    }
+    clearTimeout(timerId);
+  }, time);
 }

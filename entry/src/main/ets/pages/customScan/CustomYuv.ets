@@ -1,14 +1,15 @@
 import { fileIo } from '@kit.CoreFileKit';
-import { router, display, TipsDialog } from '@kit.ArkUI';
+import { router, display } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AsyncCallback, BusinessError } from '@kit.BasicServicesKit';
 import { scanCore, scanBarcode, customScan } from '@kit.ScanKit';
-import { common, abilityAccessCtrl, Permissions, Want } from '@kit.AbilityKit';
+import { abilityAccessCtrl, Permissions } from '@kit.AbilityKit';
 import { emitter } from '@kit.BasicServicesKit';
 import { WindowSize } from '../../common/Utils';
 import { PermissionsUtil } from './PermissionsUtil';
 import { GlobalThisUtil } from '../../common/GlobalThisUtil';
 import { CommonConstants } from '../customScanDefault/constants/CommonConstants';
+import { CommonTipsDialog } from '../../common/CommonTipsDialog';
 
 const TAG = 'Scan SampleCode CustomYuv';
 const DOMAIN: number = 0x0001;
@@ -136,6 +137,14 @@ struct YUVScan {
     enableMultiMode: true,
     enableAlbum: true
   };
+  dialogController: CustomDialogController = new CustomDialogController({
+    builder: CommonTipsDialog({
+      isDialogShow: this.isDialogShow
+    }),
+    autoCancel: false,
+    customStyle: false,
+    alignment: DialogAlignment.Center
+  });
   private callback: AsyncCallback<scanBarcode.ScanResult[]> =
     async (error: BusinessError, result: scanBarcode.ScanResult[]) => {
       if (error) {
@@ -217,8 +226,8 @@ struct YUVScan {
 
           try {
             let file =
-              fileIo.openSync("/data/storage/el2/base/haps/entry/files/IMG_" + this.getTimeStringInYYMMDD_HHMMSS() +
-                ".yuv", fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE);
+              fileIo.openSync(getContext().filesDir + "/image_" + this.getTimeStringInYYMMDD_HHMMSS() + ".yuv",
+                fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE);
             fileIo.writeSync(file.fd, frameResult.byteBuffer);
             fileIo.closeSync(file);
           } catch (err) {
@@ -231,51 +240,6 @@ struct YUVScan {
         }
       }
     };
-  dialogController: CustomDialogController = new CustomDialogController({
-    builder: TipsDialog({
-      title: $r('app.string.Scan_access_not_enabled'),
-      content: $r('app.string.Scan_access_tips'),
-      primaryButton: {
-        value: $r('app.string.Scan_got_it'),
-        action: () => {
-          this.existApp();
-        },
-      },
-      secondaryButton: {
-        value: $r('app.string.Scan_settings'),
-        action: () => {
-          this.openPermissionsInSystemSettings();
-        }
-      },
-    }),
-    autoCancel: false,
-    customStyle: false,
-    alignment: DialogAlignment.Center
-  });
-
-  openPermissionsInSystemSettings(): void {
-    hilog.error(0x0001, TAG, `openPermissionsInSystemSettings`);
-    let context = getContext(this) as common.UIAbilityContext;
-    let wantInfo: Want = {
-      bundleName: 'com.huawei.hmos.settings',
-      abilityName: 'com.huawei.hmos.settings.MainAbility',
-      uri: 'application_info_entry',
-      parameters: {
-        settingsParamBundleName: 'com.example.testclient' // Open the details page of a specified application.
-      }
-    }
-    context.startAbility(wantInfo).then(() => {
-      hilog.info(0x0001, TAG, 'startAbility Success');
-    }).catch((error: Error) => {
-      hilog.info(0x0001, TAG, 'startAbility error: %{public}s', error);
-    })
-  }
-
-  existApp() {
-    this.isDialogShow = false;
-    this.dialogController.close();
-    hilog.info(0x0001, TAG, 'Succeeded in exit app. isDialogShow: %{public}s', this.isDialogShow);
-  }
 
   async requestCameraPermission() {
     let grantStatus = await PermissionsUtil.reqPermissionsFromUser();
@@ -413,6 +377,7 @@ struct YUVScan {
         }
       });
     }
+    this.onScreenEvent();
   }
 
   aboutToDisappear() {
@@ -421,6 +386,7 @@ struct YUVScan {
       emitter.off(CommonConstants.WINDOW_SIZE_CHANGE);
       display.off('foldStatusChange');
     }
+    this.offScreenEvent();
   }
 
   async onPageShow() {
@@ -440,6 +406,22 @@ struct YUVScan {
       // Applying for Camera Permissions
       this.requestCameraPermission();
     }
+  }
+
+  onScreenEvent(): void {
+    // subscribe COMMON_EVENT_SCREEN_CHANGE
+    emitter.on({ eventId: CommonConstants.COMMON_EVENT_SCREEN_CHANGE }, (eventData: emitter.EventData) => {
+      hilog.info(0x0001, TAG, 'screenEventChange enter');
+      if (eventData.data && eventData.data.screenEventChange === CommonConstants.EVENT_SCREEN_OFF) {
+        this.onPageHide();
+      } else if (eventData.data && eventData.data.screenEventChange === CommonConstants.EVENT_SCREEN_ON) {
+        this.onPageShow();
+      }
+    });
+  }
+
+  offScreenEvent(): void {
+    emitter.off(CommonConstants.COMMON_EVENT_SCREEN_CHANGE);
   }
 
   initCamera() {
@@ -531,7 +513,7 @@ struct YUVScan {
         Column() {
           XComponent({
             id: 'componentId',
-            type: 'surface',
+            type: XComponentType.SURFACE,
             controller: this.mXComponentController
           })
             .onLoad(() => {
@@ -549,18 +531,6 @@ struct YUVScan {
         .position({ x: 0, y: 0 })
       }
 
-      Column() {
-        this.TopTool()
-        Column() {
-        }
-        .layoutWeight(1)
-        .width('100%')
-
-      }
-      .width('100%')
-      .height('100%')
-      .justifyContent(FlexAlign.Center)
-
       if (this.scanFlag) {
         ForEach(this.positionArkUi, (item: Array<Position>) => {
           ArkUiDrawView({
@@ -569,9 +539,20 @@ struct YUVScan {
             xComponentHeight: this.cameraHeight,
           })
         }, (item: Array<Position>, index: number) => {
-          return index + '__' + JSON.stringify(item)
+          return index + '__' + JSON.stringify(item);
         })
       }
+
+      Column() {
+        this.TopTool();
+        Column() {
+        }
+        .layoutWeight(1)
+        .width('100%')
+      }
+      .width('100%')
+      .height('100%')
+      .justifyContent(FlexAlign.Center)
     }
     .width('100%')
     .height('100%')

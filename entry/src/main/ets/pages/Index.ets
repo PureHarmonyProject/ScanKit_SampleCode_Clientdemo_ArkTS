@@ -1,11 +1,6 @@
-import { hilog } from '@kit.PerformanceAnalysisKit';
-import { BusinessError } from '@kit.BasicServicesKit';
 import { router } from '@kit.ArkUI';
 import { scanCore, scanBarcode } from '@kit.ScanKit';
-import { showError, checkResult } from '../common/Utils';
 import { CustomButton } from '../common/CommonComponents'
-
-const TAG = 'Scan SampleCode Index';
 
 @Entry
 @Component
@@ -63,42 +58,16 @@ struct Index {
 
         CustomButton({
           mText: $r('app.string.default_view_decode'), mOnClick: () => {
-            try {
-              scanBarcode.startScanForResult(getContext(this), this.options).then((result: scanBarcode.ScanResult) => {
-                if (!checkResult(result)) {
-                  return
-                }
-                hilog.info(0x0001, TAG, 'Promise scan result: %{public}s', JSON.stringify(result));
-                router.pushUrl({
-                  url: 'pages/resultPage/ResultPage',
-                  params: {
-                    originalValue: result.originalValue,
-                    scanType: result.scanType
-                  }
-                })
-              }).catch((error: BusinessError) => {
-                if (error.code == scanCore.ScanErrorCode.SCAN_SERVICE_CANCELED) {
-                  hilog.info(0x0001, TAG, `Disabling the Scanning Service.`);
-                } else {
-                  hilog.error(0x0001, TAG,
-                    `Failed to start the scanning service. Code: ${error.code}, message: ${error.message}.`);
-                }
-              });
-            } catch (error) {
-              hilog.error(0x0001, TAG,
-                `Failed to start the scanning service. Code: ${error.code}, message: ${error.message}.`);
-              showError(error);
-            }
+            router.pushUrl({
+              url: 'pages/defaultScan/DefaultScan'
+            })
           }
         })
+
         CustomButton({
           mText: $r('app.string.customized_view_decode'), mOnClick: () => {
             router.pushUrl({
-              url: 'pages/customScan/CustomPage',
-              params: {
-                hasOptions: true,
-                isCallback: false
-              }
+              url: 'pages/customScan/CustomPage'
             })
           }
         })
@@ -114,9 +83,6 @@ struct Index {
           mText: $r('app.string.generate_QR_code'), mOnClick: () => {
             router.pushUrl({
               url: 'pages/generateBarcode/CreateBarcode',
-              params: {
-                title: $r('app.string.generate_QR_code')
-              }
             })
           }
         })
