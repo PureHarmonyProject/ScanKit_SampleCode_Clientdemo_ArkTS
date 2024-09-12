@@ -73,14 +73,6 @@
       "value": "Barcode Scan by Custom UI"
     },
     {
-      "name": "customized_view_decode_frame",
-      "value": "Barcode Scan by Custom UI-YUV"
-    },
-    {
-      "name": "customized_view_decode_default",
-      "value": "Barcode Scan by Custom UI – Recommended Example"
-    },
-    {
       "name": "bitmap_api_decode",
       "value": "Image-Based Barcode Recognition"
     },
@@ -155,22 +147,6 @@
     {
       "name": "result_content",
       "value": "Result"
-    },
-    {
-      "name": "promise_parameter",
-      "value": "Promise has parameter"
-    },
-    {
-      "name": "promise_no_parameter",
-      "value": "Promise no parameter"
-    },
-    {
-      "name": "callback_parameter",
-      "value": "callback has parameter"
-    },
-    {
-      "name": "callback_no_parameter",
-      "value": "callback no parameter"
     },
     {
       "name": "permission_reason_camera",

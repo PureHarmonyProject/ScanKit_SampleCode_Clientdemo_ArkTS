@@ -1,54 +1,33 @@
 # Scan Kit
 
-## Introduction
+## Overview
 
-This example illustrates how to use the capabilities provided by Scan Kit, including directly accessing content through scanning, scanning barcodes using the default UI, scanning barcodes using a custom UI, recognizing barcodes based on images, and generating barcode images.
+This sample code illustrates how to use the capabilities provided by Scan Kit, including directly accessing content through scanning, scanning barcodes using the default UI, scanning barcodes using a custom UI, recognizing barcodes from images, and generating barcode images.
 
-The **import { scanCore, scanBarcode, customScan, detectBarcode, generateBarcode } from '@kit.ScanKit';** API of Scan
-Kit needs to be used.
+The APIs of Scan Kit need to be used: mport { scanCore, scanBarcode, customScan, detectBarcode, generateBarcode } from '
+@kit.ScanKit';
 
-## Effect Preview
+## Preview
 
-|        **App Home Screen**         | **Page of the Scan to Access service** |
-|:----------------------------------:|:--------------------------------------:|
-| ![](entry/screenshots/homePageEs.png) |  ![](entry/screenshots/access_en.png)  |
+|               **Control Panel**              |             **Scan Code**            |          **Direct Access to Service Page**          |
+| :--------------------------------------: | :------------------------------------: | :-------------------------------: |
+| ![](entry/screenshots/controlCenterEs.png) | ![](entry/screenshots/scanSuccess.png) | ![](entry/screenshots/accessEs.png) |
 
-|        **App Home Screen**         | **Barcode Scan by Default UI**           |        **Scan Result (Single Barcode)**        |     **Scan Result (Multiple Barcodes)**      |    **Barcode Scan Result (Default UI)**    |
-|:----------------------------------:|------------------------------------------|:----------------------------------------------:|:--------------------------------------------:|:------------------------------------------:|
+|          **App Home Page**          | **Barcode Scan by Default UI**                      |               **Scan Result (Single Barcode)**               |              **Scan Result (Multiple Barcodes)**             |           **Barcode Scan Result (Default UI)**          |
+| :-----------------------------: | -------------------------------------- | :------------------------------------------: | :----------------------------------------: | :--------------------------------------: |
 | ![](entry/screenshots/homePageEs.png) | ![](entry/screenshots/defaultScanEs.png) | ![](entry/screenshots/defaultSingleScanEs.png) | ![](entry/screenshots/defaultMutiScanEs.png) | ![](entry/screenshots/defaultResultEs.png) |
 
-|        **App Home Screen**         |      **Barcode Scan by Custom UI**      |       **Scan Result (Single Barcode)**        |     **Scan Result (Multiple Barcodes)**      |           **Barcode Scan Result (Custom UI)**            |
-|:----------------------------------:|:---------------------------------------:|:---------------------------------------------:|:--------------------------------------------:|:--------------------------------------------------------:|
-| ![](entry/screenshots/homePageEs.png) | ![](entry/screenshots/customScanEs.png) | ![](entry/screenshots/customSingleScanEs.png) | ![](entry/screenshots/customMultiScanEs.png) | ![](entry/screenshots/customOrDetectBarcodeResultEs.png) |
-
-|        **App Home Screen**         |    **Barcode Scan by Custom UI (YUV)**     |
-|:----------------------------------:|:------------------------------------------:|
-| ![](entry/screenshots/homePageEs.png) | ![](entry/screenshots/customScanYUVEs.png) |
-
-<table>
-  <tr>
-    <th width=20%>App Home Screen</th>
-    <th width=20%>Barcode Scan by Custom UI – Recommended Example</th>
-    <th width=20%>Scan Result (Single Barcode)</th>
-    <th width=20%>Scan Result (Multiple Barcodes)</th>
-    <th width=20%>Barcode Scan Result (Recommended Example)</th>
-  </tr>
-  <tr>
-    <td><img src='entry/screenshots/homePageEs.png'></td>
-    <td><img src='entry/screenshots/customScanNewEs.png'></td>
-    <td><img src='entry/screenshots/customScanSingleEs.png'></td>
-    <td><img src='entry/screenshots/customScanMutiEs.png'></td>
-    <td><img src='entry/screenshots/customOrDetectBarcodeResultEs.png'></td>
-  </tr>
-</table>
+|          **App Home Page**          | **Barcode Scan by Custom UI**                      |              **Scan Result (Single Barcode)**               |     **Scan Result (Multiple Barcodes)**     |    **Barcode Scan Result (Custom UI)**     |
+| :-----------------------------: | ---------------------------------------- | :-----------------------------------------: |:-------------------------------------------:|:------------------------------------------:|
+| ![](entry/screenshots/homePageEs.png) | ![](entry/screenshots/customScanNewEs.png) | ![](entry/screenshots/customScanSingleEs.png) | ![](entry/screenshots/customScanMutiEs.png) | ![](entry/screenshots/defaultResultEs.png) |
 
 <table>
   <tr>
     <th width=16.5%>App Home Screen</th>
-    <th width=16.5%>Recognize Local Images</th>
-    <th width=16.5%>Recognize Single Barcode in Local Image</th>
-    <th width=16.5%>Recognize Multiple Barcodes in Local Image</th>
-    <th width=16.5%>Recognize Local Image</th>
+    <th width=16.5%>Recognize Saved Image</th>
+    <th width=16.5%>Recognize Single Barcode in Saved Image</th>
+    <th width=16.5%>Recognize Multiple Barcodes in Saved Image</th>
+    <th width=16.5%>Saved Image Recognition Result</th>
     <th width=16.5%>Recognize Image Data</th>
   </tr>
   <tr>
@@ -61,104 +40,98 @@ Kit needs to be used.
   </tr>
 </table>
 
-
-|        **App Home Screen**         |    **Barcode Image Generation UI**    |     **Barcode Image Generation Result**     |
-|:----------------------------------:|:-------------------------------------:|:-------------------------------------------:|
+|          **App Home Page**          |          **Barcode Image Generation UI**          |             **Barcode Image Generation Result**             |
+| :-----------------------------: | :---------------------------------: | :---------------------------------------: |
 | ![](entry/screenshots/homePageEs.png) | ![](entry/screenshots/generateEs.png) | ![](entry/screenshots/generateResultEs.png) |
 
+How to Use
 
-Usage:
-1. Tap **Scan Kit Demo** on the home screen of your device to start the demo app. The following buttons will be displayed on the demo app home screen: **Scan to Access, Barcode Scan by Default UI, Barcode Scan by Custom UI, Image-Based Barcode Recognition, and Barcode Image Generation**.
-2. Tap **Scan to Access** to go to the level-2 UI. Tap Integration Process to view the development procedure.
-3. Tap **Barcode Scan by Default UI** to go to the level-2 UI. Tap **Barcode Scan by Default UI** again to launch the default barcode scan UI, scan a barcode image, and check the scan
-   result.
-4. Tap **Barcode Scan by Custom UI** to go to the level-2 UI. Tap **Barcode Scan by Custom UI** again to launch the
-   custom barcode scan UI, scan a barcode image, and check the scan result through a promise.
-5. Tap **Barcode Scan by Custom UI** to go to the level-2 UI. Tap **Barcode Scan by Custom UI (YUV)** to launch the
-   custom barcode scan UI, scan a barcode image, and check the scan result through a callback.
-6. Tap **Barcode Scan by Custom UI** to go to the level-2 UI. Tap **Barcode Scan by Custom UI – Recommended Example** to
-   customize a barcode scan UI using the recommended method, scan a barcode image, and obtain the scan result.
-7. Tap **Image-Based Barcode Recognition** to the level-2 page and tap **Recognize Local Images** to start the picker,
-   select a barcode image from the gallery for recognition, and check the scan result.
-8. Tap **Image-Based Barcode Recognition** to the level-2 page and tap **Recognize Image Data** to check the scan
-   result.
-9. Tap **Barcode Image Generation** to the level-2 page and call the barcode image generation API to generate different types of barcode
-   images.
+1. This demo illustrates integration with the scan-to-access service, which is only used as a reference.
+
+* Install the demo app, open the HarmonyOS scan entry from the control panel, and scan the following QR code. After the scanning is successful, the target service page of the demo app is displayed.
+
+![](entry/screenshots/qrcode.png)
+
+* If you want to replace your package name and domain name for integrating the scan-to-access service, please refer to the [integration guide](https://developer.huawei.com/consumer/en/doc/harmonyos-guides-V5/scan-directservice-V5).
+
+2. Tap **Scan Kit Demo** on the home screen of your device to start the demo app. The following buttons will be displayed on the demo app home screen: **Scan code on default UI**, **Scan code on custom UI**, **Recognize barcode in image**, and **Generate barcode image**.
+3. Tap **Scan code on default UI** to go to the level-2 UI. Tap **Scan code on default UI** again to launch the default barcode scan UI, scan a barcode image, and check the scan result.
+4. Tap **Scan code on custom UI** to go to the level-2 UI. Tap **Scan code on custom UI** again to launch the custom barcode scan UI, scan a barcode image, and check the scan result.
+5. Tap **Recognize barcode in image** to go to the level-2 UI. Tap **Saved image** to start the picker, select a barcode image from the gallery for recognition, and check the scan result.
+6. Tap **Recognize barcode in image** to go to the level-2 UI. Tap **Image data** to start recognition and check the recognition result. For details about the camera implementation, please refer to the [Camera Kit document](https://developer.huawei.com/consumer/en/doc/harmonyos-guides-V5/camera-dual-channel-preview-V5).
+7. Tap **Generate barcode image** to go to the level-2 UI. Tap **Generate code** to convert a string into a barcode image of a custom format, or tap **Generate ride code** to convert a byte array into a barcode image of a custom format. Currently, Scan Kit does not support recognition based on barcode images generated from byte arrays.
 
 ## Project Directory
 
-├─entry/src/main/ets // Code area.  
-│ ├─common  
-│ │ ├─CommonComponents.ets // Common components.              
-│ │ ├─CommonTipsDialog.ets // Common tips dialog.             
-│ │ ├─GlobalThisUtil.ts // Class that encapsulates **globalThis**.  
-│ │ ├─Logger.ts // Class that encapsulates **Logger**.               
-│ │ ├─StatusBar.ets // Status bar component.              
-│ │ ├─Utils.ts // Common methods.  
-│ ├─entryability                    
-│ │ └─EntryAbility.ets // Entry point class.   
-│ ├─pages                            
-│ │ ├─customScan // Barcode scanning customization.  
-│ │ │ ├─CommonCodeLayout.ets // Radio button component.   
-│ │ │ ├─CustomPage.ets // Page where the button for accessing the custom barcode scanning UI is located.  
-│ │ │ ├─CustomScan.ets // Custom barcode scanning UI.   
-│ │ │ ├─CustomYuv.ets // Custom barcode scanning UI (YUV).    
-│ │ │ ├─PermissionsUtil.ets // Camera authorization class.    
-│ │ ├─customScanDefault // Recommended example of the custom barcode scanning UI.    
-│ │ │ ├─constants // Constants.    
-│ │ │ │ ├─BreakpointConstants // Breakpoint constants.    
-│ │ │ │ ├─CommonConstants // Common constants.    
-│ │ │ ├─model // Implementation.    
-│ │ │ │ ├─BreakpointType // Breakpoint.  
-│ │ │ │ ├─CommonEventManager.ets // Common event manager.   
-│ │ │ │ ├─OpenPhoto // Gallery.    
-│ │ │ │ ├─PromptTone // Prompt tone.    
-│ │ │ │ ├─ScanService // Barcode scanning customization.    
-│ │ │ │ ├─ScanSize // Barcode scanning UI layout.    
-│ │ │ ├─pages // Pages.    
-│ │ │ │ ├─ScanPage // Barcode scanning page.    
-│ │ │ ├─view // Components.    
-│ │ │ │ ├─CommonCodeLayout // Radio button component.    
-│ │ │ │ ├─IconPress // Image press effect component.    
-│ │ │ │ ├─MaskLayer // Mask.    
-│ │ │ │ ├─PickerDialog // Modal dialog box component.    
-│ │ │ │ ├─ScanBottom // Bottom component.    
-│ │ │ │ ├─ScanLine // Scan line component.    
-│ │ │ │ ├─ScanLoading // Loading component.    
-│ │ │ │ ├─ScanTitle // Title component.    
-│ │ │ │ ├─ScanTopTool // Header component.    
-│ │ │ │ ├─ScanXComponent // XComponent.    
-│ │ ├─defaultScan // Barcode Scan by Default UI    
-│ │ │ ├─DefaultScan.ets //Barcode Scan by Default UI    
-│ │ ├─detectBarcode // Image-based barcode recognition.    
-│ │ │ ├─CommonCodeLayout.ets // Radio button component.   
-│ │ │ ├─DecodeBarcode.ets // Page where the image recognition button is located.    
-│ │ │ ├─DecodeCameraYuv.ets // Page for image data recognition.              
-│ │ ├─generateBarcode // Barcode generation.   
-│ │ │ ├─CreateBarcode.ets // Barcode generation page.               
-│ │ ├─resultPage // Scanning result.  
-│ │ │ ├─ResultPage.ets // Scanning result page.   
-│ │ ├─access // Scan to Access.   
-│ │ │ ├─ScanAccess.ets // Page displayed after the Scan to Access button is tapped.   
-│ │ │ ├─ScanDetail.ets // Details page of the Scan to Access service.   
-│ │ └─Index.ets // Page for accessing various scanning UIs.  
-└─entry/src/main/resources // Directory for storing resource files.
+├─entry/src/main/ets // Code area   
+│ ├─common    
+│ │ ├─CommonComponents.ets // Common components   
+│ │ ├─CommonTipsDialog.ts // Common pop-up   
+│ │ ├─GlobalThisUtil.ts // Class that encapsulates **globalThis**   
+│ │ ├─Logger.ts // Log output method   
+│ │ ├─PermissionsUtil.ets // Camera authorization class   
+│ │ ├─StatusBar.ets // Status bar component   
+│ │ ├─Utils.ets // Common methods   
+│ ├─entryability                  
+│ │ └─EntryAbility.ets // Entry point class   
+│ ├─pages        
+│ │ ├─access // Scan-to-access  
+│ │ │ ├─ScanAccess.ets // Connection success page   
+│ │ │ ├─ScanDetail.ets // Details page    
+│ │ ├─customScan // The custom barcode scanning UI   
+│ │ │ ├─constants // Constants   
+│ │ │ │ ├─BreakpointConstants.ets // Breakpoint constants   
+│ │ │ │ ├─CommonConstants.ts // Common constants   
+│ │ │ ├─model          
+│ │ │ │ ├─BreakpointType.ets // Breakpoint type   
+│ │ │ │ ├─CommonEventManager.ets // Common event manager   
+│ │ │ │ ├─FontSizeScale.ets // Font size scaling   
+│ │ │ │ ├─OpenPhoto.ets // Gallery   
+│ │ │ │ ├─PromptTone.ts // Prompt tone   
+│ │ │ │ ├─ScanService.ets // Barcode scanning customization   
+│ │ │ │ ├─ScanSize.ets // Scanning UI dimensions   
+│ │ │ ├─pages // Pages   
+│ │ │ │ ├─ScanPage.ets // Barcode scanning page   
+│ │ │ ├─view // Components   
+│ │ │ │ ├─CommonCodeLayout.ets // Radio button component   
+│ │ │ │ ├─IconPress.ets // Image pressed state component   
+│ │ │ │ ├─MaskLayer.ets // Mask layer   
+│ │ │ │ ├─PickerDialog.ets // Modal box component   
+│ │ │ │ ├─ScanBottom.ets // Bottom component   
+│ │ │ │ ├─ScanLine.ets // Scanning line component   
+│ │ │ │ ├─ScanLoading.ets // Loading component   
+│ │ │ │ ├─ScanTitle.ets // Title component   
+│ │ │ │ ├─ScanTopTool.ets // Top component   
+│ │ │ │ ├─ScanXComponent.ets // XComponent   
+│ │ │ ├─CustomPage.ets // Page where the button for accessing the custom barcode scanning UI is located   
+│ │ ├─defaultScan // Default code scan UI   
+│ │ │ ├─DefaultScan.ets // Default code scan UI   
+│ │ ├─detectBarcode // Image-based barcode recognition   
+│ │ │ ├─CommonCodeLayout.ets // Radio button component    
+│ │ │ ├─DecodeBarcode.ets //Page where the image recognition button is located   
+│ │ │ ├─DecodeCameraYuv.ets // Page for image data recognition                 
+│ │ ├─generateBarcode // Barcode image generation   
+│ │ │ ├─CreateBarcode.ets // Barcode image generation UI   
+│ │ ├─resultPage // Scanning result   
+│ │ │ ├─ResultPage.ets // Scanning result page    
+│ │ └─Index.ets // Page for accessing various scanning UIs   
+└─entry/src/main/resources // Directory for storing resource files  
 
-## Implementation Details
+## How to Implement
 
-**Barcode Scan by Default UI**: offers a consistent scanning UI at the system level, which includes a camera preview
-stream, a scanning entry for the photo gallery, a prompt to turn on the flashlight in dim light conditions, and
-pre-authorization for the camera. This function is easy to be integrated and is suitable for general scanning scenarios.
-Define the default barcode scan API in **import { scanCore, scanBarcode } from '@kit.ScanKit';**.
+1. Integration with the scan-to-access capability: Once you have registered your domain names with the scan-to-access service, users can use system-level, always-available entry points like the control panel to scan a 1D barcode or QR code. This takes them directly to the corresponding service page of an app, providing a seamless, one-step experience.
+
+* This demo only illustrates integration with the scan-to-access service as a reference. For details, please refer to the [scan-to-access document](https://developer.huawei.com/consumer/en/doc/harmonyos-guides-V5/scan-directservice-V5).
+
+2. Barcode scanning by default UI: offers a consistent scanning UI at the system level, which includes a camera preview stream, a scanning entry for the photo gallery, a prompt to turn on the flash light in dim light conditions, and pre-authorization for the camera. This function is easy to be integrated and is suitable for general scanning scenarios.
+   Define the default barcode scan API in **import { scanCore, scanBarcode } from '@kit.ScanKit';**.
 
 * startScanForResult(context: common.Context, options?: ScanOptions): Promise&lt;ScanResult&gt;
 * startScanForResult(context: common.Context, options: ScanOptions, callback: AsyncCallback&lt;ScanResult&gt;): void
 * startScanForResult(context: common.Context, callback: AsyncCallback&lt;ScanResult&gt;): void
 
-**Barcode Scan by Custom UI**: provides scanning capabilities and supports rendering the camera preview stream on the
-specified control. You need to implement the scanning UI and apply for camera permissions. This is suitable for
-scenarios that require a personalized scanning UI.
-Define the custom barcode scan API in **import { customScan } from '@kit.ScanKit';**.
+3. Barcode scanning by custom UI: provides scanning capabilities and supports rendering the camera preview stream on the specified control. You need to implement the scanning UI and apply for camera permissions. This is suitable for scenarios that require a personalized scanning UI.
+   Define the custom barcode scan API in **import { customScan } from '@kit.ScanKit';**.
 
 * init(options?: scanBarcode.ScanOptions): void
 * start(viewControl: ViewControl): Promise&lt;Array&lt;scanBarcode.ScanResult&gt;&gt;
@@ -179,8 +152,8 @@ Define the custom barcode scan API in **import { customScan } from '@kit.ScanKit
 * on(type: 'lightingFlash', callback: AsyncCallback&lt;boolean&gt;): void
 * off(type: 'lightingFlash', callback?: AsyncCallback&lt;boolean&gt;): void
 
-**Image-Based Barcode Recognition**: scans and recognizes barcode images or images in the photo gallery.
-  Define the image-based barcode recognition API in **import { detectBarcode } from '@kit.ScanKit';**.
+4. Image-based barcode recognition: scans and recognizes barcode images or images in the photo gallery.
+   Define the image-based barcode recognition API in **import { detectBarcode } from '@kit.ScanKit';**.
 
 * decode(inputImage: InputImage, options?: scanBarcode.ScanOptions): Promise&lt;Array&lt;scanBarcode.ScanResult&gt;&gt;
 * decode(inputImage: InputImage, options: scanBarcode.ScanOptions, callback: AsyncCallback&lt;Array&lt;
@@ -188,26 +161,25 @@ Define the custom barcode scan API in **import { customScan } from '@kit.ScanKit
 * decode(inputImage: InputImage, callback: AsyncCallback&lt;Array&lt;scanBarcode.ScanResult&gt;&gt;): void
 * decodeImage(image: ByteImage, options?: scanBarcode.ScanOptions): Promise&lt;DetectResult&gt;
 
-**Barcode Image Generation**: converts character strings into barcode images in a custom format.
-Define the barcode image generation API in **import { generateBarcode } from '@kit.ScanKit';**.
+5. Barcode image generation: converts character strings or byte arrays into barcode images in a custom format.
+   Define the barcode image generation API in **import { generateBarcode } from '@kit.ScanKit';**.
 
 * createBarcode(content: string, options: CreateOptions): Promise&lt;image.PixelMap&gt;
 * createBarcode(content: string, options: CreateOptions, callback: AsyncCallback&lt;image.PixelMap&gt;): void
 * createBarcode(content: ArrayBuffer, options: CreateOptions): Promise&lt;image.PixelMap&gt;
 
-
 ## Required Permissions
 
-**ohos.permission.CAMERA**: camera permission required by barcode scanning customization.   
-**ohos.permission.VIBRATE**: vibration permission required by barcode scanning customization.
+**ohos.permission.CAMERA**: camera permission required by barcode scanning customization.  
+**ohos.permission.VIBRATE**: vibration setting permission required by barcode scanning customization.
 
-## Dependency
+## Dependencies
 
 The device where the sample app runs must be equipped with a camera.
 
 ## Constraints
 
 1. This sample can only be run on standard-system Huawei phones and tablets.
-2. HarmonyOS: HarmonyOS NEXT Developer Beta2 or later.
-3. DevEco Studio: DevEco Studio NEXT Developer Beta2 or later.
-4. HarmonyOS SDK: HarmonyOS NEXT Developer Beta2 SDK or later.
+2. The HarmonyOS version must be HarmonyOS Next Developer Beta 3 or later.
+3. The DevEco Studio version must be DevEco Studio Next Developer Beta 3 or later.
+4. The HarmonyOS SDK version must be HarmonyOS NEXT Developer Beta3 SDK or later.

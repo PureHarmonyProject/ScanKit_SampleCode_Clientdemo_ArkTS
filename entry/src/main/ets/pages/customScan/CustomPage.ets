@@ -1,39 +1,43 @@
-import { router } from '@kit.ArkUI';
+import { LengthMetrics, router } from '@kit.ArkUI';
 import { CustomButton } from '../../common/CommonComponents'
+import { StatusBar } from '../../common/StatusBar';
 
 @Entry
 @Component
 struct CustomPage {
-  build() {
-    Flex({ direction: FlexDirection.Column, alignItems: ItemAlign.Center, justifyContent: FlexAlign.Center }) {
-      Column() {
+  @State translateWidth: number = 1;
+  @State translateHeight: number = 1;
 
+  build() {
+    RelativeContainer() {
+      StatusBar()
+      Column() {
         CustomButton({
           mText: $r('app.string.customized_view_decode'), mOnClick: () => {
             router.pushUrl({
-              url: 'pages/customScan/CustomScan',
+              url: "pages/customScan/pages/ScanPage"
             })
           }
         })
-        CustomButton({
-          mText: $r('app.string.customized_view_decode_frame'), mOnClick: () => {
-            router.pushUrl({
-              url: "pages/customScan/CustomYuv"
-            })
-          }
-        })
-        CustomButton({
-          mText: $r('app.string.customized_view_decode_default'), mOnClick: () => {
-            router.pushUrl({
-              url: "pages/customScanDefault/pages/ScanPage"
-            })
-          }
-        })
-      }.margin({
-        top: 50,
-        bottom: 50
+      }
+      .alignItems(HorizontalAlign.Center)
+      .width('100%')
+      .alignRules({
+        top: { anchor: '__container__', align: VerticalAlign.Center },
+        left: { anchor: '__container__', align: HorizontalAlign.Center }
       })
+      .markAnchor({
+        top: LengthMetrics.vp(this.translateHeight),
+        start: LengthMetrics.vp(this.translateWidth),
+      })
+      .onAreaChange((_: Area, newArea: Area) => {
+        this.translateWidth = Number(newArea.width) / 2;
+        this.translateHeight = Number(newArea.height) / 2;
+      })
+      .id('columnCustomPage')
     }
     .width('100%')
+    .height('100%')
+    .backgroundColor('white')
   }
 }

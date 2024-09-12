@@ -1,14 +1,93 @@
 import { image } from '@kit.ImageKit';
-import { promptAction } from '@kit.ArkUI';
-import { hilog } from '@kit.PerformanceAnalysisKit';
+import { buffer } from '@kit.ArkTS';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { scanCore, generateBarcode } from '@kit.ScanKit';
 import { StatusBar } from '../../common/StatusBar';
-import { CustomLabel, CustomButton, ScanConstant } from '../../common/CommonComponents';
-import { showError, getColorType, getTypeNum, getLevelType } from '../../common/Utils';
-import { buffer } from '@kit.ArkTS';
+import { CustomLabel, CustomButton } from '../../common/CommonComponents';
+import { showError, getColorType, getTypeNum, getLevelType, showMessage } from '../../common/Utils';
+import Logger from '../../common/Logger';
 
-const TAG: string = 'Scan SampleCode CreateBarcode';
+const TAG: string = 'CreateBarcode';
+
+class ScanConstant {
+  static readonly colorItems: Array<SelectOption> = [{
+    value: 'Black', icon: ''
+  },
+    {
+      value: 'Blue', icon: ''
+    },
+    {
+      value: 'Brown', icon: ''
+    },
+    {
+      value: 'Gray', icon: ''
+    },
+    {
+      value: 'Green', icon: ''
+    },
+    {
+      value: 'Orange', icon: ''
+    },
+    {
+      value: 'Red', icon: ''
+    },
+    {
+      value: 'White', icon: ''
+    },
+    {
+      value: 'Yellow', icon: ''
+    }];
+  static readonly errorLevelItems: Array<SelectOption> = [{
+    value: 'LEVEL_L', icon: ''
+  },
+    {
+      value: 'LEVEL_M', icon: ''
+    },
+    {
+      value: 'LEVEL_Q', icon: ''
+    },
+    {
+      value: 'LEVEL_H', icon: ''
+    }];
+  static readonly codeTypeItems: Array<SelectOption> = [{
+    value: 'AZTEC_CODE', icon: ''
+  },
+    {
+      value: 'CODABAR_CODE', icon: ''
+    },
+    {
+      value: 'CODE93_CODE', icon: ''
+    },
+    {
+      value: 'CODE39_CODE', icon: ''
+    },
+    {
+      value: 'CODE128_CODE', icon: ''
+    },
+    {
+      value: 'DATAMATRIX_CODE', icon: ''
+    },
+    {
+      value: 'EAN8_CODE', icon: ''
+    },
+    {
+      value: 'EAN13_CODE', icon: ''
+    }, {
+      value: 'ITF14_CODE', icon: ''
+    },
+    {
+      value: 'PDF417_CODE', icon: ''
+    },
+    {
+      value: 'QR_CODE', icon: ''
+    },
+    {
+      value: 'UPC_A_CODE', icon: ''
+    },
+    {
+      value: 'UPC_E_CODE', icon: ''
+    }];
+}
 
 @Extend(TextInput)
 function demoTextInput() {
@@ -53,16 +132,16 @@ function FlexRow() {
 @Entry
 @Component
 struct GenerateBarcode {
-  @State pixelMap: image.PixelMap | undefined = undefined
+  @State pixelMap: image.PixelMap | undefined = undefined;
   @State mInputContext: string = '123';
-  @State mWidth: string = '800'
-  @State mHeight: string = '800'
-  @State mCodeType: number = scanCore.ScanType.QR_CODE
-  @State mMargin: number = 1
-  @State mBackgroundColor: number = 0xffffff
-  @State mPixelMapColor: number = 0x000000
+  @State mWidth: string = '800';
+  @State mHeight: string = '800';
+  @State mCodeType: number = scanCore.ScanType.QR_CODE;
+  @State mMargin: number = 1;
+  @State mBackgroundColor: number = 0xffffff;
+  @State mPixelMapColor: number = 0x000000;
   @StorageLink('windowWidthPx') windowWidth: number = 1;
-  @State mLevel: generateBarcode.ErrorCorrectionLevel = generateBarcode.ErrorCorrectionLevel.LEVEL_H
+  @State mLevel: generateBarcode.ErrorCorrectionLevel = generateBarcode.ErrorCorrectionLevel.LEVEL_H;
 
   build() {
     Column() {
@@ -222,20 +301,17 @@ struct GenerateBarcode {
                 pixelMapColor: this.mPixelMapColor,
               }
 
-              hilog.info(0x0001, TAG, 'createBarCode backgroundColor: %{public}d', this.mBackgroundColor);
-              hilog.info(0x0001, TAG, 'createBarCode pixelMapColor: %{public}d', this.mPixelMapColor);
-              hilog.info(0x0001, TAG, 'createBarCode cp: %{public}s', (this.mBackgroundColor === this.mPixelMapColor));
               try {
                 generateBarcode.createBarcode(content, options).then((result: image.PixelMap) => {
                   this.pixelMap = result;
-                  hilog.info(0x0001, TAG, 'Succeeded in creating barCode.');
+                  Logger.info(TAG, 'Succeeded in creating barCode.');
                 }).catch((error: BusinessError) => {
                   showError(error);
-                  hilog.error(0x0001, TAG, `Failed to create barCode. Code: ${error.code}, message: ${error.message}`);
+                  Logger.error(TAG, `Failed to create barCode. Code: ${error.code}, message: ${error.message}`);
                 })
               } catch (error) {
                 showError(error);
-                hilog.error(0x0001, TAG, `Failed to create barCode. Code: ${error.code}, message: ${error.message}`);
+                Logger.error(TAG, `Failed to create barCode. Code: ${error.code}, message: ${error.message}`);
               }
             }
           })
@@ -246,10 +322,7 @@ struct GenerateBarcode {
               let content = this.mInputContext;
               let pattern = /^[0-9a-fA-F]+$/;
               if (content && !pattern.test(content)) {
-                promptAction.showToast({
-                  message: $r('app.string.trip_barcode_tip'),
-                  duration: 2000
-                });
+                showMessage($r('app.string.trip_barcode_tip'));
                 return;
               }
               if (content.length % 2 !== 0) {
@@ -269,14 +342,14 @@ struct GenerateBarcode {
               try {
                 generateBarcode.createBarcode(contentBuffer, options).then((result: image.PixelMap) => {
                   this.pixelMap = result;
-                  hilog.info(0x0001, TAG, 'Succeeded in creating barCode.');
+                  Logger.info(TAG, 'Succeeded in creating barCode.');
                 }).catch((error: BusinessError) => {
                   showError(error);
-                  hilog.error(0x0001, TAG, `Failed to create barCode. Code: ${error.code}, message: ${error.message}`);
+                  Logger.error(TAG, `Failed to create barCode. Code: ${error.code}, message: ${error.message}`);
                 })
               } catch (error) {
                 showError(error);
-                hilog.error(0x0001, TAG, `Failed to create barCode. Code: ${error.code}, message: ${error.message}`);
+                Logger.error(TAG, `Failed to create barCode. Code: ${error.code}, message: ${error.message}`);
               }
             }
           })

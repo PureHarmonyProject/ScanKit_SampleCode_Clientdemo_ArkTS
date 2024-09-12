@@ -32,8 +32,16 @@
               "ohos.want.action.viewData"
             ],
             "uris": [
+              {
+                // scheme must be set to https.
+                "scheme": "https",
+                // host must be set to the associated domain name.
+                "host": "www.example.com",
+                // path is optional. You are advised to set it in case there are multiple apps.
+                "path": "scan"
+              }
             ],
-            // domainVerify须设置为true
+            // domainVerify must be set to true
             "domainVerify": true
           }
         ]

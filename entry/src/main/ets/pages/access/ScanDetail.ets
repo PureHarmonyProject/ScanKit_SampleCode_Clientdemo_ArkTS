@@ -1,3 +1,6 @@
+import { LengthMetrics } from '@kit.ArkUI';
+import { StatusBar } from '../../common/StatusBar';
+
 @Extend(Text)
 function textHead() {
   .width('100%')
@@ -5,7 +8,6 @@ function textHead() {
   .fontWeight(FontWeight.Bold)
   .fontColor('#000000')
   .textAlign(TextAlign.Center)
-  .margin({ top: 50 })
 }
 
 @Extend(Text)
@@ -28,40 +30,60 @@ function textTitle() {
 @Entry
 @Component
 struct ScanDetail {
+  @State translateWidth: number = 1;
+  @State translateHeight: number = 1;
+  @StorageLink('scanLanguage') language: string = 'zh-Hans-CN';
+
   build() {
-    Flex({ direction: FlexDirection.Column, alignItems: ItemAlign.Start, justifyContent: FlexAlign.Start }) {
-
-      Text($r('app.string.access_detail_title')).textHead()
-
+    RelativeContainer() {
+      StatusBar()
       Column() {
+        Text($r('app.string.access_detail_title')).textHead()
 
-        Text($r('app.string.access_detail_info_f'))
-          .text()
-        Text($r('app.string.access_detail_info_t'))
-          .text()
+        Column() {
 
-        Text($r('app.string.access_detail_example')).textTitle()
-        Text($r('app.string.access_detail_example_f')).text()
-        Text($r('app.string.access_detail_example_t'))
-          .text()
+          Text($r('app.string.access_detail_info_f'))
+            .text()
+          Text($r('app.string.access_detail_info_t'))
+            .text()
 
-        Text($r('app.string.access_detail_procedure')).textTitle()
-        Text($r('app.string.access_detail_procedure1')).text()
-        Text($r('app.string.access_detail_procedure2'))
-          .text()
-        Text($r('app.string.access_detail_procedure3')).text()
-        Text($r('app.string.access_detail_procedure4')).text()
+          Text($r('app.string.access_detail_example')).textTitle()
+          Text($r('app.string.access_detail_example_f')).text()
+          Text($r('app.string.access_detail_example_t'))
+            .text()
 
-        Text($r('app.string.access_detail_th')).text().margin({ top: 20 }).textAlign(TextAlign.Center)
-        Image($rawfile('access.jpg'))
-          .height(150)
+          Text($r('app.string.access_detail_procedure')).textTitle()
+          Text($r('app.string.access_detail_procedure1')).text()
+          Text($r('app.string.access_detail_procedure2'))
+            .text()
+          Text($r('app.string.access_detail_procedure3')).text()
+          Text($r('app.string.access_detail_procedure4')).text()
 
+          Text($r('app.string.access_detail_th')).text().margin({ top: 20 }).textAlign(TextAlign.Center)
+          Image($rawfile(this.language === 'zh-Hans-CN' ? 'access.jpg' : 'accessEs.jpg'))
+            .height(150)
+
+        }
+        .margin(10)
       }
-      .margin(10)
-
+      .alignItems(HorizontalAlign.Center)
+      .width('100%')
+      .alignRules({
+        top: { anchor: '__container__', align: VerticalAlign.Center },
+        left: { anchor: '__container__', align: HorizontalAlign.Center }
+      })
+      .markAnchor({
+        top: LengthMetrics.vp(this.translateHeight),
+        start: LengthMetrics.vp(this.translateWidth),
+      })
+      .onAreaChange((_: Area, newArea: Area) => {
+        this.translateWidth = Number(newArea.width) / 2;
+        this.translateHeight = Number(newArea.height) / 2;
+      })
+      .id('columnScanDetail')
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#0a000000')
+    .backgroundColor('white')
   }
 }

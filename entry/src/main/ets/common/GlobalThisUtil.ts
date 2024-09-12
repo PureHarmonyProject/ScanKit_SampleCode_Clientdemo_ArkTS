@@ -1,6 +1,6 @@
 /**
- * 由于globalThis在ts文件，因此采用鸿蒙推荐的暂时规避手段，在ts中引用globalThis，ets中应用ts
- * 随着ets语法调整，globalThis可能被删除。后续可以考虑对globalThis进行彻底清理，通过其他方式传递全局参数
+ * Given the definition of globalThis within a ts file, we've implemented HarmonyOS's suggested interim solution by referencing globalThis in ts and employing ts within ets.
+ * Due to the adjustment of ets syntax, globalThis may be removed. A thorough cleanup of globalThis needs to be considered in the future and alternative ways need to explored to pass global parameters.
  */
 export class GlobalThisUtil {
   public static setProperty<T>(name: string, value: T): void {

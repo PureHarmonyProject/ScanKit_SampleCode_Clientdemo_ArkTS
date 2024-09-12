@@ -1,17 +1,22 @@
-import { router } from '@kit.ArkUI';
+import { LengthMetrics, router } from '@kit.ArkUI';
 import { BusinessError } from '@kit.BasicServicesKit';
-import { hilog } from '@kit.PerformanceAnalysisKit';
 import { scanBarcode, scanCore } from '@kit.ScanKit';
 import { CustomButton } from '../../common/CommonComponents';
-import { checkResult, showError } from '../../common/Utils';
+import Logger from '../../common/Logger';
+import { StatusBar } from '../../common/StatusBar';
+import { showError } from '../../common/Utils';
 
 const TAG = 'Default Scan';
 
 @Entry
 @Component
-struct CustomPage {
+struct DefaultScan {
+  @State translateWidth: number = 1;
+  @State translateHeight: number = 1;
+
   build() {
-    Flex({ direction: FlexDirection.Column, alignItems: ItemAlign.Center, justifyContent: FlexAlign.Center }) {
+    RelativeContainer() {
+      StatusBar()
       Column() {
         CustomButton({
           mText: $r('app.string.default_view_decode'), mOnClick: () => {
@@ -21,10 +26,7 @@ struct CustomPage {
                 enableMultiMode: true,
                 enableAlbum: true
               }).then((result: scanBarcode.ScanResult) => {
-                if (!checkResult(result)) {
-                  return;
-                }
-                hilog.info(0x0001, TAG, 'Promise scan result: %{public}s', JSON.stringify(result));
+                Logger.info(TAG, `Promise scan result: ${JSON.stringify(result)}`);
                 router.pushUrl({
                   url: 'pages/resultPage/ResultPage',
                   params: {
@@ -34,24 +36,39 @@ struct CustomPage {
                 })
               }).catch((error: BusinessError) => {
                 if (error.code == scanCore.ScanErrorCode.SCAN_SERVICE_CANCELED) {
-                  hilog.info(0x0001, TAG, `Disabling the Scanning Service.`);
+                  Logger.info(TAG, 'Disabling the Scanning Service.');
                 } else {
-                  hilog.error(0x0001, TAG,
+                  Logger.error(TAG,
                     `Failed to start the scanning service. Code: ${error.code}, message: ${error.message}.`);
+                  showError(error);
                 }
               });
             } catch (error) {
-              hilog.error(0x0001, TAG,
+              Logger.error(TAG,
                 `Failed to start the scanning service. Code: ${error.code}, message: ${error.message}.`);
               showError(error);
             }
           }
         })
-      }.margin({
-        top: 50,
-        bottom: 50
+      }
+      .alignItems(HorizontalAlign.Center)
+      .width('100%')
+      .alignRules({
+        top: { anchor: '__container__', align: VerticalAlign.Center },
+        left: { anchor: '__container__', align: HorizontalAlign.Center }
       })
+      .markAnchor({
+        top: LengthMetrics.vp(this.translateHeight),
+        start: LengthMetrics.vp(this.translateWidth),
+      })
+      .onAreaChange((_: Area, newArea: Area) => {
+        this.translateWidth = Number(newArea.width) / 2;
+        this.translateHeight = Number(newArea.height) / 2;
+      })
+      .id('columnDefaultScan')
     }
     .width('100%')
+    .height('100%')
+    .backgroundColor('white')
   }
 }

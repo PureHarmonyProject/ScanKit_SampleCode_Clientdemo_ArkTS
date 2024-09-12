@@ -1,5 +1,6 @@
 import { TipsDialog } from '@kit.ArkUI';
 import { common, Want } from '@kit.AbilityKit';
+import { BusinessError } from '@kit.BasicServicesKit';
 import Logger from './Logger';
 
 const TAG: string = 'Common Tips Dialog';
@@ -40,18 +41,24 @@ export struct CommonTipsDialog {
   openPermissionsInSystemSettings(): void {
     Logger.info(TAG, 'Start to open permissions in system settings.');
     let context = getContext(this) as common.UIAbilityContext;
+    // Start the MainAbility of com.huawei.hmos.settings and match the URI of application_info_entry.
     let wantInfo: Want = {
       bundleName: 'com.huawei.hmos.settings',
       abilityName: 'com.huawei.hmos.settings.MainAbility',
       uri: 'application_info_entry',
       parameters: {
-        settingsParamBundleName: 'com.example.scanSample' // Open the details page of a specified application.
+        settingsParamBundleName: 'com.example.scanSample'
       }
     };
-    context.startAbility(wantInfo).then(() => {
-      Logger.info(TAG, 'Succeeded in starting ability.');
-    }).catch((error: Error) => {
-      Logger.info(TAG, `Failed to start ability. Message: ${error.message}.`);
-    })
+    try {
+      context.startAbility(wantInfo).then(() => {
+        Logger.info(TAG, 'Succeeded in starting ability.');
+      }).catch((error: BusinessError) => {
+        Logger.error(TAG, `Failed to start ability by promise. Code: ${error.code}.`);
+      })
+    } catch (error) {
+      Logger.error(TAG, `Failed to start ability by catch. Code: ${error.code}.`);
+    }
+
   }
 }

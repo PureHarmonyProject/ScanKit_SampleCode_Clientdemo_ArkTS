@@ -73,14 +73,6 @@
       "value": "自定义界面扫码能力"
     },
     {
-      "name": "customized_view_decode_frame",
-      "value": "自定义界面扫码能力-YUV"
-    },
-    {
-      "name": "customized_view_decode_default",
-      "value": "自定义界面扫码能力-推荐样例"
-    },
-    {
       "name": "bitmap_api_decode",
       "value": "图像识码能力"
     },
@@ -155,22 +147,6 @@
     {
       "name": "result_content",
       "value": "码值"
-    },
-    {
-      "name": "promise_parameter",
-      "value": "Promise 带参数"
-    },
-    {
-      "name": "promise_no_parameter",
-      "value": "Promise 不带参数"
-    },
-    {
-      "name": "callback_parameter",
-      "value": "callback 带参数"
-    },
-    {
-      "name": "callback_no_parameter",
-      "value": "callback 不带参数"
     },
     {
       "name": "permission_reason_camera",

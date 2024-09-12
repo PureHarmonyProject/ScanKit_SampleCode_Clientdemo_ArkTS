@@ -1,17 +1,9 @@
 import { router } from '@kit.ArkUI';
-import { scanCore, scanBarcode } from '@kit.ScanKit';
 import { CustomButton } from '../common/CommonComponents'
 
 @Entry
 @Component
 struct Index {
-  @StorageLink('windowWidthPx') windowWidth: number = 1;
-  @State options: scanBarcode.ScanOptions = {
-    scanTypes: [scanCore.ScanType.ALL],
-    enableMultiMode: true,
-    enableAlbum: true
-  };
-
   build() {
     Flex({ direction: FlexDirection.Column, alignItems: ItemAlign.Center, justifyContent: FlexAlign.Center }) {
       Text($r('app.string.demo_title'))
@@ -47,14 +39,6 @@ struct Index {
       })
 
       Column() {
-
-        CustomButton({
-          mText: $r('app.string.scan_to_access'), mOnClick: () => {
-            router.pushUrl({
-              url: 'pages/access/ScanAccess'
-            })
-          }
-        })
 
         CustomButton({
           mText: $r('app.string.default_view_decode'), mOnClick: () => {

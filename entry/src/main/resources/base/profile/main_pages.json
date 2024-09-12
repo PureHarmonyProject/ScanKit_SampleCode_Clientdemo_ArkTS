@@ -5,11 +5,9 @@
     "pages/detectBarcode/DecodeBarcode",
     "pages/detectBarcode/DecodeCameraYuv",
     "pages/generateBarcode/CreateBarcode",
-    "pages/customScan/CustomScan",
     "pages/customScan/CustomPage",
-    "pages/customScan/CustomYuv",
     "pages/resultPage/ResultPage",
-    "pages/customScanDefault/pages/ScanPage",
+    "pages/customScan/pages/ScanPage",
     "pages/access/ScanAccess",
     "pages/access/ScanDetail",
     "pages/defaultScan/DefaultScan"

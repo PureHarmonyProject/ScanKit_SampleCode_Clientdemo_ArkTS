@@ -2,19 +2,22 @@ import { camera } from '@kit.CameraKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { abilityAccessCtrl, common } from '@kit.AbilityKit';
 import { image } from '@kit.ImageKit';
-import { display } from '@kit.ArkUI';
+import { display, LengthMetrics, router } from '@kit.ArkUI';
 import { detectBarcode, scanBarcode, scanCore } from '@kit.ScanKit';
+import Logger from '../../common/Logger';
 import { GlobalThisUtil } from '../../common/GlobalThisUtil';
-import { hilog } from '@kit.PerformanceAnalysisKit';
+import { BreakpointType } from '../customScan/model/BreakpointType';
+import { BreakpointConstants } from '../customScan/constants/BreakpointConstants';
 
-const TAG: string = 'Scan SampleCode DecodeCameraYuv';
+const TAG: string = 'DecodeCameraYuv';
 const CAMERA_1080: number = 1080;
 const CAMERA_1920: number = 1920;
 
 @Entry
 @Component
-struct CameraHome {
+struct DecodeCameraYuv {
   mXComponentController: XComponentController = new XComponentController();
+  @StorageLink('currentBreakpoint') currentBreakpoint: string = BreakpointConstants.BREAKPOINT_SM;
   @State isUserGrant: boolean = false;
   @State xComponentHeight: number = 1;
   @State xComponentWidth: number = 1;
@@ -22,8 +25,9 @@ struct CameraHome {
   @State previewScreenOffsetY: number = 0;
   @State scanResultPoints: Array<scanBarcode.ScanCodeRect> = [];
   @State cornerPoints: Array<Array<scanBarcode.Point>> = [];
+  @State navHeight: number = 39;
   // CameraKit
-  private cameraManager: camera.CameraManager = camera.getCameraManager(GlobalThisUtil.getProperty<common.UIAbilityContext>('scan_context'));
+  private cameraManager: camera.CameraManager = camera.getCameraManager(getContext(this) as common.UIAbilityContext);
   private photoSession: camera.PhotoSession | undefined = undefined;
   private cameraInput: camera.CameraInput | undefined = undefined;
   private previewOutput: camera.PreviewOutput | undefined = undefined;
@@ -47,17 +51,15 @@ struct CameraHome {
         let length: number = grantStatus.length;
         for (let i = 0; i < length; i++) {
           if (grantStatus[i] === 0) {
-            // The user is authorized to continue to access the target operation.
+            // The user has granted the permission.
             resolve(true);
           } else {
-            // The user rejects the authorization,
-            // prompts that the user must be authorized to access the functions of the current page,
-            // and guides the user to enable the corresponding permission in the system settings.
+            // If the user refuses to grant the permission, display a message indicating that user authorization is required, and direct the user to set the permission in system settings.
             reject(false);
           }
         }
-      }).catch((err: BusinessError) => {
-        hilog.error(0x0001, TAG, 'requestPermissionsFromUser failed error: %{public}s', JSON.stringify(err));
+      }).catch((error: BusinessError) => {
+        Logger.error(TAG, `Failed to requestPermissionsFromUser by atManager. Code: ${error.code}.`);
         reject(false);
       })
     });
@@ -65,6 +67,9 @@ struct CameraHome {
 
   async aboutToAppear() {
     this.setDisplay();
+    if (GlobalThisUtil.getProperty('scan_topRect_height')) {
+      this.navHeight = px2vp(GlobalThisUtil.getProperty('scan_topRect_height'));
+    }
   }
 
   setDisplay() {
@@ -81,7 +86,7 @@ struct CameraHome {
         this.adaptRatio = this.xComponentWidth / CAMERA_1080;
       }
     } catch (error) {
-      hilog.error(0x0001, TAG, 'getDefaultDisplaySync failed error: %{public}s', JSON.stringify(error));
+      Logger.error(TAG, `Failed to getDefaultDisplaySync. Code: ${error.code}.`);
     }
   }
 
@@ -103,51 +108,88 @@ struct CameraHome {
 
   stopCamera() {
     if (this.photoSession) {
-      // Stop current camera session.
+      // Stop the current camera session.
       this.photoSession.stop();
-      // Release camera input.
+      // Release CameraInput.
       if (this.cameraInput) {
         this.cameraInput.close();
       }
-      // Release camera preview.
+      // Release the camera preview stream.
       if (this.previewOutput) {
         this.previewOutput.release();
       }
-      // Release second camera preview.
+      // Release the second camera preview stream.
       if (this.previewOutput2) {
         this.previewOutput2.release();
       }
-      // Release camera session.
+      // Release the camera session.
       this.photoSession.release();
       this.photoSession = undefined;
     }
   }
 
+  @Builder
+  goBack() {
+    Column() {
+      Image($rawfile('scan_back.svg'))
+        .width(24)
+        .height(24)
+        .objectFit(ImageFit.Contain)
+        .responseRegion({
+          x: '-50%',
+          y: '-50%',
+          width: '200%',
+          height: '200%'
+        })
+        .draggable(false)
+        .fillColor(Color.Black)
+        .id('decode_camera_yuv_goBack')
+        .margin({
+          top: LengthMetrics.vp(this.navHeight + 8),
+          start: LengthMetrics.vp(new BreakpointType(16,
+            24,
+            32).getValue(this.currentBreakpoint))
+        })
+        .onClick(async () => {
+          router.back();
+        })
+    }
+    .position({
+      x: 0,
+      y: 0
+    })
+  }
+
+  @Builder
+  cameraXComponent() {
+    // Create XComponent.
+    if (this.isUserGrant) {
+      Column() {
+        XComponent({
+          id: 'componentId',
+          type: XComponentType.SURFACE,
+          controller: this.mXComponentController
+        })
+          .onLoad(() => {
+            this.xComponentInit();
+          })
+          .width(this.xComponentWidth)
+          .height(this.xComponentHeight)
+          .position({
+            x: this.previewScreenOffsetX,
+            y: this.previewScreenOffsetY
+          })
+      }
+      .width('100%')
+      .height('100%')
+    }
+  }
+
   build() {
     Stack() {
-      // Create XComponent.
-      if (this.isUserGrant) {
-        Column() {
-          XComponent({
-            id: 'componentId',
-            type: XComponentType.SURFACE,
-            controller: this.mXComponentController
-          })
-            .onLoad(() => {
-              this.xComponentInit();
-            })
-            .width(this.xComponentWidth)
-            .height(this.xComponentHeight)
-            .position({
-              x: this.previewScreenOffsetX,
-              y: this.previewScreenOffsetY
-            })
-        }
-        .width('100%')
-        .height('100%')
-      }
+      this.cameraXComponent()
 
-      // Draw center point.
+      // Draw the central point.
       Column() {
         if (this.scanResultPoints && this.scanResultPoints.length > 0) {
           ForEach(this.scanResultPoints, (rect: scanBarcode.ScanCodeRect) => {
@@ -168,7 +210,7 @@ struct CameraHome {
         y: 0
       })
 
-      // Draw QRCode corner points.
+      // Draw QR code corners.
       Column() {
         if (this.cornerPoints && this.cornerPoints.length > 0) {
           ForEach(this.cornerPoints, (points: Array<scanBarcode.Point>) => {
@@ -189,6 +231,8 @@ struct CameraHome {
         x: this.previewScreenOffsetX,
         y: 0
       })
+
+      this.goBack()
     }
   }
 
@@ -200,7 +244,7 @@ struct CameraHome {
     let surfaceId: string = this.mXComponentController.getXComponentSurfaceId();
 
     try {
-      // Create ImageReceiver Object.
+      // Create the ImageReceiver object.
       let size: image.Size = {
         width: CAMERA_1080,
         height: CAMERA_1920
@@ -209,17 +253,16 @@ struct CameraHome {
 
       this.startPreviewOutput(this.cameraManager, surfaceId, receiver);
     } catch (error) {
-      hilog.error(0x0001, TAG, 'Failed to create the PreviewOutput instance error: %{public}s', JSON.stringify(error));
+      Logger.error(TAG, `Failed to create the previewOutput instance. Code: ${error.code}`);
     }
   }
 
   async startPreviewOutput(
     cameraManager: camera.CameraManager, xComponentSurfaceId: string, receiver: image.ImageReceiver): Promise<void> {
-    // CameraKit
-    // Get supported camera device.
+    // Call Camera Kit to obtain supported camera devices.
     let camerasDevices: Array<camera.CameraDevice> = cameraManager.getSupportedCameras();
 
-    // Get supported mode.
+    // Obtain supported modes.
     let sceneModes: Array<camera.SceneMode> = cameraManager.getSupportedSceneModes(camerasDevices[0]);
     let isSupportPhotoMode: boolean = sceneModes.indexOf(camera.SceneMode.NORMAL_PHOTO) >= 0;
     if (!isSupportPhotoMode) {
@@ -254,27 +297,27 @@ struct CameraHome {
 
     await this.photoSession.start();
 
-    // Get camera preview buffer.
+    // Obtain the camera preview stream buffer.
     this.onImageArrival(receiver);
   }
 
   onImageArrival(receiver: image.ImageReceiver): void {
     receiver.on('imageArrival', () => {
       receiver.readNextImage((err: BusinessError, nextImage: image.Image) => {
-        hilog.info(0x0001, TAG, 'Receiver.readNextImage success');
+        Logger.info(TAG, 'Receiver.readNextImage success');
         if (err || nextImage === undefined) {
-          hilog.error(0x0001, TAG, 'receiver.readNextImage failed, err: ' + JSON.stringify(err));
+          Logger.error(TAG, `receiver.readNextImage failed. Code: ${err.code}`);
           return;
         }
         nextImage.getComponent(image.ComponentType.JPEG, (err: BusinessError, imgComponent: image.Component) => {
           if (err || nextImage === undefined) {
-            hilog.error(0x0001, TAG, 'readNextImage failed');
+            Logger.error(TAG, 'Failed to getComponent by nextImage.');
             return;
           }
 
           if (!this.isDecoding && imgComponent && imgComponent.byteBuffer as ArrayBuffer) {
-            // Decode camera preview buffer.
-            // Note: Cameras and camera previews aren’t always in the same orientation.
+            // Image decoding preview buffer.
+            // Note: The camera and camera preview are not always in the same orientation.
             this.decodeImageBuffer(nextImage, imgComponent, CAMERA_1920, CAMERA_1080);
           }
         })
@@ -300,17 +343,16 @@ struct CameraHome {
       this.scanResultPoints = [];
       this.cornerPoints = [];
       this.isDecoding = true;
-      // Decode image buffer.
+      // Image decoding buffer.
       detectBarcode.decodeImage(byteImg, options).then((res: detectBarcode.DetectResult) => {
         let results: Array<scanBarcode.ScanResult> = res.scanResults;
 
         results.forEach((result) => {
-          // Barcode value.
+          // Code value.
           let codeType: scanCore.ScanType = result.scanType;
-          let codeValue: string = result.originalValue;
-          hilog.info(0x0001, TAG, 'Scan result: type: ' + codeType + ' value: ' + codeValue);
+          Logger.info(TAG, `Scan result: type: ${codeType}`);
 
-          // Barcode area.
+          // Code position.
           let rect: scanBarcode.ScanCodeRect | undefined = result.scanCodeRect;
           if (rect) {
             this.scanResultPoints.push({
@@ -321,7 +363,7 @@ struct CameraHome {
             });
           }
 
-          // QRCode corner points.
+          // QR code corners.
           let points: Array<scanBarcode.Point> | undefined = result.cornerPoints;
           if (result.scanType == scanCore.ScanType.QR_CODE && points) {
             this.cornerPoints.push([]);
@@ -331,16 +373,16 @@ struct CameraHome {
           }
         });
 
-        // Try to zoom.
+        // Zoom in or out.
         if (res.zoomValue > 1.0) {
           this.setCameraZoom(res.zoomValue);
         }
 
         this.isDecoding = false;
-        // Releases the image data after decoding.
+        // Release image data after decoding.
         nextImage.release();
       }).catch((error: BusinessError) => {
-        hilog.error(0x0001, TAG, 'decodeImage, error: ' + JSON.stringify(error));
+        Logger.error(TAG, `Failed to decodeImage. Code: ${error.code}, message: ${error.message}.`);
         this.isDecoding = false;
         nextImage.release();
       })
@@ -351,7 +393,7 @@ struct CameraHome {
   }
 
   setCameraZoom(zoomValue: number) {
-    // Set zoom ratio.
+    // Set the zoom ratio.
     if (this.photoSession) {
       try {
         let zoomRatio: number = this.photoSession.getZoomRatio() * zoomValue;
@@ -359,7 +401,7 @@ struct CameraHome {
           this.photoSession.setZoomRatio(zoomRatio);
         }
       } catch (error) {
-        hilog.error(0x0001, TAG, 'Failed to set the zoom ratio value, error: ' + JSON.stringify(error));
+        Logger.error(TAG, `Failed to setCameraZoom. Code: ${error.code}.`);
       }
     }
   }

@@ -15,7 +15,7 @@
 import hilog from '@ohos.hilog'
 
 class Logger {
-  private domain: number = 0x0000;
+  private domain: number = 0x00001;
   private prefix: string = 'Scan SampleCode';
 
   debug(...args: string[]): void {

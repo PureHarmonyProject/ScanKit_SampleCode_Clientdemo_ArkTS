@@ -80,7 +80,7 @@ struct ResultPage {
         this.translateWidth = Number(newArea.width) / 2;
         this.translateHeight = Number(newArea.height) / 2;
       })
-      .id('row3')
+      .id('columnResultPage')
     }
     .width('100%')
     .height('100%')

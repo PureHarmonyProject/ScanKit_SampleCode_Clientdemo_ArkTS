@@ -1,18 +1,11 @@
 import { LengthMetrics, router } from '@kit.ArkUI';
 import { GlobalThisUtil } from './GlobalThisUtil';
 
-export class routerParams {
-  title: string
-
-  constructor(str: string) {
-    this.title = str
-  }
-}
-
 @Component
 export struct StatusBar {
   @Prop title: string | Resource = ''
   @State sysStatusH: number = 39
+  @Prop isBackToHome: boolean = false;
 
   aboutToAppear() {
     if (GlobalThisUtil.getProperty('scan_topRect_height')) {
@@ -43,7 +36,14 @@ export struct StatusBar {
     .zIndex(10)
     .position({ start: LengthMetrics.vp(15) })
     .onClick(async () => {
-      router.back();
+      if (this.isBackToHome) {
+        router.clear();
+        router.replaceUrl({
+          url: 'pages/Index'
+        })
+      } else {
+        router.back();
+      }
     })
     .height(56 + this.sysStatusH)
     .width('100%')

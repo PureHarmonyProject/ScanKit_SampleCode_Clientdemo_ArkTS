@@ -1,9 +1,9 @@
 import { router, display } from '@kit.ArkUI';
-import { hilog } from '@kit.PerformanceAnalysisKit';
 import { scanBarcode } from '@kit.ScanKit';
 import { GlobalThisUtil } from '../../common/GlobalThisUtil';
+import Logger from '../../common/Logger';
 
-const TAG: string = 'Scan SampleCode CodeLayout';
+const TAG: string = 'CodeLayout';
 
 @Entry
 @Component
@@ -28,19 +28,17 @@ struct CodeLayout {
     }
     let isFold: boolean = display.isFoldable();
     this.setDisplay();
-    hilog.info(0x0001, TAG, 'aboutToAppear CodeLayout');
+    Logger.info(TAG, 'aboutToAppear CodeLayout');
     let params = router.getParams() as Record<string, number | string | Array<scanBarcode.ScanResult>>;
     this.result = params.result as Array<scanBarcode.ScanResult>;
     this.uri = params.uri as string;
     this.infoW = params.infoW as number;
     this.infoH = params.infoH as number;
-    hilog.info(0x0001, TAG, 'params: %{public}s', JSON.stringify(params));
-    hilog.info(0x0001, TAG, JSON.stringify(this.result));
-    hilog.info(0x0001, TAG, 'uri: %{public}s, infoW: %{public}d, infoH: %{public}d', this.uri, this.infoW, this.infoH);
+    Logger.info(TAG, `uri: ${this.uri}, infoW: ${this.infoW}, infoH: ${this.infoH}`);
     this.calculate();
     if (isFold) {
       display.on('foldDisplayModeChange', async (foldStatus: display.FoldDisplayMode) => {
-        // 1: expanded; 2: collapsed
+        // 1: unfolded 2: folded
         if (foldStatus === 1 || foldStatus === 2) {
           setTimeout(() => {
             this.codeLocation = [];
@@ -53,22 +51,20 @@ struct CodeLayout {
   }
 
   setDisplay(): void {
-    hilog.info(0x0001, TAG, 'setDisplay start');
+    Logger.info(TAG, 'setDisplay start');
     let displayClass: display.Display | null = null;
     try {
       displayClass = display.getDefaultDisplaySync();
-      hilog.info(0x0001, TAG, 'displayClass: %{public}s', JSON.stringify(displayClass));
-    } catch (exception) {
-      hilog.error(0x0001, TAG, 'Failed to obtain the default display object. exception: %{public}s',
-        JSON.stringify(exception));
+      Logger.info(TAG, `width: ${displayClass.width}, height: ${displayClass.height}.`);
+    } catch (error) {
+      Logger.error(TAG, `Failed to getDefaultDisplaySync. Code: ${error.code}.`);
     }
 
     if (displayClass !== null) {
       displayClass.height = displayClass.height - vp2px(this.statusHeight);
       this.displayHeight = Math.round(px2lpx(displayClass.height));
       this.displayWidth = Math.round(px2lpx(displayClass.width));
-      hilog.info(0x0001, TAG, 'displayHeight: %{public}d', this.displayHeight);
-      hilog.info(0x0001, TAG, 'displayWidth: %{public}d', this.displayWidth);
+      Logger.info(TAG, `setDisplay,displayWidth: ${this.displayWidth}, displayHeight: ${this.displayHeight}.`);
     }
   }
 
