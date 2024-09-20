@@ -32,6 +32,7 @@ export default class EntryAbility extends UIAbility {
       AppStorage.setOrCreate<number>('scanFontSizeScale', this.context.config.fontSizeScale);
       AppStorage.setOrCreate<number>('scanColorMode', this.context.config.colorMode);
       AppStorage.setOrCreate<string>('scanLanguage', this.context.config.language);
+      console.log(`syh 11 ${AppStorage.get<string>('scanLanguage')}`)
     }
   }
 
@@ -45,6 +46,7 @@ export default class EntryAbility extends UIAbility {
       }
       if (AppStorage.get('scanLanguage') !== newConfig.language) {
         AppStorage.setOrCreate<string>('scanLanguage', newConfig.language);
+        console.log(`syh 22 ${AppStorage.get<string>('scanLanguage')}`)
       }
     }
   }
