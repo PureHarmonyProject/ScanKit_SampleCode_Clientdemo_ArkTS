@@ -316,20 +316,6 @@ struct ScanPage {
     .width('100%')
     .height('100%')
     .backgroundColor(this.userGrant ? Color.Transparent : Color.Black)
-    .gesture(PinchGesture({ fingers: 2 })
-      .onActionStart((_: GestureEvent) => {
-        Logger.info(TAG, 'Pinch start.');
-      })
-      .onActionUpdate((event: GestureEvent) => {
-        if (event) {
-          this.scaleValue = event.scale;
-          Logger.info(TAG, `scaleValue: ${this.scaleValue}`);
-        }
-      })
-      .onActionEnd((_: GestureEvent) => {
-        let pinchValue: number = this.scaleValue * this.scanService.getZoom();
-        this.scanService.setZoom(pinchValue);
-      }))
   }
 
   onScreenEvent(): void {
