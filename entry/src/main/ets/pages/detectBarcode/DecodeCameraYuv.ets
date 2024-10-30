@@ -314,21 +314,36 @@ struct DecodeCameraYuv {
             Logger.error(TAG, 'Failed to getComponent by nextImage.');
             return;
           }
-
+          let width = CAMERA_1920;
+          let height = CAMERA_1080;
           if (!this.isDecoding && imgComponent && imgComponent.byteBuffer as ArrayBuffer) {
             // Image decoding preview buffer.
             // Note: The camera and camera preview are not always in the same orientation.
-            this.decodeImageBuffer(nextImage, imgComponent, CAMERA_1920, CAMERA_1080);
+            let stride = imgComponent.rowStride;
+            Logger.info(TAG, `getComponent stride:${stride}, width: ${width}`);
+            if (stride == width) {
+              this.decodeImageBuffer(nextImage, imgComponent.byteBuffer, CAMERA_1920, CAMERA_1080);
+            } else {
+              // NV21(YUV_420_SP)
+              const dstBufferSize = width * height * 1.5;
+              const dstArr = new Uint8Array(dstBufferSize);
+              Logger.error(TAG, 'dstBufferSize: ' + dstBufferSize);
+              for (let j = 0; j < height * 1.5; j++) {
+                const srcBuf = new Uint8Array(imgComponent.byteBuffer, j * stride, width);
+                dstArr.set(srcBuf, j * width);
+              }
+              this.decodeImageBuffer(nextImage, dstArr.buffer as ArrayBuffer, CAMERA_1920, CAMERA_1080);
+            }
           }
         })
       })
     })
   }
 
-  decodeImageBuffer(nextImage: image.Image, imgComponent: image.Component, width: number, height: number) {
+  decodeImageBuffer(nextImage: image.Image, buffer: ArrayBuffer, width: number, height: number) {
     try {
       let byteImg: detectBarcode.ByteImage = {
-        byteBuffer: imgComponent.byteBuffer,
+        byteBuffer: buffer,
         width: width,
         height: height,
         format: detectBarcode.ImageFormat.NV21

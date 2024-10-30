@@ -1,7 +1,7 @@
 import { curves, display, router } from '@kit.ArkUI';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { vibrator } from '@kit.SensorServiceKit';
-import Logger from '../../../common/logger';
+import Logger from '../../../common/Logger';
 import { GlobalThisUtil } from '../../../common/GlobalThisUtil';
 import { ScanResults } from '../model/ScanService'
 import { XComponentSize } from '../model/ScanSize'
