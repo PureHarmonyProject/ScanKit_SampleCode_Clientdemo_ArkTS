@@ -13,12 +13,14 @@ enum ScanErrorCode {
   SCAN_INVALID_PARAM = 401,
 }
 
-class ScanError extends Error {
-  public code: ScanErrorCode;
-
-  constructor(code: ScanErrorCode, message: string) {
-    super(message);
+class ScanError implements BusinessError {
+  code: number;
+  name: string;
+  message: string;
+  constructor(code: number,  message: string) {
+    this.name = 'galleryDecodeResult';
     this.code = code;
+    this.message = message;
   }
 }
 
@@ -74,17 +76,13 @@ export async function openAlbum(option: scanBarcode.ScanOptions, callback: Async
     try {
       await photoPicker.select(photoSelectOptions).then((result: photoAccessHelper.PhotoSelectResult) => {
         callBackFn();
-        if (!result || (result.photoUris && result.photoUris.length === 0) ) {
+        if (!result || (result.photoUris && result.photoUris.length === 0)) {
           callBackFailed(`Failed to get photoPicker result.`, callback);
           return;
         }
         Logger.info(TAG, `Succeed in getting photoUris. IsOriginalPhoto: ${result.isOriginalPhoto}`);
         let uri = result.photoUris[0];
-        try {
-          decodeAlbum(option, uri, callback);
-        } catch (error) {
-          callBackFailed(`Failed to decodeAlbum. Code: ${error.code}`, callback);
-        }
+        decodeAlbum(option, uri, callback);
       });
     } catch (error) {
       callBackFailed(`Failed to select a picture. Code: ${error.code}`, callback);

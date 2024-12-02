@@ -2,12 +2,14 @@ import { LengthMetrics, router } from '@kit.ArkUI';
 import Logger from '../../../common/Logger';
 import { BreakpointConstants } from '../constants/BreakpointConstants';
 import { BreakpointType } from '../model/BreakpointType';
+import { ScanService } from '../model/ScanService';
 
 const TAG = 'ScanTopTool';
 
 @Component
 export struct ScanTopTool {
   @StorageLink('currentBreakpoint') currentBreakpoint: string = BreakpointConstants.BREAKPOINT_SM;
+  @State scanService: ScanService = ScanService.getInstance();
   @Prop navHeight: number;
   @Prop scanResultSize: number;
   public backToScan: () => void = () => {
@@ -36,6 +38,7 @@ export struct ScanTopTool {
     .onClick(async () => {
       if (this.scanResultSize > 1) {
         Logger.info(TAG, 'Start to backToScan.');
+        this.scanService.resetRetryScanTimes();
         this.backToScan();
       } else {
         router.back();

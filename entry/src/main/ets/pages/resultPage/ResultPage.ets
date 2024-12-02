@@ -1,7 +1,7 @@
 import { LengthMetrics, router } from '@kit.ArkUI';
 import { scanBarcode } from '@kit.ScanKit';
 import { StatusBar } from '../../common/StatusBar';
-import { getTypeStr } from '../../common/Utils'
+import { getScanTypeKey } from '../../common/Utils'
 
 @Extend(Text)
 function labelText() {
@@ -36,7 +36,7 @@ struct ResultPage {
         Column() {
           Text($r('app.string.code_format'))
             .labelText()
-          Text(getTypeStr(this.result.scanType))
+          Text(getScanTypeKey(this.result.scanType))
             .valueText()
 
           Text($r('app.string.result_content'))
@@ -76,9 +76,11 @@ struct ResultPage {
         top: LengthMetrics.vp(this.translateHeight),
         start: LengthMetrics.vp(this.translateWidth),
       })
-      .onAreaChange((_: Area, newArea: Area) => {
-        this.translateWidth = Number(newArea.width) / 2;
-        this.translateHeight = Number(newArea.height) / 2;
+      .onSizeChange((_: SizeOptions, newValue: SizeOptions) => {
+        if (newValue && typeof newValue.width === 'number' && typeof newValue.height === 'number') {
+          this.translateWidth = newValue.width / 2;
+          this.translateHeight = newValue.height / 2;
+        }
       })
       .id('columnResultPage')
     }

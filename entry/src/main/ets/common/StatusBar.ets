@@ -3,13 +3,13 @@ import { GlobalThisUtil } from './GlobalThisUtil';
 
 @Component
 export struct StatusBar {
-  @Prop title: string | Resource = ''
-  @State sysStatusH: number = 39
+  @Prop title: string | Resource = '';
+  @State sysStatusH: number = 39;
   @Prop isBackToHome: boolean = false;
 
   aboutToAppear() {
     if (GlobalThisUtil.getProperty('scan_topRect_height')) {
-      this.sysStatusH = px2vp(GlobalThisUtil.getProperty('scan_topRect_height'))
+      this.sysStatusH = px2vp(GlobalThisUtil.getProperty('scan_topRect_height'));
     }
   }
 
@@ -40,7 +40,7 @@ export struct StatusBar {
         router.clear();
         router.replaceUrl({
           url: 'pages/Index'
-        })
+        });
       } else {
         router.back();
       }

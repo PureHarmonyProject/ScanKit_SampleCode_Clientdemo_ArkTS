@@ -1,4 +1,4 @@
-import { customScan, scanBarcode } from '@kit.ScanKit';
+import { customScan, scanBarcode, scanCore } from '@kit.ScanKit';
 import { AsyncCallback, BusinessError } from '@kit.BasicServicesKit';
 import { GlobalThisUtil } from '../../../common/GlobalThisUtil';
 import Logger from '../../../common/Logger';
@@ -32,8 +32,8 @@ export class ScanService {
   public isStopCamera: boolean = false;
   public scanResult: ScanResults = new ScanResults();
   public isFlashlight: boolean = false; // Whether the flash light is turned on.
-  public isSensorLight: boolean =
-    false; // Determine whether the condition for displaying the flashing icon is met based on lightningFlash.
+  public isSensorLight: boolean = false; // Determine whether the condition for displaying the flashing icon is met based on lightningFlash.
+  public retryScanTimes: number = 0;
   private static instance: ScanService | null = null;
 
   public static getInstance(): ScanService {
@@ -213,5 +213,34 @@ export class ScanService {
     } catch (error) {
       Logger.error(TAG, `Failed to change flashLight. Code: ${error.code}`);
     }
+  }
+
+  // start回调时，根据error判断是否做重试操作
+  retryOnCondition(error: BusinessError, options: scanBarcode.ScanOptions, viewControl: customScan.ViewControl,
+    callback: AsyncCallback<Array<scanBarcode.ScanResult>>): boolean {
+    if (error) {
+      Logger.error(TAG,
+        `An error is returned during customCallbackScan. Code: ${error.code}, message: ${error.message}`);
+      if (error.name !== 'galleryDecodeResult' && this.retryScanTimes < CommonConstants.MAX_RETRY_SCAN_TIMES &&
+        error.code === scanCore.ScanErrorCode.INTERNAL_ERROR) {
+        this.retryScanTimes++;
+        let timeId = setTimeout(async () => {
+          Logger.info(TAG, `Retry scan start by customScan.start callback. Times: ${this.retryScanTimes}.`);
+          this.isScanLine = false;
+          await this.releaseCamera();
+          this.backToScan(options, viewControl, callback);
+          Logger.info(TAG, `Retry scan end.`);
+          clearTimeout(timeId);
+        }, CommonConstants.DELAY_RETRY_SCAN_TIME)
+        // 重试了
+        return true;
+      }
+    }
+    return false; // 没做重试
+  }
+
+  resetRetryScanTimes(): void {
+    Logger.info(TAG, 'Reset retry scan times.');
+    this.retryScanTimes = 0;
   }
 }

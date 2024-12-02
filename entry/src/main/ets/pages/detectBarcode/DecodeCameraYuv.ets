@@ -27,7 +27,7 @@ struct DecodeCameraYuv {
   @State cornerPoints: Array<Array<scanBarcode.Point>> = [];
   @State navHeight: number = 39;
   // CameraKit
-  private cameraManager: camera.CameraManager = camera.getCameraManager(getContext(this) as common.UIAbilityContext);
+  private cameraManager: camera.CameraManager | undefined = undefined;
   private photoSession: camera.PhotoSession | undefined = undefined;
   private cameraInput: camera.CameraInput | undefined = undefined;
   private previewOutput: camera.PreviewOutput | undefined = undefined;
@@ -67,6 +67,7 @@ struct DecodeCameraYuv {
 
   async aboutToAppear() {
     this.setDisplay();
+    this.setCameraManager();
     if (GlobalThisUtil.getProperty('scan_topRect_height')) {
       this.navHeight = px2vp(GlobalThisUtil.getProperty('scan_topRect_height'));
     }
@@ -236,13 +237,21 @@ struct DecodeCameraYuv {
     }
   }
 
+  setCameraManager(): void {
+    try {
+      this.cameraManager = camera.getCameraManager(getContext());
+    } catch (error) {
+      let err = error as BusinessError;
+      Logger.error(TAG, `Failed to get cameraManager. Code: ${err.code}.`);
+    }
+  }
+
   xComponentInit() {
     this.mXComponentController.setXComponentSurfaceRect({
       surfaceWidth: vp2px(this.xComponentWidth),
       surfaceHeight: vp2px(this.xComponentHeight)
     });
     let surfaceId: string = this.mXComponentController.getXComponentSurfaceId();
-
     try {
       // Create the ImageReceiver object.
       let size: image.Size = {
@@ -251,7 +260,9 @@ struct DecodeCameraYuv {
       }
       let receiver: image.ImageReceiver = image.createImageReceiver(size, image.ImageFormat.JPEG, 8);
 
-      this.startPreviewOutput(this.cameraManager, surfaceId, receiver);
+      if (this.cameraManager) {
+        this.startPreviewOutput(this.cameraManager, surfaceId, receiver);
+      }
     } catch (error) {
       Logger.error(TAG, `Failed to create the previewOutput instance. Code: ${error.code}`);
     }
@@ -324,7 +335,7 @@ struct DecodeCameraYuv {
             if (stride == width) {
               this.decodeImageBuffer(nextImage, imgComponent.byteBuffer, CAMERA_1920, CAMERA_1080);
             } else {
-              // NV21(YUV_420_SP)
+              // NV21（YUV_420_SP）
               const dstBufferSize = width * height * 1.5;
               const dstArr = new Uint8Array(dstBufferSize);
               Logger.error(TAG, 'dstBufferSize: ' + dstBufferSize);

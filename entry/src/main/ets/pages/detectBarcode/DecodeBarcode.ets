@@ -39,26 +39,28 @@ struct DecodeBarcode {
                   try {
                     let file = fileIo.openSync(photoResult.photoUris[0], fileIo.OpenMode.READ_ONLY);
                     const imageSourceApi = image.createImageSource(file.fd);
-                    try{
+                    try {
                       fileIo.closeSync(file);
                     } catch (error) {
                       Logger.error(TAG, `Failed to closeSync. Code: ${error.code}.`);
                     }
-                    imageSourceApi.getImageInfo(0, (error: BusinessError, imageInfo) => {
-                      if (imageInfo == undefined) {
-                        Logger.error(TAG, `Failed to obtain the image pixel map information. Code: ${error.code}.`);
-                        // TODO: When an image fails to be obtained, perform compatibility or prompt processing.
-                        return;
-                      }
-                      Logger.info(TAG, `imageInfo: ${JSON.stringify(imageInfo)}.`);
-                      infoW = imageInfo.size.width;
-                      infoH = imageInfo.size.height;
-                      imageSourceApi.release().then(() => {
-                        Logger.info(TAG, 'Succeeded in releasing the image source instance.');
-                      }).catch((error: BusinessError) => {
-                        Logger.error(TAG, `Failed to release the image source instance. Code: ${error.code}.`);
+                    if (imageSourceApi) {
+                      imageSourceApi.getImageInfo(0, (error: BusinessError, imageInfo) => {
+                        if (imageInfo == undefined) {
+                          Logger.error(TAG, `Failed to obtain the image pixel map information. Code: ${error.code}.`);
+                          // TODO: When an image fails to be obtained, perform compatibility or prompt processing.
+                          return;
+                        }
+                        Logger.info(TAG, `imageInfo: ${JSON.stringify(imageInfo)}.`);
+                        infoW = imageInfo.size.width;
+                        infoH = imageInfo.size.height;
+                        imageSourceApi.release().then(() => {
+                          Logger.info(TAG, 'Succeeded in releasing the image source instance.');
+                        }).catch((error: BusinessError) => {
+                          Logger.error(TAG, `Failed to release the image source instance. Code: ${error.code}.`);
+                        })
                       })
-                    })
+                    }
                   } catch (error) {
                     showError(error);
                     Logger.error(TAG, `Promise options Error. Code: ${error.code}.`);
@@ -133,9 +135,11 @@ struct DecodeBarcode {
         top: LengthMetrics.vp(this.translateHeight),
         start: LengthMetrics.vp(this.translateWidth),
       })
-      .onAreaChange((_: Area, newArea: Area) => {
-        this.translateWidth = Number(newArea.width) / 2;
-        this.translateHeight = Number(newArea.height) / 2;
+      .onSizeChange((_: SizeOptions, newValue: SizeOptions) => {
+        if (newValue && typeof newValue.width === 'number' && typeof newValue.height === 'number') {
+          this.translateWidth = newValue.width / 2;
+          this.translateHeight = newValue.height / 2;
+        }
       })
       .id('columnDecodeBarcode')
     }

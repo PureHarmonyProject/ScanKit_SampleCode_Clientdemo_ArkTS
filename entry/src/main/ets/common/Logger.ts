@@ -17,25 +17,22 @@ import hilog from '@ohos.hilog'
 class Logger {
   private domain: number = 0x00001;
   private prefix: string = 'Scan SampleCode';
+  private format: string = '%{public}s %{public}s';
 
   debug(...args: string[]): void {
-    let format: string = "%{public}s ".repeat(args.length);
-    hilog.debug(this.domain, this.prefix, format, args);
+    hilog.debug(this.domain, this.prefix, this.format, args);
   }
 
   info(...args: string[]): void {
-    let format: string = "%{public}s ".repeat(args.length);
-    hilog.info(this.domain, this.prefix, format, args);
+    hilog.info(this.domain, this.prefix, this.format, args);
   }
 
   warn(...args: string[]): void {
-    let format: string = "%{public}s ".repeat(args.length);
-    hilog.warn(this.domain, this.prefix, format, args);
+    hilog.warn(this.domain, this.prefix, this.format, args);
   }
 
   error(...args: string[]): void {
-    let format: string = "%{public}s ".repeat(args.length);
-    hilog.error(this.domain, this.prefix, format, args);
+    hilog.error(this.domain, this.prefix, this.format, args);
   }
 }
 

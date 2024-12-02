@@ -58,7 +58,6 @@ struct ScanPage {
   };
   @State isDialogShow: boolean = false;
   @State userGrant: boolean = false; // Check whether the camera permission is granted.
-  private scaleValue: number = 1; // Preview stream zoom ratio.
   options: scanBarcode.ScanOptions = {
     scanTypes: [scanCore.ScanType.ALL],
     enableMultiMode: true,
@@ -75,8 +74,8 @@ struct ScanPage {
   public avPlayer: PromptTone | null = null; // Audio notification after successful barcode scanning.
   customCallbackScan: AsyncCallback<scanBarcode.ScanResult[]> =
     async (error: BusinessError, result: scanBarcode.ScanResult[]) => {
-      if (error) {
-        Logger.error(TAG, `An error is returned during customCallbackScan. Code: ${error.code}`);
+      if (this.scanService.retryOnCondition(error, this.options, this.viewControl, this.customCallbackScan)) {
+        return;
       }
       if (!this.scanService.isScanned && !this.scanService.isOpenAlbum &&
       this.scanService.isOnPageShow) {
@@ -158,6 +157,7 @@ struct ScanPage {
 
   onPageHide(): void {
     this.scanService.scanDestroy();
+    this.scanService.resetRetryScanTimes();
     this.clearTimer();
     this.userGrant = false;
     this.isDialogShow = false;
@@ -260,11 +260,11 @@ struct ScanPage {
           this.scanService.isScanned = false;
           this.scanService.isScanLine = false;
           await this.scanService.releaseCamera();
+          this.scanService.resetRetryScanTimes();
           this.clearTimer();
           openAlbum(this.options, this.customCallbackScan, () => {
             this.scanService.isAlbumLoading = true;
             this.scanService.isOpenAlbum = false;
-            this.onPageShow();
           });
         }
       })
@@ -471,6 +471,7 @@ struct ScanPage {
         if (this.isNeedReleaseCamera(this.deviceStatus.foldStatus, foldStatus)) {
           Logger.info(TAG, `Fold status changed, status: ${foldStatus}`);
           await this.releaseUI();
+          this.scanService.resetRetryScanTimes();
           funcDelayer(() => {
             Logger.info(TAG, 'Fold status changed, need to set display.');
             this.setDisplay();

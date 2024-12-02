@@ -9,7 +9,7 @@ export class FontSizeScale {
       // The parameters of the getNumber method must be of the Resource type. Otherwise, the performance deteriorates.
       fontSizePx = getContext().resourceManager.getNumber(res.id);
     } catch (error) {
-      Logger.error(TAG, `Failed to flush preference. Code: ${error.code}`);
+      Logger.error(TAG, `Failed to getNumber by resourceManager. Code: ${error.code}`);
       return res;
     }
     let fontSizeVp: number = px2vp(fontSizePx);

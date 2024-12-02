@@ -95,7 +95,7 @@ export default class EntryAbility extends UIAbility {
       let avoidArea = windowObj.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM);
       GlobalThisUtil.setProperty('scan_topRect_height', avoidArea.topRect.height);
       windowStage.loadContent(this.page, (error, _) => {
-        if (error.code) {
+        if (error && error.code) {
           Logger.error(TAG, `Failed to load the content. Code: ${error.code}.`);
           return;
         }

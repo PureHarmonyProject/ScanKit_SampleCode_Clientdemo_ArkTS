@@ -117,5 +117,7 @@ export class CommonConstants {
   static readonly GLOBAL_SCAN_SELECT_A_PICTURE: string = 'scan_select_a_picture';
   static readonly EVENT_SCREEN_OFF: boolean = false;
   static readonly EVENT_SCREEN_ON: boolean = true;
+  static readonly DELAY_RETRY_SCAN_TIME: number = 100;
+  static readonly MAX_RETRY_SCAN_TIMES: number = 3;
 }
 

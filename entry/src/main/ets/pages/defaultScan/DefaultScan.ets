@@ -35,7 +35,7 @@ struct DefaultScan {
                   }
                 })
               }).catch((error: BusinessError) => {
-                if (error.code == scanCore.ScanErrorCode.SCAN_SERVICE_CANCELED) {
+                if (error.code === scanCore.ScanErrorCode.SCAN_SERVICE_CANCELED) {
                   Logger.info(TAG, 'Disabling the Scanning Service.');
                 } else {
                   Logger.error(TAG,
@@ -61,9 +61,11 @@ struct DefaultScan {
         top: LengthMetrics.vp(this.translateHeight),
         start: LengthMetrics.vp(this.translateWidth),
       })
-      .onAreaChange((_: Area, newArea: Area) => {
-        this.translateWidth = Number(newArea.width) / 2;
-        this.translateHeight = Number(newArea.height) / 2;
+      .onSizeChange((_: SizeOptions, newValue: SizeOptions) => {
+        if (newValue && typeof newValue.width === 'number' && typeof newValue.height === 'number') {
+          this.translateWidth = newValue.width / 2;
+          this.translateHeight = newValue.height / 2;
+        }
       })
       .id('columnDefaultScan')
     }

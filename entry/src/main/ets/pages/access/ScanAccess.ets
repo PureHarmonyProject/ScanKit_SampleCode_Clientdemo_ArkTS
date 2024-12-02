@@ -37,9 +37,11 @@ struct ScanAccess {
         top: LengthMetrics.vp(this.translateHeight),
         start: LengthMetrics.vp(this.translateWidth),
       })
-      .onAreaChange((_: Area, newArea: Area) => {
-        this.translateWidth = Number(newArea.width) / 2;
-        this.translateHeight = Number(newArea.height) / 2;
+      .onSizeChange((_: SizeOptions, newValue: SizeOptions) => {
+        if (newValue && typeof newValue.width === 'number' && typeof newValue.height === 'number') {
+          this.translateWidth = newValue.width / 2;
+          this.translateHeight = newValue.height / 2;
+        }
       })
     }
     .width('100%')

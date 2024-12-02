@@ -4,88 +4,92 @@ import { BusinessError } from '@kit.BasicServicesKit';
 import { scanCore, generateBarcode } from '@kit.ScanKit';
 import { StatusBar } from '../../common/StatusBar';
 import { CustomLabel, CustomButton } from '../../common/CommonComponents';
-import { showError, getColorType, getTypeNum, getLevelType, showMessage } from '../../common/Utils';
+import { showError, getColorType, getScanTypeVal, getErrorCorrectionLevel, showMessage } from '../../common/Utils';
 import Logger from '../../common/Logger';
 
 const TAG: string = 'CreateBarcode';
 
 class ScanConstant {
-  static readonly colorItems: Array<SelectOption> = [{
-    value: 'Black', icon: ''
-  },
+  static readonly colorItems: Array<SelectOption> = [
     {
-      value: 'Blue', icon: ''
+      value: 'Black'
     },
     {
-      value: 'Brown', icon: ''
+      value: 'Blue'
     },
     {
-      value: 'Gray', icon: ''
+      value: 'Brown'
     },
     {
-      value: 'Green', icon: ''
+      value: 'Gray'
     },
     {
-      value: 'Orange', icon: ''
+      value: 'Green'
     },
     {
-      value: 'Red', icon: ''
+      value: 'Orange'
     },
     {
-      value: 'White', icon: ''
+      value: 'Red'
     },
     {
-      value: 'Yellow', icon: ''
+      value: 'White'
+    },
+    {
+      value: 'Yellow'
     }];
-  static readonly errorLevelItems: Array<SelectOption> = [{
-    value: 'LEVEL_L', icon: ''
-  },
+  static readonly errorLevelItems: Array<SelectOption> = [
     {
-      value: 'LEVEL_M', icon: ''
+      value: 'LEVEL_L'
     },
     {
-      value: 'LEVEL_Q', icon: ''
+      value: 'LEVEL_M'
     },
     {
-      value: 'LEVEL_H', icon: ''
+      value: 'LEVEL_Q'
+    },
+    {
+      value: 'LEVEL_H'
     }];
-  static readonly codeTypeItems: Array<SelectOption> = [{
-    value: 'AZTEC_CODE', icon: ''
-  },
+  static readonly codeTypeItems: Array<SelectOption> = [
     {
-      value: 'CODABAR_CODE', icon: ''
+      value: 'AZTEC_CODE'
     },
     {
-      value: 'CODE93_CODE', icon: ''
+      value: 'CODABAR_CODE'
     },
     {
-      value: 'CODE39_CODE', icon: ''
+      value: 'CODE93_CODE'
     },
     {
-      value: 'CODE128_CODE', icon: ''
+      value: 'CODE39_CODE'
     },
     {
-      value: 'DATAMATRIX_CODE', icon: ''
+      value: 'CODE128_CODE'
     },
     {
-      value: 'EAN8_CODE', icon: ''
+      value: 'DATAMATRIX_CODE'
     },
     {
-      value: 'EAN13_CODE', icon: ''
-    }, {
-      value: 'ITF14_CODE', icon: ''
+      value: 'EAN8_CODE'
     },
     {
-      value: 'PDF417_CODE', icon: ''
+      value: 'EAN13_CODE'
     },
     {
-      value: 'QR_CODE', icon: ''
+      value: 'ITF14_CODE'
     },
     {
-      value: 'UPC_A_CODE', icon: ''
+      value: 'PDF417_CODE'
     },
     {
-      value: 'UPC_E_CODE', icon: ''
+      value: 'QR_CODE'
+    },
+    {
+      value: 'UPC_A_CODE'
+    },
+    {
+      value: 'UPC_E_CODE'
     }];
 }
 
@@ -219,7 +223,7 @@ struct GenerateBarcode {
               .selected(10)
               .demoSelect()
               .onSelect((_: number, value?: string) => {
-                this.mCodeType = getTypeNum(value)
+                this.mCodeType = getScanTypeVal(value)
               })
               .width(px2vp(this.windowWidth) <= 480 ? '60%' : '80%')
 
@@ -277,7 +281,7 @@ struct GenerateBarcode {
               .value('LEVEL_H')
               .demoSelect()
               .onSelect((_: number, value?: string) => {
-                this.mLevel = getLevelType(value)
+                this.mLevel = getErrorCorrectionLevel(value)
               })
 
           }.width('50%').demoRow()
