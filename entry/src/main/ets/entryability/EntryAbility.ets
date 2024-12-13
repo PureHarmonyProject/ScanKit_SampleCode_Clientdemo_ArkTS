@@ -112,9 +112,11 @@ export default class EntryAbility extends UIAbility {
           this.updateWindowSize(windowSize);
         })
       } catch (error) {
-        Logger.error(TAG, `Failed to listen window size change. Code: ${error.code}`);
+        Logger.error(TAG, `Failed to listen window size change. Code: ${error.code}.`);
       }
-    })
+    }).catch((error: BusinessError) => {
+      Logger.error(TAG, `Failed to get getMainWindow by windowStage. Code: ${error.code}.`);
+    });
   }
 
   // Obtain the code value through the onNewWant callback in warm launch scenarios.

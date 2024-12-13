@@ -1,14 +1,10 @@
-import { customScan } from '@kit.ScanKit';
 import { IconPress } from './IconPress'
-import Logger from '../../../common/Logger';
 import { BreakpointConstants } from '../constants/BreakpointConstants';
 import { CommonConstants } from '../constants/CommonConstants';
 import { ScanSize } from '../model/ScanSize';
 import { BreakpointType } from '../model/BreakpointType';
 import { ScanService } from '../model/ScanService';
 import { FontSizeScale } from '../model/FontSizeScale';
-
-const TAG: string = 'ScanBottom';
 
 @Extend(Column)
 function componentColumnContainer(currentBreakpoint: string) {

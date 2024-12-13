@@ -46,6 +46,11 @@ struct DecodeBarcode {
                     }
                     if (imageSourceApi) {
                       imageSourceApi.getImageInfo(0, (error: BusinessError, imageInfo) => {
+                        imageSourceApi.release().then(() => {
+                          Logger.info(TAG, 'Succeeded in releasing the image source instance.');
+                        }).catch((error: BusinessError) => {
+                          Logger.error(TAG, `Failed to release the image source instance. Code: ${error.code}.`);
+                        })
                         if (imageInfo == undefined) {
                           Logger.error(TAG, `Failed to obtain the image pixel map information. Code: ${error.code}.`);
                           // TODO: When an image fails to be obtained, perform compatibility or prompt processing.
@@ -54,11 +59,6 @@ struct DecodeBarcode {
                         Logger.info(TAG, `imageInfo: ${JSON.stringify(imageInfo)}.`);
                         infoW = imageInfo.size.width;
                         infoH = imageInfo.size.height;
-                        imageSourceApi.release().then(() => {
-                          Logger.info(TAG, 'Succeeded in releasing the image source instance.');
-                        }).catch((error: BusinessError) => {
-                          Logger.error(TAG, `Failed to release the image source instance. Code: ${error.code}.`);
-                        })
                       })
                     }
                   } catch (error) {

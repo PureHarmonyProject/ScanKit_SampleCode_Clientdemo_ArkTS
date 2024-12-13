@@ -45,15 +45,15 @@
 3. 点击“默认界面扫码能力”按钮，进入二级界面，点击“默认界面扫码能力”按钮，拉起默认扫码页面，扫描码图，返回结果。
 4. 点击“自定义界面扫码能力”按钮，进入二级界面，点击“自定义界面扫码能力”按钮，通过推荐方式构建自定义扫码界面，扫描码图，返回结果。
 5. 点击“图像识码能力”按钮，进入二级界面，点击“识别本地图片”按钮，拉起picker从图库中选择图片，进行图像识码，选择码图，返回结果。
-6. 点击“图像识码能力”按钮，进入二级界面，点击“识别图像数据”按钮，扫描码图，显示结果。相机实现参考[cameraKit](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides-V5/camera-dual-channel-preview-V5)
-7. 点击“码图生成能力”按钮，进入二级界面，点击“生成码”按钮，将字符串转换为自定义格式的码图；点击“生成乘车码”按钮，将字节数组转换为自定义格式的码图。通过字节数组生成码图，目前scan kit不支持识别出来内容。
+6. 点击“图像识码能力”按钮，进入二级界面，点击“识别图像数据”按钮，扫描码图，显示结果。相机实现参考[Camera Kit](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides-V5/camera-dual-channel-preview-V5)
+7. 点击“码图生成能力”按钮，进入二级界面，点击“生成码”按钮，将字符串转换为自定义格式的码图；点击“生成乘车码”按钮，将字节数组转换为自定义格式的码图。通过字节数组生成码图，目前Scan Kit不支持识别出来内容。
 
 ## 工程目录
 
 ├─entry/src/main/ets // 代码区  
 │ ├─common  
 │ │ ├─CommonComponents.ets // 公共组件  
-│ │ ├─CommonTipsDialog.ts // 公共提示弹窗  
+│ │ ├─CommonTipsDialog.ets // 公共提示弹窗  
 │ │ ├─GlobalThisUtil.ts // globalThis封装类  
 │ │ ├─Logger.ts // 日志打印方法  
 │ │ ├─PermissionsUtil.ets // 相机授权类  
@@ -71,7 +71,7 @@
 │ │ │ │ ├─CommonConstants.ts // 公共常量  
 │ │ │ ├─model        
 │ │ │ │ ├─BreakpointType.ets // 断点  
-│ │ │ │ ├─CommonEventManager.ets // 公共事件管理  
+│ │ │ │ ├─CommonEventManager.ts // 公共事件管理  
 │ │ │ │ ├─FontSizeScale.ets // 字体大小缩放  
 │ │ │ │ ├─OpenPhoto.ets // 图库  
 │ │ │ │ ├─PromptTone.ts // 提示音  

@@ -9,21 +9,53 @@ The APIs of Scan Kit need to be used: mport { scanCore, scanBarcode, customScan,
 
 ## Preview
 
-|               **Control Panel**              |             **Scan Code**            |          **Direct Access to Service Page**          |
-| :--------------------------------------: | :------------------------------------: | :-------------------------------: |
-| ![](entry/screenshots/controlCenterEs.png) | ![](entry/screenshots/scanSuccess.png) | ![](entry/screenshots/accessEs.png) |
-
-|          **App Home Page**          | **Barcode Scan by Default UI**                      |               **Scan Result (Single Barcode)**               |              **Scan Result (Multiple Barcodes)**             |           **Barcode Scan Result (Default UI)**          |
-| :-----------------------------: | -------------------------------------- | :------------------------------------------: | :----------------------------------------: | :--------------------------------------: |
-| ![](entry/screenshots/homePageEs.png) | ![](entry/screenshots/defaultScanEs.png) | ![](entry/screenshots/defaultSingleScanEs.png) | ![](entry/screenshots/defaultMutiScanEs.png) | ![](entry/screenshots/defaultResultEs.png) |
-
-|          **App Home Page**          | **Barcode Scan by Custom UI**                      |              **Scan Result (Single Barcode)**               |     **Scan Result (Multiple Barcodes)**     |    **Barcode Scan Result (Custom UI)**     |
-| :-----------------------------: | ---------------------------------------- | :-----------------------------------------: |:-------------------------------------------:|:------------------------------------------:|
-| ![](entry/screenshots/homePageEs.png) | ![](entry/screenshots/customScanNewEs.png) | ![](entry/screenshots/customScanSingleEs.png) | ![](entry/screenshots/customScanMutiEs.png) | ![](entry/screenshots/defaultResultEs.png) |
-
 <table>
   <tr>
-    <th width=16.5%>App Home Screen</th>
+    <th width=33.3%>Control Panel</th>
+    <th width=33.3%>Scan Code</th>
+    <th width=33.3%>Direct Access to Service Page</th>
+  </tr>
+  <tr>
+    <td><img src='entry/screenshots/controlCenterEs.png'></td>
+    <td><img src='entry/screenshots/scanSuccess.png'></td>
+    <td><img src='entry/screenshots/accessEs.png'></td>
+  </tr>
+</table>
+<table>
+  <tr>
+    <th width=20%>App Home Page</th>
+    <th width=20%>Barcode Scan by Default UI</th>
+    <th width=20%>Scan Result (Single Barcode)</th>
+    <th width=20%>Scan Result (Multiple Barcodes)</th>
+    <th width=20%>Barcode Scan Result (Default UI)</th>
+  </tr>
+  <tr>
+    <td><img src='entry/screenshots/homePageEs.png'></td>
+    <td><img src='entry/screenshots/defaultScanEs.png'></td>
+    <td><img src='entry/screenshots/defaultSingleScanEs.png'></td>
+    <td><img src='entry/screenshots/defaultMutiScanEs.png'></td>
+    <td><img src='entry/screenshots/defaultResultEs.png'></td>
+  </tr>
+</table>
+<table>
+  <tr>
+    <th width=20%>App Home Page</th>
+    <th width=20%>Barcode Scan by Custom UI</th>
+    <th width=20%>Scan Result (Single Barcode)</th>
+    <th width=20%>Scan Result (Multiple Barcodes)</th>
+    <th width=20%>Barcode Scan Result (Custom UI)</th>
+  </tr>
+  <tr>
+    <td><img src='entry/screenshots/homePageEs.png'></td>
+    <td><img src='entry/screenshots/customScanNewEs.png'></td>
+    <td><img src='entry/screenshots/customScanSingleEs.png'></td>
+    <td><img src='entry/screenshots/customScanMutiEs.png'></td>
+    <td><img src='entry/screenshots/defaultResultEs.png'></td>
+  </tr>
+</table>
+<table>
+  <tr>
+    <th width=16.5%>App Home Page</th>
     <th width=16.5%>Recognize Saved Image</th>
     <th width=16.5%>Recognize Single Barcode in Saved Image</th>
     <th width=16.5%>Recognize Multiple Barcodes in Saved Image</th>
@@ -39,10 +71,18 @@ The APIs of Scan Kit need to be used: mport { scanCore, scanBarcode, customScan,
     <td><img src='entry/screenshots/decodeImage.png'></td>
   </tr>
 </table>
-
-|          **App Home Page**          |          **Barcode Image Generation UI**          |             **Barcode Image Generation Result**             |
-| :-----------------------------: | :---------------------------------: | :---------------------------------------: |
-| ![](entry/screenshots/homePageEs.png) | ![](entry/screenshots/generateEs.png) | ![](entry/screenshots/generateResultEs.png) |
+<table>
+  <tr>
+    <th width=33.3%>App Home Page</th>
+    <th width=33.3%>Barcode Image Generation UI</th>
+    <th width=33.3%>Barcode Image Generation Result</th>
+  </tr>
+  <tr>
+    <td><img src='entry/screenshots/homePageEs.png'></td>
+    <td><img src='entry/screenshots/generateEs.png'></td>
+    <td><img src='entry/screenshots/generateResultEs.png'></td>
+  </tr>
+</table>
 
 How to Use
 
@@ -66,7 +106,7 @@ How to Use
 ├─entry/src/main/ets // Code area   
 │ ├─common    
 │ │ ├─CommonComponents.ets // Common components   
-│ │ ├─CommonTipsDialog.ts // Common pop-up   
+│ │ ├─CommonTipsDialog.ets // Common pop-up   
 │ │ ├─GlobalThisUtil.ts // Class that encapsulates **globalThis**   
 │ │ ├─Logger.ts // Log output method   
 │ │ ├─PermissionsUtil.ets // Camera authorization class   
@@ -84,7 +124,7 @@ How to Use
 │ │ │ │ ├─CommonConstants.ts // Common constants   
 │ │ │ ├─model          
 │ │ │ │ ├─BreakpointType.ets // Breakpoint type   
-│ │ │ │ ├─CommonEventManager.ets // Common event manager   
+│ │ │ │ ├─CommonEventManager.ts // Common event manager   
 │ │ │ │ ├─FontSizeScale.ets // Font size scaling   
 │ │ │ │ ├─OpenPhoto.ets // Gallery   
 │ │ │ │ ├─PromptTone.ts // Prompt tone   
