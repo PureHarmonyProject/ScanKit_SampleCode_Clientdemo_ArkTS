@@ -4,7 +4,7 @@
 
 This sample code illustrates how to use the capabilities provided by Scan Kit, including directly accessing content through scanning, scanning barcodes using the default UI, scanning barcodes using a custom UI, recognizing barcodes from images, and generating barcode images.
 
-The APIs of Scan Kit need to be used: mport { scanCore, scanBarcode, customScan, detectBarcode, generateBarcode } from '@kit.ScanKit';
+The APIs of Scan Kit need to be used: import { scanCore, scanBarcode, customScan, detectBarcode, generateBarcode } from '@kit.ScanKit';
 
 ## Preview
 
