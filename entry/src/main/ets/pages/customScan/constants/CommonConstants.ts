@@ -120,4 +120,10 @@ export class CommonConstants {
   static readonly DELAY_RETRY_SCAN_TIME: number = 100;
   static readonly MAX_RETRY_SCAN_TIMES: number = 3;
 }
+export enum DisplayRotationAngle {
+  ROTATION_0 = 0,
+  ROTATION_90 = 1,
+  ROTATION_180 = 2,
+  ROTATION_270 = 3
+};
 

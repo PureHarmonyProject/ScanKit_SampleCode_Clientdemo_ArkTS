@@ -1,4 +1,4 @@
-import curves from '@ohos.curves';
+import { curves } from "@kit.ArkUI"
 
 @Extend(Column)
 function maskStyle() {

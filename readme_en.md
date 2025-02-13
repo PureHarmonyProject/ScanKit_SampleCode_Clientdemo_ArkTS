@@ -219,6 +219,6 @@ The device where the sample app runs must be equipped with a camera.
 ## Constraints
 
 1. This sample can only be run on standard-system Huawei phones and tablets.
-2. The HarmonyOS version must be HarmonyOS Next Developer Beta 3 or later.
-3. The DevEco Studio version must be DevEco Studio Next Developer Beta 3 or later.
-4. The HarmonyOS SDK version must be HarmonyOS NEXT Developer Beta3 SDK or later.
+2. The HarmonyOS version must be HarmonyOS 5.0.2 Beta1 or later.
+3. The DevEco Studio version must be DevEco Studio 5.0.2 Beta1 or later.
+4. The HarmonyOS SDK version must be HarmonyOS 5.0.2 Beta1 SDK or later.

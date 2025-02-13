@@ -1,6 +1,5 @@
-import { commonEventManager } from '@kit.BasicServicesKit';
+import { commonEventManager, emitter } from '@kit.BasicServicesKit';
 import type { BusinessError } from '@kit.BasicServicesKit';
-import emitter from '@ohos.events.emitter';
 import { CommonConstants } from '../constants/CommonConstants';
 import Logger from '../../../common/Logger';
 
@@ -66,7 +65,7 @@ export class CommonEventManager {
     }
   }
 
-  notifyScreenEvent(isScreenOn: boolean) {
+  private notifyScreenEvent(isScreenOn: boolean): void {
     let eventData: emitter.EventData = {
       data: {
         'screenEventChange': isScreenOn,

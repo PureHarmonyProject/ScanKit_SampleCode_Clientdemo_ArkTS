@@ -10,7 +10,7 @@ function buttonScanStyle() {
   .fontColor($r('sys.color.ohos_id_color_text_primary_activated'))
   .align(Alignment.Center)
   .type(ButtonType.Capsule)
-  .margin({ bottom: 12 })
+  .margin({ bottom: 10 })
 }
 
 @Component
@@ -28,7 +28,7 @@ export struct CustomButton {
           .height(this.mHeight)
           .buttonScanStyle()
           .width('100%')
-          .onClick(this.mOnClick);
+          .onClick(this.mOnClick)
       }.margin({ right: 16, left: 16 })
     } else {
       Column() {
@@ -36,7 +36,7 @@ export struct CustomButton {
           .height(this.mHeight)
           .buttonScanStyle()
           .width(448)
-          .onClick(this.mOnClick);
+          .onClick(this.mOnClick)
       }
     }
   }
@@ -44,7 +44,7 @@ export struct CustomButton {
 
 @Component
 export struct CustomLabel {
-  @Prop text: string | Resource = ''
+  @Prop text: string | Resource = '';
 
   build() {
     Column() {

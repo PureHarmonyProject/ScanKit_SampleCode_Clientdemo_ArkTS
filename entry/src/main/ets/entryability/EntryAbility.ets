@@ -1,7 +1,6 @@
 import { AbilityConstant, UIAbility, Want, Configuration } from '@kit.AbilityKit';
-import deviceInfo from '@ohos.deviceInfo';
 import { display, router, window } from '@kit.ArkUI';
-import { BusinessError, emitter } from '@kit.BasicServicesKit';
+import { BusinessError, deviceInfo, emitter } from '@kit.BasicServicesKit';
 import { GlobalThisUtil } from '../common/GlobalThisUtil';
 import { CommonConstants } from '../pages/customScan/constants/CommonConstants';
 import { CommonEventManager } from '../pages/customScan/model/CommonEventManager';

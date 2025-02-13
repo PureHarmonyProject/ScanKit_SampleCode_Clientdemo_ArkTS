@@ -166,6 +166,6 @@
 ## 约束与限制
 
 1. 本实例仅支持标准系统上运行，支持设备：华为手机、华为平板。
-2. HarmonyOS系统：HarmonyOS NEXT Developer Beta3及以上。
-3. DevEco Studio版本：DevEco Studio NEXT Developer Beta3及以上。
-4. HarmonyOS SDK版本：HarmonyOS NEXT Developer Beta3 SDK及以上。
+2. HarmonyOS系统：HarmonyOS 5.0.2 Beta1及以上。
+3. DevEco Studio版本：DevEco Studio 5.0.2 Beta1及以上。
+4. HarmonyOS SDK版本：HarmonyOS 5.0.2 Beta1 SDK及以上。

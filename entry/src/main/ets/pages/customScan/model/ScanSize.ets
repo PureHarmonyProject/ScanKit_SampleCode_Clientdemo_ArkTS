@@ -1,10 +1,24 @@
 import { display, window } from '@kit.ArkUI';
 import { GlobalThisUtil } from '../../../common/GlobalThisUtil';
-import { CommonConstants } from '../constants/CommonConstants';
+import { CommonConstants, DisplayRotationAngle } from '../constants/CommonConstants';
 import { BreakpointConstants } from '../constants/BreakpointConstants';
 import Logger from '../../../common/Logger';
 
 export const TAG = 'ScanKit ScanSize';
+
+export function getFoldStatusByDisplay(): display.FoldStatus {
+  let foldStatus: display.FoldStatus = display.FoldStatus.FOLD_STATUS_UNKNOWN;
+  try {
+    let getFoldStatus: display.FoldStatus = display.getFoldStatus();
+    if (getFoldStatus) {
+      foldStatus = getFoldStatus;
+    }
+  } catch (error) {
+    Logger.error(TAG, `Failed to getFoldStatusByDisplay. Code: ${error.code}`);
+
+  }
+  return foldStatus;
+}
 
 @Observed
 export class XComponentSize {
@@ -23,25 +37,48 @@ export class XComponentSize {
 
 @Observed
 export class DeviceStatus {
-  public isLandscape: boolean; // Whether the screen is in landscape mode.
-  public orientation: display.Orientation;
-  public foldStatus: display.FoldStatus;
+  public rotation: number;
+  public oldFoldStatus: display.FoldStatus;
+  public newFoldStatus: display.FoldStatus;
+  public deviceType: string;
 
   constructor() {
-    this.isLandscape = false;
-    this.orientation = display.Orientation.PORTRAIT;
-    this.foldStatus = display.FoldStatus.FOLD_STATUS_UNKNOWN;
+    this.rotation = DisplayRotationAngle.ROTATION_0;
+    this.oldFoldStatus = display.FoldStatus.FOLD_STATUS_UNKNOWN;
+    this.newFoldStatus = display.FoldStatus.FOLD_STATUS_UNKNOWN;
+    this.deviceType = GlobalThisUtil.getProperty(CommonConstants.GLOBAL_SCAN_DEVICE_TYPE);
+  }
+
+  public isLandscape(): boolean {
+    let displayClass: display.Display | null = null;
+    try {
+      displayClass = display.getDefaultDisplaySync();
+    } catch (error) {
+      Logger.error(TAG, `Failed to getDefaultDisplaySync. Code: ${error.code}`);
+    }
+    if (displayClass !== null) {
+      Logger.info(TAG, `Display rotation: ${displayClass.rotation}`);
+      this.rotation = displayClass.rotation;
+    }
+    return this.rotation === DisplayRotationAngle.ROTATION_90 ||
+        this.rotation === DisplayRotationAngle.ROTATION_270;
+  }
+
+  public setRotation(rotation: number): void {
+    Logger.info(TAG, `setRotation,rotation: ${rotation}`);
+    this.rotation = rotation;
   }
 }
 
 @Observed
 export class ScanLayout {
   public topHeight: number; // Scanning line bottom area height.
-  public bottomHeightMdOrLg: number = CommonConstants.SCAN_BOTTOM_HEIGHT; // Height below the scanning line area when the device is considered as an MD or LG device.
+  public bottomHeightMdOrLg: number =
+    CommonConstants.SCAN_BOTTOM_HEIGHT; // Height below the scanning line area when the device is considered as an MD or LG device.
   public bottomHeightSmExcludesMarginDSplitScreen: number =
     CommonConstants.ICON_PRESS_HEIGHT + CommonConstants.TAB_BAR_HEIGHT +
     CommonConstants.AI_BOTTOM_BAR_HEIGHT; // Height below the scanning line area minus marginD if the device is an SM device and is in split-screen mode.
-  public bottomHeightSmExcludesmarginD: number =
+  public bottomHeightSmExcludesMarginD: number =
     CommonConstants.SCAN_LINE_MARGIN + CommonConstants.FLASH_HEIGHT + CommonConstants.FLASH_MARGIN_BOTTOM +
     CommonConstants.PLACEHOLDER_HEIGHT +
     this.bottomHeightSmExcludesMarginDSplitScreen; // Height below the scanning line area minus marginD if the device is an SM device and is not in split-screen mode.
@@ -155,24 +192,15 @@ export class ScanSize {
     return null;
   }
 
-  public getOrientation() {
+  public setDisplayRotation(): void {
     let displayClass: display.Display | null = this.getDisplay();
     if (displayClass !== null) {
-      this.deviceStatus.orientation = displayClass.orientation;
-      if (this.deviceStatus.orientation === display.Orientation.LANDSCAPE ||
-        this.deviceStatus.orientation === display.Orientation.LANDSCAPE_INVERTED) {
-        this.deviceStatus.isLandscape = true;
-      } else {
-        this.deviceStatus.isLandscape = false;
-      }
+      this.deviceStatus.setRotation(displayClass.rotation);
+      Logger.info(TAG, `setDisplayRotation rotation: ${displayClass.rotation}`);
     }
-    Logger.info(TAG, `getOrientation scan orientation:  ${this.deviceStatus.orientation}`);
   }
 
-  public setScanXComponentSize(isSupportRotation: boolean, windowSize: window.Size): void {
-    if (isSupportRotation) {
-      this.getOrientation();
-    }
+  public setScanXComponentSize(windowSize: window.Size): void {
     if (windowSize) {
       Logger.info(TAG, `Start to set scan XComponent size. Width: ${windowSize.width}, height: ${windowSize.height}`);
       this.updateBreakpoint(windowSize.width);
@@ -181,13 +209,10 @@ export class ScanSize {
       let offsetY: number = 0;
       let offsetX: number = 0;
       let ratio = CommonConstants.NOT_FOLD_DEVICE_EXPAND_RATIO;
-      if (GlobalThisUtil.getProperty(CommonConstants.GLOBAL_SCAN_DEVICE_IS_FOLDING) &&
-        display.getFoldStatus() !== display.FoldStatus.FOLD_STATUS_FOLDED) {
-        ratio = CommonConstants.FOLD_DEVICE_EXPAND_RATIO;
-      }
+      ratio = width <= height ? this.selectSuitableRatio(width, height) : this.selectSuitableRatio(height, width);
+
       // The aspect ratio is 9/16 or 1. When the device is in landscape mode, the reciprocal is used.
-      if (this.deviceStatus.orientation === display.Orientation.LANDSCAPE ||
-        this.deviceStatus.orientation === display.Orientation.LANDSCAPE_INVERTED) {
+      if (this.deviceStatus.isLandscape()) {
         ratio = 1 / ratio;
       }
       if (height > 0) {
@@ -214,6 +239,20 @@ export class ScanSize {
     this.xComponentSize.height = height;
     this.xComponentSize.offsetX = offsetX;
     this.xComponentSize.offsetY = offsetY;
+  }
+
+  private selectSuitableRatio(width: number, height: number): number {
+    let suitableRatio: number = 9/16;
+    let cameraRatios: Array<number> = [9/16, 3/4, 1];
+    let smallestRatioDelta: number = Infinity;
+    for (let ratio of cameraRatios) {
+      let ratioDelta = Math.abs(ratio - width / height)
+      if (ratioDelta < smallestRatioDelta) {
+        smallestRatioDelta = ratioDelta;
+        suitableRatio = ratio;
+      }
+    }
+    return suitableRatio;
   }
 
   private updateBreakpoint(windowWidth: number): void {

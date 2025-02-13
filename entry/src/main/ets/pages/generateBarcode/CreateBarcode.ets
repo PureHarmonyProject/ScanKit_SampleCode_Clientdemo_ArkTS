@@ -137,15 +137,17 @@ function FlexRow() {
 @Component
 struct GenerateBarcode {
   @State pixelMap: image.PixelMap | undefined = undefined;
-  @State mInputContext: string = '123';
-  @State mWidth: string = '800';
-  @State mHeight: string = '800';
-  @State mCodeType: number = scanCore.ScanType.QR_CODE;
-  @State mMargin: number = 1;
-  @State mBackgroundColor: number = 0xffffff;
-  @State mPixelMapColor: number = 0x000000;
+  @State codeInputContext: string = '123'; // Default content of the QR code.
+  @State codeWidth: string = '800'; // Default barcode width, in px.
+  @State codeHeight: string = '800'; // Default barcode height, in px.
+  @State codeType: scanCore.ScanType = scanCore.ScanType.QR_CODE; // Default barcode type, which is QR code.
+  @State codeMargin: number = 1; // Default barcode margin, in px.
+  @State codeBackgroundColor: number = 0xffffff; // Default background color of the barcode image.
+  @State codePixelMapColor: number = 0x000000; // Default color of the barcode image.
   @StorageLink('windowWidthPx') windowWidth: number = 1;
-  @State mLevel: generateBarcode.ErrorCorrectionLevel = generateBarcode.ErrorCorrectionLevel.LEVEL_H;
+  @State codeLevel: generateBarcode.ErrorCorrectionLevel =
+    generateBarcode.ErrorCorrectionLevel.LEVEL_H; // Default error correction level of the barcode image.
+  @State pixelMapWidth: number = 300;
 
   build() {
     Column() {
@@ -174,10 +176,10 @@ struct GenerateBarcode {
             })
               .margin({ left: 5 })
 
-            TextArea({ placeholder: this.mInputContext })
+            TextArea({ placeholder: this.codeInputContext })
               .demoTextArea()
               .onChange((value: string) => {
-                this.mInputContext = value
+                this.codeInputContext = value;
               })
           }.FlexRow()
 
@@ -195,7 +197,7 @@ struct GenerateBarcode {
               TextInput({ placeholder: '800' }).demoTextInput()
                 .type(InputType.Number)
                 .onChange((value: string) => {
-                  this.mWidth = value
+                  this.codeWidth = value;
                 }).width('100%')
             }.width('48%')
 
@@ -208,102 +210,108 @@ struct GenerateBarcode {
               TextInput({ placeholder: '800' }).demoTextInput()
                 .type(InputType.Number)
                 .onChange((value: string) => {
-                  this.mHeight = value
+                  this.codeHeight = value;
                 }).width('100%')
             }.width('50%')
           }.FlexRow()
 
-
           Row() {
-            CustomLabel({
-              text: $r('app.string.barcode_type')
-            })
-            Select(ScanConstant.codeTypeItems)
-              .value('QR_CODE')
-              .selected(10)
-              .demoSelect()
-              .onSelect((_: number, value?: string) => {
-                this.mCodeType = getScanTypeVal(value)
+            Row() {
+              CustomLabel({
+                text: $r('app.string.barcode_type')
               })
-              .width(px2vp(this.windowWidth) <= 480 ? '60%' : '80%')
+              Select(ScanConstant.codeTypeItems)
+                .value('QR_CODE')
+                .selected(10)
+                .demoSelect()
+                .onSelect((_: number, value?: string) => {
+                  this.codeType = getScanTypeVal(value);
+                })
+                .width(px2vp(this.windowWidth) <= 480 ? '60%' : '80%')
 
-          }.width('50%').demoRow()
+            }.width('50%').demoRow()
 
-          Row() {
-            CustomLabel({
-              text: $r('app.string.barcode_margin')
-            })
-            TextInput({ placeholder: '1' }).demoTextInput()
-              .type(InputType.Number)
-              .onChange((value: string) => {
-                this.mMargin = Number.parseInt(value)
-              }).width(px2vp(this.windowWidth) <= 480 ? '60%' : '80%')
-          }.width('50%').demoRow()
-
-          Row() {
-            CustomLabel({
-              text: $r('app.string.barcode_color')
-            })
-            Select(ScanConstant.colorItems)
-              .selected(0)
-              .value('Black')
-              .demoSelect()
-              .onSelect((_: number, value?: string) => {
-                this.mPixelMapColor = getColorType(value)
+            Row() {
+              CustomLabel({
+                text: $r('app.string.barcode_margin')
               })
-              .width(px2vp(this.windowWidth) <= 480 ? '60%' : '80%')
-
-          }.width('50%').demoRow()
+              TextInput({ placeholder: '1' }).demoTextInput()
+                .type(InputType.Number)
+                .onChange((value: string) => {
+                  this.codeMargin = Number.parseInt(value);
+                }).width(px2vp(this.windowWidth) <= 480 ? '60%' : '80%')
+            }.width('50%').demoRow()
+          }
 
           Row() {
-            CustomLabel({
-              text: $r('app.string.barcode_background_color')
-            })
-            Select(ScanConstant.colorItems)
-              .selected(7)
-              .value('White')
-              .demoSelect()
-              .onSelect((_: number, value?: string) => {
-                this.mBackgroundColor = getColorType(value)
+            Row() {
+              CustomLabel({
+                text: $r('app.string.barcode_color')
               })
-              .align(Alignment.Center)
-              .width(px2vp(this.windowWidth) <= 480 ? '60%' : '80%')
-          }.width('50%').demoRow()
+              Select(ScanConstant.colorItems)
+                .selected(0)
+                .value('Black')
+                .demoSelect()
+                .onSelect((_: number, value?: string) => {
+                  this.codePixelMapColor = getColorType(value);
+                })
+                .width(px2vp(this.windowWidth) <= 480 ? '60%' : '80%')
 
-          Row() {
-            CustomLabel({
-              text: $r('app.string.barcode_error_level')
-            })
-            Select(ScanConstant.errorLevelItems)
-              .align(Alignment.Center)
-              .width(px2vp(this.windowWidth) <= 480 ? '60%' : '80%')
-              .selected(3)
-              .value('LEVEL_H')
-              .demoSelect()
-              .onSelect((_: number, value?: string) => {
-                this.mLevel = getErrorCorrectionLevel(value)
+            }.width('50%').demoRow()
+
+            Row() {
+              CustomLabel({
+                text: $r('app.string.barcode_background_color')
               })
-
-          }.width('50%').demoRow()
+              Select(ScanConstant.colorItems)
+                .selected(7)
+                .value('White')
+                .demoSelect()
+                .onSelect((_: number, value?: string) => {
+                  this.codeBackgroundColor = getColorType(value);
+                })
+                .align(Alignment.Center)
+                .width(px2vp(this.windowWidth) <= 480 ? '60%' : '80%')
+            }.width('50%').demoRow()
+          }
 
           Row() {
-          }.width('50%').demoRow()
+            Row() {
+              CustomLabel({
+                text: $r('app.string.barcode_error_level')
+              })
+              Select(ScanConstant.errorLevelItems)
+                .align(Alignment.Center)
+                .width(px2vp(this.windowWidth) <= 480 ? '60%' : '80%')
+                .selected(3)
+                .value('LEVEL_H')
+                .demoSelect()
+                .onSelect((_: number, value?: string) => {
+                  this.codeLevel = getErrorCorrectionLevel(value);
+                })
+
+            }.width('50%').demoRow()
+
+            Row() {
+            }.width('50%').demoRow()
+          }
         }.padding(16)
+        .height(255)
 
         Column() {
           CustomButton({
             mText: $r('app.string.generate_barcode'), mOnClick: () => {
               this.pixelMap = undefined;
-              let content = this.mInputContext;
+              let content = this.codeInputContext;
               let options: generateBarcode.CreateOptions = {
-                scanType: this.mCodeType,
-                height: Number(this.mHeight),
-                width: Number(this.mWidth),
-                margin: Number(this.mMargin),
-                level: this.mLevel,
-                backgroundColor: this.mBackgroundColor,
-                pixelMapColor: this.mPixelMapColor,
-              }
+                scanType: this.codeType,
+                height: Number(this.codeHeight),
+                width: Number(this.codeWidth),
+                margin: Number(this.codeMargin),
+                level: this.codeLevel,
+                backgroundColor: this.codeBackgroundColor,
+                pixelMapColor: this.codePixelMapColor,
+              };
 
               try {
                 generateBarcode.createBarcode(content, options).then((result: image.PixelMap) => {
@@ -323,7 +331,7 @@ struct GenerateBarcode {
           CustomButton({
             mText: $r('app.string.generate_trip_barcode'), mOnClick: () => {
               this.pixelMap = undefined;
-              let content = this.mInputContext;
+              let content = this.codeInputContext;
               let pattern = /^[0-9a-fA-F]+$/;
               if (content && !pattern.test(content)) {
                 showMessage($r('app.string.trip_barcode_tip'));
@@ -334,14 +342,14 @@ struct GenerateBarcode {
               }
               let contentBuffer: ArrayBuffer = buffer.from(content, 'hex').buffer;
               let options: generateBarcode.CreateOptions = {
-                scanType: this.mCodeType,
-                height: Number(this.mHeight),
-                width: Number(this.mWidth),
-                margin: Number(this.mMargin),
-                level: this.mLevel,
-                backgroundColor: this.mBackgroundColor,
-                pixelMapColor: this.mPixelMapColor,
-              }
+                scanType: this.codeType,
+                height: Number(this.codeHeight),
+                width: Number(this.codeWidth),
+                margin: Number(this.codeMargin),
+                level: this.codeLevel,
+                backgroundColor: this.codeBackgroundColor,
+                pixelMapColor: this.codePixelMapColor,
+              };
 
               try {
                 generateBarcode.createBarcode(contentBuffer, options).then((result: image.PixelMap) => {
@@ -350,25 +358,36 @@ struct GenerateBarcode {
                 }).catch((error: BusinessError) => {
                   showError(error);
                   Logger.error(TAG, `Failed to create barCode. Code: ${error.code}, message: ${error.message}`);
-                })
+                });
               } catch (error) {
                 showError(error);
                 Logger.error(TAG, `Failed to create barCode. Code: ${error.code}, message: ${error.message}`);
               }
             }
           })
-
-          Column() {
-            if (this.pixelMap) {
-              Image(this.pixelMap).width(300).height(300).objectFit(ImageFit.Contain)
-            }
-          }.width(300).height(300).margin(10)
         }
+        .height(100)
         .alignItems(HorizontalAlign.Center)
       }
       .width('100%')
-      .height('100%')
+
+      Column() {
+        if (this.pixelMap) {
+          Image(this.pixelMap).width(this.pixelMapWidth).height(this.pixelMapWidth).objectFit(ImageFit.Contain)
+        }
+      }
+      .width('100%')
+      .margin(10)
+      .layoutWeight(1)
+      .onAreaChange((_: Area, newvalue: Area) => {
+        let min = Math.min(newvalue.width as number, newvalue.height as number);
+        if (min < 320) {
+          this.pixelMapWidth = min - 20;
+        }
+      })
     }
+    .width('100%')
+    .height('100%')
   }
 }
 

@@ -1,11 +1,11 @@
-import { curves, display, router } from '@kit.ArkUI';
+import { curves, router } from '@kit.ArkUI';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { vibrator } from '@kit.SensorServiceKit';
 import Logger from '../../../common/Logger';
 import { GlobalThisUtil } from '../../../common/GlobalThisUtil';
 import { ScanResults } from '../model/ScanService'
 import { XComponentSize } from '../model/ScanSize'
-import { CommonConstants } from '../constants/CommonConstants';
+import { CommonConstants, DisplayRotationAngle } from '../constants/CommonConstants';
 import { PickerDialog } from './PickerDialog';
 import { ScanTitle } from './ScanTitle';
 import { funcDelayer } from '../../../common/Utils';
@@ -27,7 +27,7 @@ const TAG: string = 'CommonCodeLayout';
 export struct CodeLayout {
   @ObjectLink xComponentSize: XComponentSize;
   @Prop navHeight: number;
-  @Prop orientation: display.Orientation;
+  @Prop rotation: number;
   @State scanResults: ScanResults = {
     code: 0,
     data: [],
@@ -188,33 +188,25 @@ export struct CodeLayout {
 
   getOffset(coordinateAxis: string, location: Array<number>): number {
     if (coordinateAxis === 'x') {
-      return this.setOffsetXByOrientation(location);
+      return this.setOffsetXByRotation(location);
     }
-    return this.setOffsetYByOrientation(location);
+    return this.setOffsetYByRotation(location);
   }
 
-  setOffsetXByOrientation(location: Array<number>): number {
+  setOffsetXByRotation(location: Array<number>): number {
     let offset: number = 0;
-    switch (this.orientation) {
-      case 0:
+    switch (this.rotation) {
+      case DisplayRotationAngle.ROTATION_0:
         offset = (location[0] + location[2]) / 2 + this.xComponentSize.offsetX;
         break;
-      case 1:
-        if (GlobalThisUtil.getProperty(CommonConstants.GLOBAL_SCAN_DEVICE_TYPE) === CommonConstants.DEVICE_TYPES[1]) {
-          offset = (location[1] + location[3]) / 2 + this.xComponentSize.offsetX;
-        } else {
-          offset = this.xComponentSize.width - (location[1] + location[3]) / 2 + this.xComponentSize.offsetX;
-        }
+      case DisplayRotationAngle.ROTATION_90:
+        offset = this.xComponentSize.width - (location[1] + location[3]) / 2 + this.xComponentSize.offsetX;
         break;
-      case 2:
+      case DisplayRotationAngle.ROTATION_180:
         offset = this.xComponentSize.width - (location[0] + location[2]) / 2 + this.xComponentSize.offsetX;
         break;
-      case 3:
-        if (GlobalThisUtil.getProperty(CommonConstants.GLOBAL_SCAN_DEVICE_TYPE) === CommonConstants.DEVICE_TYPES[1]) {
-          offset = this.xComponentSize.width - (location[1] + location[3]) / 2 + this.xComponentSize.offsetX;
-        } else {
-          offset = (location[1] + location[3]) / 2 + this.xComponentSize.offsetX;
-        }
+      case DisplayRotationAngle.ROTATION_270:
+        offset = (location[1] + location[3]) / 2 + this.xComponentSize.offsetX;
         break;
       default:
         break;
@@ -222,28 +214,20 @@ export struct CodeLayout {
     return offset;
   }
 
-  setOffsetYByOrientation(location: Array<number>): number {
+  setOffsetYByRotation(location: Array<number>): number {
     let offset: number = 0;
-    switch (this.orientation) {
-      case 0:
+    switch (this.rotation) {
+      case DisplayRotationAngle.ROTATION_0:
         offset = (location[3] + location[1]) / 2 + this.xComponentSize.offsetY;
         break;
-      case 1:
-        if (GlobalThisUtil.getProperty(CommonConstants.GLOBAL_SCAN_DEVICE_TYPE) === CommonConstants.DEVICE_TYPES[1]) {
-          offset = this.xComponentSize.height - (location[0] + location[2]) / 2 + this.xComponentSize.offsetY;
-        } else {
-          offset = (location[0] + location[2]) / 2 + this.xComponentSize.offsetY;
-        }
+      case DisplayRotationAngle.ROTATION_90:
+        offset = (location[0] + location[2]) / 2 + this.xComponentSize.offsetY;
         break;
-      case 2:
+      case DisplayRotationAngle.ROTATION_180:
         offset = this.xComponentSize.height - (location[3] + location[1]) / 2 + this.xComponentSize.offsetY;
         break;
-      case 3:
-        if (GlobalThisUtil.getProperty(CommonConstants.GLOBAL_SCAN_DEVICE_TYPE) === CommonConstants.DEVICE_TYPES[1]) {
-          offset = (location[0] + location[2]) / 2 + this.xComponentSize.offsetY;
-        } else {
-          offset = this.xComponentSize.height - (location[0] + location[2]) / 2 + this.xComponentSize.offsetY;
-        }
+      case DisplayRotationAngle.ROTATION_270:
+        offset = this.xComponentSize.height - (location[0] + location[2]) / 2 + this.xComponentSize.offsetY;
         break;
       default:
         break;

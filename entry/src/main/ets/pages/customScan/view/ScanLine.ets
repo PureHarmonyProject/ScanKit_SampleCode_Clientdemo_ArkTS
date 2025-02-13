@@ -166,7 +166,7 @@ export struct ScanLine {
         ]
       }).width('80%')
         .height('100%')
-        .markAnchor({ y: this.allAngle == 180 ? (60 * this.speed) : 0 })
+        .markAnchor({ y: this.allAngle === 180 ? (60 * this.speed) : 0 })
         .maskShape(new Rect({ width: '100%', height: 60 * (this.speed) })
           .position({ y: this.linePosition + '%' })
           .fill(Color.White))

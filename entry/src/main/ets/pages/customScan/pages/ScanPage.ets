@@ -19,8 +19,8 @@ import { DeviceStatus, ScanLayout, ScanSize, XComponentSize, NewArea } from '../
 import { ScanXComponent } from '../view/ScanXComponent';
 import { ScanLoading } from '../view/ScanLoading';
 import { PermissionsUtil } from '../../../common/PermissionsUtil';
-import { funcDelayer } from '../../../common/Utils';
 import { CommonTipsDialog } from '../../../common/CommonTipsDialog';
+import { getFoldStatusByDisplay } from '../model/ScanSize';
 
 export const TAG = 'ScanPage';
 
@@ -83,7 +83,7 @@ struct ScanPage {
         this.scanResult.data = result || [];
         let resultLength: number = result ? result.length : 0;
         if (GlobalThisUtil.getProperty(CommonConstants.GLOBAL_SCAN_SELECT_A_PICTURE) || resultLength) {
-          this.scanService.stopCamera();
+          this.scanService.releaseCamera();
           this.clearTimer();
           this.scanService.isScanned = true; // Scanned successfully.
           this.scanResult.uri = GlobalThisUtil.getProperty(CommonConstants.GLOBAL_SCAN_SELECT_A_PICTURE);
@@ -119,7 +119,7 @@ struct ScanPage {
 
   aboutToAppear() {
     // Obtain the device orientation.
-    this.scanSize.getOrientation();
+    this.scanSize.setDisplayRotation();
 
     // Not access the gallery for code recognition.
     GlobalThisUtil.setProperty(CommonConstants.GLOBAL_SCAN_IS_DECODING_GALLERY, false);
@@ -130,7 +130,8 @@ struct ScanPage {
     }
 
     if (GlobalThisUtil.getProperty('hmsCore_scan_isFoldable')) {
-      this.deviceStatus.foldStatus = display.getFoldStatus();
+      this.deviceStatus.newFoldStatus = getFoldStatusByDisplay();
+      this.deviceStatus.oldFoldStatus = this.deviceStatus.newFoldStatus;
       // Foldable screen status listener.
       this.foldStatusSubscribe();
     }
@@ -229,12 +230,12 @@ struct ScanPage {
           isOpenAlbum: this.scanService.isOpenAlbum
         })
           .height(this.currentBreakpoint === BreakpointConstants.BREAKPOINT_SM ?
-            `calc(100% - ${this.scanLayout.topHeight}vp - ${this.scanLayout.bottomHeightSmExcludesmarginD}vp - ${3 *
+            `calc(100% - ${this.scanLayout.topHeight}vp - ${this.scanLayout.bottomHeightSmExcludesMarginD}vp - ${3 *
             this.scanLayout.marginD}vp)`
             : `calc(100% - ${this.scanLayout.topHeight}vp - ${this.scanLayout.bottomHeightMdOrLg}vp)`)
           .margin({
             bottom: this.currentBreakpoint === BreakpointConstants.BREAKPOINT_SM ?
-              `calc(${this.scanLayout.bottomHeightSmExcludesmarginD}vp + ${3 * this.scanLayout.marginD}vp)`
+              `calc(${this.scanLayout.bottomHeightSmExcludesMarginD}vp + ${3 * this.scanLayout.marginD}vp)`
               : this.scanLayout.bottomHeightMdOrLg
           })
           .constraintSize({
@@ -278,11 +279,10 @@ struct ScanPage {
       MaskLayer()
       Column() {
         CodeLayout({
-          orientation: this.deviceStatus.orientation,
+          rotation: this.deviceStatus.rotation,
           xComponentSize: this.xComponentSize,
           navHeight: this.scanSize.navHeight,
           scanResults: this.scanResult,
-          foldStatus: this.deviceStatus.foldStatus,
           backToScan: (() => {
             this.backToScanCamera();
           })
@@ -389,6 +389,17 @@ struct ScanPage {
             Logger.error(TAG, `densityPixels less than or equal to 0`);
           }
         }
+
+        if (this.deviceStatus.rotation !== newDisplay.rotation) {
+          Logger.info(TAG,
+            `onDisplayChange, pre_rotation: ${this.deviceStatus.rotation}, new_rotation: ${newDisplay.rotation}.`);
+          this.scanService.initScanData();
+          let rotationAngle: number = Math.abs(this.deviceStatus.rotation - newDisplay.rotation);
+          this.deviceStatus.setRotation(newDisplay.rotation);
+          if (rotationAngle === 2) {
+            this.initScan();
+          }
+        }
       } catch (error) {
         Logger.error(TAG, `Failed to invoke an API of getDefaultDisplaySync. Code: ${error.code}`);
       }
@@ -406,13 +417,13 @@ struct ScanPage {
   setDisplay(): void {
     let windowSize: window.Size | null = this.scanSize.setWindowSize();
     if (windowSize) {
-      this.scanSize.setScanXComponentSize(true, windowSize)
+      this.scanSize.setScanXComponentSize(windowSize)
     }
   }
 
   startScan(windowSize: window.Size | null): void {
     if (windowSize) {
-      this.scanSize.setScanXComponentSize(true, windowSize)
+      this.scanSize.setScanXComponentSize(windowSize);
       this.initScan()
     }
   }
@@ -450,14 +461,17 @@ struct ScanPage {
 
   windowSizeSubscribe(): void {
     // Respond to the window size change.
-    emitter.on({ eventId: CommonConstants.WINDOW_SIZE_CHANGE }, (eventData: emitter.EventData) => {
+    emitter.on({ eventId: CommonConstants.WINDOW_SIZE_CHANGE }, async (eventData: emitter.EventData) => {
       Logger.info(TAG, 'windowSizeChange enter');
-      this.scanService.initScanData();
-      this.clearTimer();
       if (eventData.data) {
         let windowSize: window.Size = {
           width: px2vp(eventData.data.width),
           height: px2vp(eventData.data.height)
+        }
+        if (this.deviceStatus.oldFoldStatus !== this.deviceStatus.newFoldStatus) {
+          await this.releaseUI();
+          this.scanService.resetRetryScanTimes();
+          this.deviceStatus.oldFoldStatus = this.deviceStatus.newFoldStatus;
         }
         this.startScan(windowSize);
       }
@@ -468,20 +482,10 @@ struct ScanPage {
     try {
       display.on('foldStatusChange', async (foldStatus: display.FoldStatus) => {
         // FOLD_STATUS_FOLDED => FOLD_STATUS_HALF_FOLDED; FOLD_STATUS_EXPANDED or FOLD_STATUS_HALF_FOLDED => FOLD_STATUS_FOLDED
-        if (this.isNeedReleaseCamera(this.deviceStatus.foldStatus, foldStatus)) {
-          Logger.info(TAG, `Fold status changed, status: ${foldStatus}`);
-          await this.releaseUI();
-          this.scanService.resetRetryScanTimes();
-          funcDelayer(() => {
-            Logger.info(TAG, 'Fold status changed, need to set display.');
-            this.setDisplay();
-          }, 300);
-        }
-        if (foldStatus === display.FoldStatus.FOLD_STATUS_EXPANDED ||
-          foldStatus === display.FoldStatus.FOLD_STATUS_FOLDED) {
-          Logger.info(TAG, 'Set fold status.');
-          this.deviceStatus.foldStatus = foldStatus;
-        }
+        Logger.info(TAG,
+          `foldStatus has changed, pre_foldStatus: ${this.deviceStatus.newFoldStatus}, new_foldStatus: ${foldStatus}`);
+        this.deviceStatus.oldFoldStatus = this.deviceStatus.newFoldStatus;
+        this.deviceStatus.newFoldStatus = foldStatus;
       });
     } catch (error) {
       Logger.error(TAG, `Failed to foldStatusListen. Code: ${error.code}`);
@@ -492,17 +496,6 @@ struct ScanPage {
     this.scanService.resetScanData();
     this.clearTimer();
     await this.scanService.releaseCamera();
-  }
-
-  isNeedReleaseCamera(preFoldStatus: display.FoldStatus, foldStatus: display.FoldStatus): boolean {
-    if (preFoldStatus === display.FoldStatus.FOLD_STATUS_FOLDED &&
-      foldStatus === display.FoldStatus.FOLD_STATUS_HALF_FOLDED) {
-      return true;
-    } else if (foldStatus === display.FoldStatus.FOLD_STATUS_FOLDED && preFoldStatus !== foldStatus) {
-      return true;
-    } else {
-      return false;
-    }
   }
 
   async backToScanCamera() {

@@ -45,7 +45,7 @@ export class ScanService {
 
   public initCamera(options: scanBarcode.ScanOptions, viewControl: customScan.ViewControl,
     callback: AsyncCallback<Array<scanBarcode.ScanResult>>) {
-    if (this.isOnPageShow && !this.isScanLine &&
+    if (this.isOnPageShow && !this.isScanLine && !this.isScanned &&
       !GlobalThisUtil.getProperty(CommonConstants.GLOBAL_SCAN_IS_DECODING_GALLERY)) {
       Logger.info(TAG, `initCamera start. width: ${viewControl.width}, height: ${viewControl.height}`);
       try {
