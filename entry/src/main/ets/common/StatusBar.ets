@@ -1,17 +1,11 @@
 import { LengthMetrics, router } from '@kit.ArkUI';
-import { GlobalThisUtil } from './GlobalThisUtil';
+import { WindowService } from '../pages/customScan/model/WindowService';
 
 @Component
 export struct StatusBar {
+  @State windowService: WindowService = WindowService.getInstance();
   @Prop title: string | Resource = '';
-  @State sysStatusH: number = 39;
   @Prop isBackToHome: boolean = false;
-
-  aboutToAppear() {
-    if (GlobalThisUtil.getProperty('scan_topRect_height')) {
-      this.sysStatusH = px2vp(GlobalThisUtil.getProperty('scan_topRect_height'));
-    }
-  }
 
   build() {
     Row() {
@@ -45,7 +39,7 @@ export struct StatusBar {
         router.back();
       }
     })
-    .height(56 + this.sysStatusH)
+    .height(56 + this.windowService.topAvoidHeight)
     .width('100%')
     .alignRules({
       top: { anchor: '__container__', align: VerticalAlign.Top },

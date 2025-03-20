@@ -2,14 +2,13 @@ import { curves, router } from '@kit.ArkUI';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { vibrator } from '@kit.SensorServiceKit';
 import Logger from '../../../common/Logger';
-import { GlobalThisUtil } from '../../../common/GlobalThisUtil';
-import { ScanResults } from '../model/ScanService'
-import { XComponentSize } from '../model/ScanSize'
-import { CommonConstants, DisplayRotationAngle } from '../constants/CommonConstants';
+import { ScanResults, ScanService, ScanStatus } from '../model/ScanService';
+import { DisplayRotationAngle } from '../constants/CommonConstants';
 import { PickerDialog } from './PickerDialog';
-import { ScanTitle } from './ScanTitle';
 import { funcDelayer } from '../../../common/Utils';
 import { scanBarcode } from '@kit.ScanKit';
+import { XComponentService } from '../model/XComponentService';
+import { DeviceService } from '../model/DeviceService';
 
 @Extend(Image)
 function selected(scanState: boolean, x: number, y: number) {
@@ -25,18 +24,9 @@ const TAG: string = 'CommonCodeLayout';
 
 @Component
 export struct CodeLayout {
-  @ObjectLink xComponentSize: XComponentSize;
-  @Prop navHeight: number;
-  @Prop rotation: number;
-  @State scanResults: ScanResults = {
-    code: 0,
-    data: [],
-    size: 0,
-    uri: ''
-  }
-  @Prop foldStatus: number = -1;
+  @State scanService: ScanService = ScanService.getInstance();
+  @State xComponentService: XComponentService = XComponentService.getInstance();
   @State multiCodeScanLocation: Array<Array<number>> = []; // Display positions of multiple barcodes.
-  @State multiCodeScanResult: Array<object> = []; // Scanning result.
   @State isMultiSelected: boolean = false; // Whether a barcode among multiple barcodes is selected.
   @State multiSelectedIndex: number = 0; // Index of the selected barcode.
   @State singleCodeX: number = 0; // X-axis position of a single barcode.
@@ -49,15 +39,21 @@ export struct CodeLayout {
   @State fadeOutOpacity: number = 1;
   @State isPickerDialogShow: boolean = false;
   @State isShowCode: boolean = true;
-  public backToScan: () => void = () => {
+  @Prop scanResults: ScanResults = {
+    code: 0,
+    data: [],
+    size: 0,
+  };
+  public restartPreviewStream: () => void = () => {
   };
 
   aboutToAppear() {
-    if (this.scanResults.uri) {
+    if (this.scanService.scanStatus === ScanStatus.PHOTO_DECODING_COMPLETED) {
       // Not display the radio button for the gallery.
       if (this.scanResults.size === 0) {
         // No code value is recognized.
         this.isPickerDialogShow = true;
+        this.scanService.isAlbumLoading = false;
       } else {
         this.vibratorPlay();
         this.isShowCode = false;
@@ -71,7 +67,6 @@ export struct CodeLayout {
       for (let i = 0; i < this.scanResults.size; i++) {
         // Scanning result.
         let scanResult: scanBarcode.ScanResult = this.scanResults.data[i];
-        this.multiCodeScanResult.push(scanResult);
         let scanCodeRect: scanBarcode.ScanCodeRect | undefined = scanResult.scanCodeRect;
         if (scanCodeRect) {
           this.multiCodeScanLocation.push(
@@ -94,8 +89,8 @@ export struct CodeLayout {
   }
 
   aboutToDisappear() {
-    GlobalThisUtil.setProperty((CommonConstants.GLOBAL_SCAN_SELECT_A_PICTURE), false);
     this.isPickerDialogShow = false;
+    this.scanService.isAlbumLoading = false;
   }
 
   @Builder
@@ -152,11 +147,6 @@ export struct CodeLayout {
 
   build() {
     Stack() {
-      ScanTitle({
-        scanResultSize: this.scanResults.size,
-        navHeight: this.navHeight,
-      }).width('100%').height('100%')
-
       if (this.scanResults.size === 1 && this.isShowCode) {
         // Single barcode scanning.
         this.SingleCodeLayout();
@@ -176,7 +166,7 @@ export struct CodeLayout {
           text: $r('app.string.Scan_diaLog_not_found'),
           cancel: (() => {
             this.isPickerDialogShow = false;
-            this.backToScan();
+            this.restartPreviewStream();
           })
         })
       }
@@ -195,18 +185,18 @@ export struct CodeLayout {
 
   setOffsetXByRotation(location: Array<number>): number {
     let offset: number = 0;
-    switch (this.rotation) {
+    switch (DeviceService.rotation) {
       case DisplayRotationAngle.ROTATION_0:
-        offset = (location[0] + location[2]) / 2 + this.xComponentSize.offsetX;
+        offset = (location[0] + location[2]) / 2 + this.xComponentService.offsetX;
         break;
       case DisplayRotationAngle.ROTATION_90:
-        offset = this.xComponentSize.width - (location[1] + location[3]) / 2 + this.xComponentSize.offsetX;
+        offset = this.xComponentService.width - (location[1] + location[3]) / 2 + this.xComponentService.offsetX;
         break;
       case DisplayRotationAngle.ROTATION_180:
-        offset = this.xComponentSize.width - (location[0] + location[2]) / 2 + this.xComponentSize.offsetX;
+        offset = this.xComponentService.width - (location[0] + location[2]) / 2 + this.xComponentService.offsetX;
         break;
       case DisplayRotationAngle.ROTATION_270:
-        offset = (location[1] + location[3]) / 2 + this.xComponentSize.offsetX;
+        offset = (location[1] + location[3]) / 2 + this.xComponentService.offsetX;
         break;
       default:
         break;
@@ -216,18 +206,18 @@ export struct CodeLayout {
 
   setOffsetYByRotation(location: Array<number>): number {
     let offset: number = 0;
-    switch (this.rotation) {
+    switch (DeviceService.rotation) {
       case DisplayRotationAngle.ROTATION_0:
-        offset = (location[3] + location[1]) / 2 + this.xComponentSize.offsetY;
+        offset = (location[3] + location[1]) / 2 + this.xComponentService.offsetY;
         break;
       case DisplayRotationAngle.ROTATION_90:
-        offset = (location[0] + location[2]) / 2 + this.xComponentSize.offsetY;
+        offset = (location[0] + location[2]) / 2 + this.xComponentService.offsetY;
         break;
       case DisplayRotationAngle.ROTATION_180:
-        offset = this.xComponentSize.height - (location[3] + location[1]) / 2 + this.xComponentSize.offsetY;
+        offset = this.xComponentService.height - (location[3] + location[1]) / 2 + this.xComponentService.offsetY;
         break;
       case DisplayRotationAngle.ROTATION_270:
-        offset = this.xComponentSize.height - (location[0] + location[2]) / 2 + this.xComponentSize.offsetY;
+        offset = this.xComponentService.height - (location[0] + location[2]) / 2 + this.xComponentService.offsetY;
         break;
       default:
         break;
@@ -255,7 +245,7 @@ export struct CodeLayout {
     }
   }
 
-  openMultiCode(arr: Array<number>, index: number): void{
+  openMultiCode(arr: Array<number>, index: number): void {
     // Tap animation. Multi-barcode scanning is not supported based on the gallery currently.
     this.singleCodeX = this.getOffset('x', arr);
     this.singleCodeY = this.getOffset('y', arr);

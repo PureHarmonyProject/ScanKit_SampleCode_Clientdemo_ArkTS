@@ -2,6 +2,7 @@ import { BreakpointConstants } from '../constants/BreakpointConstants';
 import { CommonConstants } from '../constants/CommonConstants';
 import { BreakpointType } from '../model/BreakpointType';
 import { FontSizeScale } from '../model/FontSizeScale';
+import { ScanLayout } from '../model/ScanLayout';
 
 @Extend(LoadingProgress)
 function loadingIcon() {
@@ -25,7 +26,7 @@ function loadingText() {
 
 @Component
 export struct ScanLoading {
-  @StorageLink('currentBreakpoint') currentBreakpoint: string = BreakpointConstants.BREAKPOINT_SM;
+  @State scanLayout: ScanLayout = ScanLayout.getInstance();
   @StorageLink('scanFontSizeScale') fontSizeScale: number = 1;
 
   build() {
@@ -37,7 +38,8 @@ export struct ScanLoading {
             CommonConstants.SCAN_FONT_SIZE_SCALE_LIMIT_SYMBOL_TEXT, $r('sys.float.Body_M')))
       }
       .height(new BreakpointType(BreakpointConstants.LOADING_HEIGHT_SM,
-        BreakpointConstants.LOADING_HEIGHT_MD, BreakpointConstants.LOADING_HEIGHT_LG).getValue(this.currentBreakpoint))
+        BreakpointConstants.LOADING_HEIGHT_MD,
+        BreakpointConstants.LOADING_HEIGHT_LG).getValue(this.scanLayout.widthBreakpoint))
       .offset({
         y: -36
       })

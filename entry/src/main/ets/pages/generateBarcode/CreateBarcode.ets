@@ -6,6 +6,7 @@ import { StatusBar } from '../../common/StatusBar';
 import { CustomLabel, CustomButton } from '../../common/CommonComponents';
 import { showError, getColorType, getScanTypeVal, getErrorCorrectionLevel, showMessage } from '../../common/Utils';
 import Logger from '../../common/Logger';
+import { WindowService } from '../customScan/model/WindowService';
 
 const TAG: string = 'CreateBarcode';
 
@@ -144,7 +145,7 @@ struct GenerateBarcode {
   @State codeMargin: number = 1; // Default barcode margin, in px.
   @State codeBackgroundColor: number = 0xffffff; // Default background color of the barcode image.
   @State codePixelMapColor: number = 0x000000; // Default color of the barcode image.
-  @StorageLink('windowWidthPx') windowWidth: number = 1;
+  @State windowService: WindowService = WindowService.getInstance();
   @State codeLevel: generateBarcode.ErrorCorrectionLevel =
     generateBarcode.ErrorCorrectionLevel.LEVEL_H; // Default error correction level of the barcode image.
   @State pixelMapWidth: number = 300;
@@ -227,7 +228,7 @@ struct GenerateBarcode {
                 .onSelect((_: number, value?: string) => {
                   this.codeType = getScanTypeVal(value);
                 })
-                .width(px2vp(this.windowWidth) <= 480 ? '60%' : '80%')
+                .width(this.windowService.width <= 480 ? '60%' : '80%')
 
             }.width('50%').demoRow()
 
@@ -239,7 +240,7 @@ struct GenerateBarcode {
                 .type(InputType.Number)
                 .onChange((value: string) => {
                   this.codeMargin = Number.parseInt(value);
-                }).width(px2vp(this.windowWidth) <= 480 ? '60%' : '80%')
+                }).width(this.windowService.width <= 480 ? '60%' : '80%')
             }.width('50%').demoRow()
           }
 
@@ -255,7 +256,7 @@ struct GenerateBarcode {
                 .onSelect((_: number, value?: string) => {
                   this.codePixelMapColor = getColorType(value);
                 })
-                .width(px2vp(this.windowWidth) <= 480 ? '60%' : '80%')
+                .width(this.windowService.width <= 480 ? '60%' : '80%')
 
             }.width('50%').demoRow()
 
@@ -271,7 +272,7 @@ struct GenerateBarcode {
                   this.codeBackgroundColor = getColorType(value);
                 })
                 .align(Alignment.Center)
-                .width(px2vp(this.windowWidth) <= 480 ? '60%' : '80%')
+                .width(this.windowService.width <= 480 ? '60%' : '80%')
             }.width('50%').demoRow()
           }
 
@@ -282,7 +283,7 @@ struct GenerateBarcode {
               })
               Select(ScanConstant.errorLevelItems)
                 .align(Alignment.Center)
-                .width(px2vp(this.windowWidth) <= 480 ? '60%' : '80%')
+                .width(this.windowService.width <= 480 ? '60%' : '80%')
                 .selected(3)
                 .value('LEVEL_H')
                 .demoSelect()

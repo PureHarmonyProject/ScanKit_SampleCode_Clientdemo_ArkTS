@@ -106,7 +106,6 @@ How to Use
 │ ├─common    
 │ │ ├─CommonComponents.ets // Common components   
 │ │ ├─CommonTipsDialog.ets // Common pop-up   
-│ │ ├─GlobalThisUtil.ts // Class that encapsulates **globalThis**   
 │ │ ├─Logger.ts // Log output method   
 │ │ ├─PermissionsUtil.ets // Camera authorization class   
 │ │ ├─StatusBar.ets // Status bar component   
@@ -123,12 +122,15 @@ How to Use
 │ │ │ │ ├─CommonConstants.ts // Common constants   
 │ │ │ ├─model          
 │ │ │ │ ├─BreakpointType.ets // Breakpoint type   
-│ │ │ │ ├─CommonEventManager.ts // Common event manager   
+│ │ │ │ ├─CommonEventManager.ts // Common event manager  
+│ │ │ │ ├─DeviceService.ets // Device management class  
 │ │ │ │ ├─FontSizeScale.ets // Font size scaling   
 │ │ │ │ ├─OpenPhoto.ets // Gallery   
 │ │ │ │ ├─PromptTone.ts // Prompt tone   
+│ │ │ │ ├─ScanLayout.ets // Barcode scanning UI layout management class   
 │ │ │ │ ├─ScanService.ets // Barcode scanning customization   
-│ │ │ │ ├─ScanSize.ets // Scanning UI dimensions   
+│ │ │ │ ├─WindowService.ets // Window management class   
+│ │ │ │ ├─XComponentService.ets // XComponent management class   
 │ │ │ ├─pages // Pages   
 │ │ │ │ ├─ScanPage.ets // Barcode scanning page   
 │ │ │ ├─view // Components   
@@ -140,7 +142,6 @@ How to Use
 │ │ │ │ ├─ScanLine.ets // Scanning line component   
 │ │ │ │ ├─ScanLoading.ets // Loading component   
 │ │ │ │ ├─ScanTitle.ets // Title component   
-│ │ │ │ ├─ScanTopTool.ets // Top component   
 │ │ │ │ ├─ScanXComponent.ets // XComponent   
 │ │ │ ├─CustomPage.ets // Page where the button for accessing the custom barcode scanning UI is located   
 │ │ ├─defaultScan // Default code scan UI   
@@ -219,6 +220,6 @@ The device where the sample app runs must be equipped with a camera.
 ## Constraints
 
 1. This sample can only be run on standard-system Huawei phones and tablets.
-2. The HarmonyOS version must be HarmonyOS 5.0.2 Beta1 or later.
+2. The HarmonyOS version must be HarmonyOS 5.0.3 Release or later.
 3. The DevEco Studio version must be DevEco Studio 5.0.2 Beta1 or later.
 4. The HarmonyOS SDK version must be HarmonyOS 5.0.2 Beta1 SDK or later.

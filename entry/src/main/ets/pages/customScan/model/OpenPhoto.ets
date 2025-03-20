@@ -1,99 +1,72 @@
 import { AsyncCallback, BusinessError } from '@kit.BasicServicesKit';
-import { detectBarcode, scanBarcode } from '@kit.ScanKit';
+import { detectBarcode, scanBarcode, scanCore } from '@kit.ScanKit';
 import { photoAccessHelper } from '@kit.MediaLibraryKit';
-import Logger from '../../../common/Logger';
-import { GlobalThisUtil } from '../../../common/GlobalThisUtil';
-import { CommonConstants } from '../constants/CommonConstants';
+import { ScanService, ScanStatus } from './ScanService';
 
-const TAG = 'OpenPhoto';
-
-enum ScanErrorCode {
-  SCAN_SUCCEED = 0,
-  SCAN_NO_PERMISSION = 201,
-  SCAN_INVALID_PARAM = 401,
+enum StatusCode {
+  INTERNAL_SERVER_ERROR = 500,
+  NOT_FOUND = 404,
+  SUCCEED = 0
 }
 
-class ScanError implements BusinessError {
+const NOT_FOUND_PHOTO = 'No photo selected';
+const NOT_FOUND_BARCODE = 'No barcode was recognized.';
+const SELECT_CALL_FAILED = 'The select interface of PhotoViewPicker call failed.';
+const DECODE_CALL_FAILED = 'The decode interface of detectBarcode call failed.';
+const DECODE_SUCCESS = 'Photo decoding successful.';
+const scanService: ScanService = ScanService.getInstance();
+const defaultScanOptions: scanBarcode.ScanOptions = {
+  scanTypes: [scanCore.ScanType.ALL],
+  enableMultiMode: false,
+  enableAlbum: true
+};
+
+class GalleryDecodeError implements BusinessError {
   code: number;
   name: string;
   message: string;
-  constructor(code: number,  message: string) {
+
+  constructor(code: number, message: string) {
     this.name = 'galleryDecodeResult';
     this.code = code;
     this.message = message;
   }
 }
 
-function decodeAlbum(option: scanBarcode.ScanOptions, uri: string,
-  callback: AsyncCallback<Array<scanBarcode.ScanResult>>): void {
-  GlobalThisUtil.setProperty(CommonConstants.GLOBAL_SCAN_SELECT_A_PICTURE, true);
+async function decodeAlbum(uri: string, callback: AsyncCallback<Array<scanBarcode.ScanResult>>): Promise<void> {
   // Image recognition parameter. By default, a single barcode is recognized.
-  let inputImage: detectBarcode.InputImage = { uri: uri };
-  let options: scanBarcode.ScanOptions = {
-    scanTypes: option.scanTypes,
-    enableMultiMode: false,
-    enableAlbum: true
-  };
+  const inputImage: detectBarcode.InputImage = { uri };
   try {
-    detectBarcode.decode(inputImage, options)
-      .then((result: Array<scanBarcode.ScanResult>) => {
-        // If no value is returned, no processing is performed.
-        if (!result || result.length === 0) {
-          noResultCallBack(callback);
-          return;
-        }
-        let scanResult: scanBarcode.ScanResult = {
-          scanType: result[0].scanType,
-          originalValue: result[0].originalValue,
-          scanCodeRect: result[0].scanCodeRect
-        };
-        callback((new ScanError(ScanErrorCode.SCAN_SUCCEED, '')), [scanResult]);
-      })
-      .catch((error: BusinessError) => {
-        Logger.error(TAG, `Failed to detectBarcode. Code: ${error.code}`);
-        noResultCallBack(callback);
-      });
-  } catch (error) {
-    Logger.error(TAG, `Failed to detectBarcode.decode. Code: ${error.code}`);
-  }
-}
-
-function noResultCallBack(callback: AsyncCallback<scanBarcode.ScanResult[]>): void {
-  callback((new ScanError(ScanErrorCode.SCAN_INVALID_PARAM, '')), []);
-}
-
-export async function openAlbum(option: scanBarcode.ScanOptions, callback: AsyncCallback<Array<scanBarcode.ScanResult>>,
-  callBackFn: CallableFunction): Promise<void> {
-
-  try {
-    let photoSelectOptions = new photoAccessHelper.PhotoSelectOptions();
-    photoSelectOptions.MIMEType = photoAccessHelper.PhotoViewMIMETypes.IMAGE_TYPE;
-    photoSelectOptions.maxSelectNumber = 1;
-    photoSelectOptions.isPhotoTakingSupported = false;
-    photoSelectOptions.isEditSupported = false;
-    let photoPicker = new photoAccessHelper.PhotoViewPicker();
-
-    try {
-      await photoPicker.select(photoSelectOptions).then((result: photoAccessHelper.PhotoSelectResult) => {
-        callBackFn();
-        if (!result || (result.photoUris && result.photoUris.length === 0)) {
-          callBackFailed(`Failed to get photoPicker result.`, callback);
-          return;
-        }
-        Logger.info(TAG, `Succeed in getting photoUris. IsOriginalPhoto: ${result.isOriginalPhoto}`);
-        let uri = result.photoUris[0];
-        decodeAlbum(option, uri, callback);
-      });
-    } catch (error) {
-      callBackFailed(`Failed to select a picture. Code: ${error.code}`, callback);
+    const scanResults: Array<scanBarcode.ScanResult> = await detectBarcode.decode(inputImage, defaultScanOptions);
+    if (scanResults && scanResults.length > 0) {
+      callback((new GalleryDecodeError(StatusCode.SUCCEED, DECODE_SUCCESS)), [scanResults[0]]);
+    } else {
+      callback((new GalleryDecodeError(StatusCode.NOT_FOUND, NOT_FOUND_BARCODE)), []);
     }
   } catch (error) {
-    callBackFailed(`Failed to get photoPicker. Code: ${error.code}`, callback);
+    callback((new GalleryDecodeError(error.code || StatusCode.INTERNAL_SERVER_ERROR,
+      error.message || DECODE_CALL_FAILED)), []);
   }
 }
 
-function callBackFailed(msg: string, callback: AsyncCallback<Array<scanBarcode.ScanResult>>): void {
-  Logger.error(TAG, msg);
-  GlobalThisUtil.setProperty(CommonConstants.GLOBAL_SCAN_IS_DECODING_GALLERY, false);
-  noResultCallBack(callback);
+export async function openAlbum(callback: AsyncCallback<Array<scanBarcode.ScanResult>>): Promise<void> {
+  const photoSelectOptions: photoAccessHelper.PhotoSelectOptions = {
+    MIMEType: photoAccessHelper.PhotoViewMIMETypes.IMAGE_TYPE,
+    maxSelectNumber: 1,
+    isPhotoTakingSupported: false,
+    isEditSupported: false
+  };
+  const photoPicker: photoAccessHelper.PhotoViewPicker = new photoAccessHelper.PhotoViewPicker();
+  try {
+    const photoSelectResult: photoAccessHelper.PhotoSelectResult = await photoPicker.select(photoSelectOptions);
+    if (photoSelectResult && photoSelectResult.photoUris && photoSelectResult.photoUris.length > 0) {
+      decodeAlbum(photoSelectResult.photoUris[0], callback);
+    } else {
+      scanService.updateScanStatus(ScanStatus.NO_PHOTO_SELECT);
+      callback(new GalleryDecodeError(StatusCode.NOT_FOUND, NOT_FOUND_PHOTO), []);
+    }
+  } catch (error) {
+    scanService.updateScanStatus(ScanStatus.NO_PHOTO_SELECT);
+    callback(new GalleryDecodeError(error.code || StatusCode.INTERNAL_SERVER_ERROR, SELECT_CALL_FAILED), []);
+  }
 }

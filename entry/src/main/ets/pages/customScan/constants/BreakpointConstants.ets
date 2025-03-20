@@ -11,9 +11,13 @@ export class BreakpointConstants {
    */
   public static readonly BREAKPOINT_MD: string = 'md';
   /**
-   * Large device
+   * Breakpoints that represent large device types.
    */
   public static readonly BREAKPOINT_LG: string = 'lg';
+  /**
+   * Breakpoints that represent extra large device types.
+   */
+  public static readonly BREAKPOINT_XL: string = 'xl';
   /**
    * Medium device min. width
    */
@@ -23,15 +27,39 @@ export class BreakpointConstants {
    */
   public static readonly LARGE_DEVICE_WIDTH: number = 840;
   /**
-   *  Loading start height of small device
+   * Middle device height.
+   */
+  public static readonly MIDDLE_DEVICE_HEIGHT: number = 300;
+  /**
+   * Large device height.
+   */
+  public static readonly LARGE_DEVICE_HEIGHT: number = 480;
+  /**
+   * Extra large device height.
+   */
+  public static readonly EXTRA_LARGE_DEVICE_HEIGHT: number = 600;
+  /**
+   *  Loading Height SM
    */
   public static readonly LOADING_HEIGHT_SM: string = '60%';
   /**
-   *  Loading start height of medium device
+   *  Loading Height MD
    */
   public static readonly LOADING_HEIGHT_MD: string = '60%';
   /**
-   *  Loading start height of large device
+   *  Loading Height LG
    */
   public static readonly LOADING_HEIGHT_LG: string = '50%';
+  /**
+   *  Container Margin SM
+   */
+  public static readonly CONTAINER_MARGIN_SM: number = 16;
+  /**
+   *  Container Margin MD
+   */
+  public static readonly CONTAINER_MARGIN_MD: number = 24;
+  /**
+   *  Container Margin LG
+   */
+  public static readonly CONTAINER_MARGIN_LG: number = 32;
 }

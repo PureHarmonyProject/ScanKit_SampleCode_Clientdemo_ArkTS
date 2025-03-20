@@ -1,6 +1,5 @@
 import { customScan, scanBarcode, scanCore } from '@kit.ScanKit';
 import { AsyncCallback, BusinessError } from '@kit.BasicServicesKit';
-import { GlobalThisUtil } from '../../../common/GlobalThisUtil';
 import Logger from '../../../common/Logger';
 import { CommonConstants } from '../constants/CommonConstants';
 
@@ -11,28 +10,32 @@ export class ScanResults {
   public code: number;
   public data: Array<scanBarcode.ScanResult>;
   public size: number;
-  public uri: string;
 
   constructor() {
     this.code = 0;
     this.data = [];
     this.size = 0;
-    this.uri = '';
   }
+}
+
+export enum ScanStatus {
+  FORBIDDEN = 'FORBIDDEN', // Barcode scanning forbidden.
+  NOT_STARTED = 'NOT_STARTED', // Preview stream not enabled.
+  PREVIEW_DECODING = 'PREVIEW_DECODING', // Decoding the preview stream.
+  PHOTO_DECODING = 'PHOTO_DECODING', // Decoding the gallery.
+  NO_PHOTO_SELECT = 'NO_PHOTO_SELECT', // No image selected.
+  PREVIEW_DECODING_COMPLETED = 'PREVIEW_DECODING_COMPLETED', // Preview stream decoding finished.
+  PHOTO_DECODING_COMPLETED = 'PHOTO_DECODING_COMPLETED' // Gallery decoding finished.
 }
 
 @Observed
 export class ScanService {
-  public isScanned: boolean = false;
-  public isScanLine: boolean = false;
+  public scanStatus: ScanStatus = ScanStatus.FORBIDDEN;
   public isAlbumLoading: boolean = false;
-  public isOpenAlbum: boolean = false;
-  public isOnPageShow: boolean = true;
-  public isReleaseCamera: boolean = false;
-  public isStopCamera: boolean = false;
   public scanResult: ScanResults = new ScanResults();
   public isFlashlight: boolean = false; // Whether the flash light is turned on.
-  public isSensorLight: boolean = false; // Determine whether the condition for displaying the flashing icon is met based on lightningFlash.
+  // Determine whether the condition for displaying the flashing icon is met based on lightningFlash.
+  public isSensorLight: boolean = false;
   public retryScanTimes: number = 0;
   private static instance: ScanService | null = null;
 
@@ -43,142 +46,50 @@ export class ScanService {
     return ScanService.instance;
   }
 
-  public initCamera(options: scanBarcode.ScanOptions, viewControl: customScan.ViewControl,
+  public updateScanStatus(scanStatus: ScanStatus) {
+    this.scanStatus = scanStatus;
+    Logger.info(TAG, `updateScanStatus, scanStatus: ${this.scanStatus}`);
+  }
+
+  public isDecodingCompleted(): boolean {
+    return this.scanStatus === ScanStatus.PREVIEW_DECODING_COMPLETED ||
+      this.scanStatus === ScanStatus.PHOTO_DECODING_COMPLETED
+  }
+
+  public startPreviewStream(options: scanBarcode.ScanOptions, viewControl: customScan.ViewControl,
     callback: AsyncCallback<Array<scanBarcode.ScanResult>>) {
-    if (this.isOnPageShow && !this.isScanLine && !this.isScanned &&
-      !GlobalThisUtil.getProperty(CommonConstants.GLOBAL_SCAN_IS_DECODING_GALLERY)) {
-      Logger.info(TAG, `initCamera start. width: ${viewControl.width}, height: ${viewControl.height}`);
-      try {
-        Logger.info(TAG, 'customScan init start');
-        this.isReleaseCamera = false;
-        customScan.init(options);
-      } catch (error) {
-        Logger.error(TAG, `Failed to init customScan. Code: ${error.code}, message: ${error.message}`);
-      }
-      this.startCamera(viewControl, callback);
-      Logger.info(TAG, 'initCamera end');
-    }
-  }
-
-  public startCamera(viewControl: customScan.ViewControl,
-    callback: AsyncCallback<Array<scanBarcode.ScanResult>>): void {
-    try {
-      Logger.info(TAG, 'Start to start camera.');
-      this.isStopCamera = false;
-      customScan.start(viewControl, callback);
-      this.initLightFlash()
+    Logger.info(TAG,
+      `Start Preview Stream. Width: ${viewControl.width}, height: ${viewControl.height}, scanStatus: ${this.scanStatus}`)
+    if (this.scanStatus === ScanStatus.NOT_STARTED || this.scanStatus === ScanStatus.PREVIEW_DECODING_COMPLETED ||
+      this.scanStatus === ScanStatus.PHOTO_DECODING_COMPLETED || this.scanStatus === ScanStatus.NO_PHOTO_SELECT) {
+      this.updateScanStatus(ScanStatus.PREVIEW_DECODING);
+      this.resetScanResult();
+      this.initCustomScan(options);
+      this.startCustomScan(viewControl, callback);
+      this.initLightFlash();
       this.onLightingFlash();
-    } catch (error) {
-      Logger.error(TAG, `Failed to start customScan. Code: ${error.code}`);
-    }
-    this.isScanLine = true;
-  }
-
-  public async stopCamera(): Promise<void> {
-    if (!this.isStopCamera) {
-      try {
-        this.isScanLine = false;
-        this.isStopCamera = true;
-        Logger.info(TAG, 'Start to stop camera.');
-        this.closeFlashLight();
-        this.offLightingFlash();
-        await customScan.stop().catch((error: BusinessError) => {
-          Logger.error(TAG, `Failed to stop customScan by promising. Code: ${error.code}`);
-        });
-      } catch (error) {
-        Logger.error(TAG, `Failed to stop customScan by catching. Code: ${error.code}`);
-      }
+      Logger.info(TAG, 'Start Preview Stream end.');
     }
   }
 
-  public async releaseCamera(): Promise<void> {
-    if (!this.isReleaseCamera) {
-      this.isReleaseCamera = true;
-      await this.stopCamera();
-      try {
-        Logger.info(TAG, 'Start to release camera.');
-        await customScan.release().catch((error: BusinessError) => {
-          Logger.error(TAG,
-            `Failed to release customScan by promising. Code: ${error.code}`);
-        });
-      } catch (error) {
-        Logger.error(TAG, `Failed to release customScan by catching. Code: ${error.code}`);
-      }
+  public async stopPreviewStream(): Promise<void> {
+    Logger.info(TAG, 'Stop Preview Stream start.');
+    if (this.scanStatus === ScanStatus.PREVIEW_DECODING) {
+      this.closeFlashLight();
+      this.offLightingFlash();
+      this.resetRetryScanTimes();
+      this.updateScanStatus(ScanStatus.NOT_STARTED);
+      await this.stopCustomScan();
+      await this.releaseCustomScan();
+      Logger.info(TAG, 'Stop Preview Stream end.');
     }
   }
 
-  public closeFlashLight() {
-    Logger.info(TAG, 'Start to close flashlight.');
-    try {
-      if (customScan.getFlashLightStatus()) {
-        customScan.closeFlashLight();
-        this.isFlashlight = false;
-      }
-    } catch (error) {
-      Logger.error(TAG, `Failed to closeFlashLight. Code: ${error.code}`);
-    }
-  }
-
-  public resetScanData(): void {
-    Logger.info(TAG, 'Start to reset scan data.');
-    this.isScanLine = false;
-    this.initScanData();
-  }
-
-  public initScanData() {
-    Logger.info(TAG, 'Start to init scan data.');
-    this.isScanned = false;
-    GlobalThisUtil.setProperty(CommonConstants.GLOBAL_SCAN_SELECT_A_PICTURE, false);
-    if (!this.isOpenAlbum) {
-      this.isAlbumLoading = false;
-      GlobalThisUtil.setProperty(CommonConstants.GLOBAL_SCAN_IS_DECODING_GALLERY, false);
-    }
-    this.scanResult.uri = '';
-    this.scanResult.data = [];
-    this.scanResult.size = 0;
-  }
-
-  public scanDestroy(): void {
-    Logger.info(TAG, 'Start to destroy scan.');
-    this.isOnPageShow = false;
-    this.resetScanData();
-    this.releaseCamera();
-  }
-
-  public async backToScan(options: scanBarcode.ScanOptions, viewControl: customScan.ViewControl,
-    callback: AsyncCallback<Array<scanBarcode.ScanResult>>): Promise<void> {
-    Logger.info(TAG, 'Start to back to scan.');
-    this.resetScanData();
-    this.initCamera(options, viewControl, callback);
-  }
-
-  public initLightFlash(): void {
-    this.isSensorLight = false;
-    this.isFlashlight = false;
-  }
-
-  public offLightingFlash(): void {
-    try {
-      customScan.off('lightingFlash');
-    } catch (error) {
-      Logger.error(TAG, `Catch: off lightingFlash. Code: ${error.code}, message: ${error?.message}`);
-    }
-  }
-
-  public onLightingFlash(): void {
-    try {
-      customScan.on('lightingFlash', (error, isLightingFlash) => {
-        if (error) {
-          Logger.error(TAG,
-            `lightingFlash callback error. Code: ${error.code}, message: ${error?.message}`);
-          return;
-        }
-        this.isSensorLight = isLightingFlash
-        Logger.info(TAG, `isSensorLight: ${this.isSensorLight}`);
-      });
-    } catch (error) {
-      Logger.error(TAG,
-        `lightingFlash callback error by catching. Code: ${error.code}, message: ${error?.message}`);
+  public changeFlashlight(): void {
+    if (this.getFlashLightStatus()) {
+      this.closeFlashLight();
+    } else {
+      this.openFlashLight();
     }
   }
 
@@ -202,44 +113,145 @@ export class ScanService {
     }
   }
 
-  public changeFlashlight(): void {
-    try {
-      if (customScan.getFlashLightStatus()) {
-        customScan.closeFlashLight();
-      } else {
-        customScan.openFlashLight();
-      }
-      this.isFlashlight = customScan.getFlashLightStatus();
-    } catch (error) {
-      Logger.error(TAG, `Failed to change flashLight. Code: ${error.code}`);
-    }
-  }
-
-  // start回调时，根据error判断是否做重试操作
-  retryOnCondition(error: BusinessError, options: scanBarcode.ScanOptions, viewControl: customScan.ViewControl,
+  // start callback of customScan, which determines whether to retry based on the error information.
+  public retryOnCondition(error: BusinessError, options: scanBarcode.ScanOptions, viewControl: customScan.ViewControl,
     callback: AsyncCallback<Array<scanBarcode.ScanResult>>): boolean {
     if (error) {
       Logger.error(TAG,
-        `An error is returned during customCallbackScan. Code: ${error.code}, message: ${error.message}`);
-      if (error.name !== 'galleryDecodeResult' && this.retryScanTimes < CommonConstants.MAX_RETRY_SCAN_TIMES &&
+        `An error is returned during customScanCallback. Code: ${error.code}, message: ${error.message}`);
+      if (this.retryScanTimes < CommonConstants.MAX_RETRY_SCAN_TIMES &&
         error.code === scanCore.ScanErrorCode.INTERNAL_ERROR) {
         this.retryScanTimes++;
         let timeId = setTimeout(async () => {
-          Logger.info(TAG, `Retry scan start by customScan.start callback. Times: ${this.retryScanTimes}.`);
-          this.isScanLine = false;
-          await this.releaseCamera();
-          this.backToScan(options, viewControl, callback);
-          Logger.info(TAG, `Retry scan end.`);
+          Logger.info(TAG, `Retry preview stream by customScanCallback. Times: ${this.retryScanTimes}.`);
+          await this.stopPreviewStream();
+          this.startPreviewStream(options, viewControl, callback);
+          Logger.info(TAG, `Retry preview stream end.`);
           clearTimeout(timeId);
         }, CommonConstants.DELAY_RETRY_SCAN_TIME)
-        // 重试了
-        return true;
+        return true; // Retry.
       }
     }
-    return false; // 没做重试
+    return false; // No retry.
   }
 
-  resetRetryScanTimes(): void {
+  private initCustomScan(options: scanBarcode.ScanOptions) {
+    try {
+      Logger.info(TAG, 'Init customScan start.');
+      customScan.init(options);
+      Logger.info(TAG, 'Init customScan end.');
+    } catch (error) {
+      Logger.error(TAG, `Failed to init customScan. Code: ${error.code}, message: ${error.message}.`);
+    }
+  }
+
+  private startCustomScan(viewControl: customScan.ViewControl,
+    callback: AsyncCallback<Array<scanBarcode.ScanResult>>): void {
+    try {
+      Logger.info(TAG, 'Start customScan start.');
+      customScan.start(viewControl, callback);
+      Logger.info(TAG, 'Start customScan end.');
+    } catch (error) {
+      Logger.error(TAG, `Failed to start customScan. Code: ${error.code}, message: ${error.message}.`);
+    }
+  }
+
+  private async stopCustomScan(): Promise<void> {
+    try {
+      Logger.info(TAG, `stop customScan start.`);
+      await customScan.stop().catch((error: BusinessError) => {
+        Logger.error(TAG, `Failed to stop customScan by promising. Code: ${error.code}, message: ${error.message}.`);
+      });
+      Logger.info(TAG, `stop customScan end.`);
+    } catch (error) {
+      Logger.error(TAG, `Failed to stop customScan by catching. Code: ${error.code}, message: ${error.message}.`);
+    }
+  }
+
+  private async releaseCustomScan(): Promise<void> {
+    try {
+      Logger.info(TAG, `release customScan start.`);
+      await customScan.release().catch((error: BusinessError) => {
+        Logger.error(TAG, `Failed to release customScan by promising. Code: ${error.code}, message: ${error.message}.`);
+      });
+      Logger.info(TAG, `release customScan end.`);
+    } catch (error) {
+      Logger.error(TAG, `Failed to release customScan by catching. Code: ${error.code}, message: ${error.message}.`);
+    }
+  }
+
+  private resetScanResult(): void {
+    Logger.info(TAG, 'resetScanResult');
+    this.scanResult.code = 0;
+    this.scanResult.data = [];
+    this.scanResult.size = 0;
+  }
+
+  private initLightFlash(): void {
+    this.isSensorLight = false;
+    this.isFlashlight = false;
+  }
+
+  private offLightingFlash(): void {
+    try {
+      customScan.off('lightingFlash');
+    } catch (error) {
+      Logger.error(TAG, `Catch: off lightingFlash. Code: ${error.code}, message: ${error?.message}`);
+    }
+  }
+
+  private onLightingFlash() {
+    try {
+      customScan.on('lightingFlash', (error, isLightingFlash) => {
+        if (error) {
+          Logger.error(TAG,
+            `lightingFlash callback error. Code: ${error.code}, message: ${error?.message}`);
+          return;
+        }
+        this.isSensorLight = isLightingFlash;
+        Logger.info(TAG, `isSensorLight: ${this.isSensorLight}`);
+      });
+    } catch (error) {
+      Logger.error(TAG,
+        `lightingFlash callback error by catching. Code: ${error.code}, message: ${error?.message}`);
+    }
+  }
+
+  private getFlashLightStatus(): boolean {
+    Logger.info(TAG, 'Start to getFlashLightStatus.');
+    let isFlashlight: boolean = false;
+    try {
+      isFlashlight = customScan.getFlashLightStatus();
+    } catch (error) {
+      Logger.error(TAG, `Failed to getFlashLightStatus. Code: ${error.code}, message: ${error.message}.`);
+    }
+    this.isFlashlight = isFlashlight;
+    return isFlashlight;
+  }
+
+  private closeFlashLight(): void {
+    Logger.info(TAG, 'Start to close flashlight.');
+    try {
+      if (this.isFlashlight) {
+        customScan.closeFlashLight();
+        this.isFlashlight = false;
+      }
+    } catch (error) {
+      Logger.error(TAG, `Failed to closeFlashLight. Code: ${error.code}, message: ${error.message}.`);
+    }
+  }
+
+  private openFlashLight() {
+    Logger.info(TAG, 'Start to open flashlight.');
+    try {
+      customScan.openFlashLight();
+      this.isFlashlight = true;
+    } catch (error) {
+      Logger.error(TAG, `Failed to openFlashLight. Code: ${error.code}, message: ${error.message}.`);
+    }
+  }
+
+  private resetRetryScanTimes(): void {
     Logger.info(TAG, 'Reset retry scan times.');
     this.retryScanTimes = 0;
   }

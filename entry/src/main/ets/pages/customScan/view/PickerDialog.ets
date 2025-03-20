@@ -3,6 +3,7 @@ import { curves } from '@kit.ArkUI';
 import { funcDelayer } from '../../../common/Utils';
 import { CommonConstants } from '../constants/CommonConstants';
 import { FontSizeScale } from '../model/FontSizeScale';
+import { WindowService } from '../model/WindowService';
 
 @Extend(Text)
 function textClass(color: ResourceColor, textAlign: TextAlign) {
@@ -12,12 +13,6 @@ function textClass(color: ResourceColor, textAlign: TextAlign) {
   .textAlign(textAlign)
   .lineHeight(22)
   .opacity(0.9)
-}
-
-@Extend(Button)
-function buttonClass() {
-  .width('100%')
-  .height(40)
 }
 
 @Extend(Column)
@@ -42,9 +37,6 @@ function dialogBoxContainer(color: ResourceColor) {
   })
   .backgroundColor(color)
   .borderRadius($r('sys.float.ohos_id_corner_radius_dialog'))
-  .constraintSize({
-    maxWidth: 400
-  })
 }
 
 @Extend(Column)
@@ -63,6 +55,7 @@ export struct PickerDialog {
   @Prop text: Resource;
   @Prop dialogScale: number = 0.85;
   @State dialogWidth: number = 368;
+  @State windowService: WindowService = WindowService.getInstance();
   public cancel: () => void = () => {
   };
 
@@ -78,8 +71,8 @@ export struct PickerDialog {
   @Builder
   DialogButton() {
     Button($r('app.string.Scan_diaLog_got_it'), { buttonStyle: ButtonStyleMode.TEXTUAL })
-      .buttonClass()
-      .width(this.dialogWidth - 32)
+      .width('100%')
+      .height(40)
       .onClick(() => {
         animateTo({
           duration: 250,
@@ -112,7 +105,8 @@ export struct PickerDialog {
     Column() {
       Flex({
         direction: FlexDirection.Column,
-        justifyContent: FlexAlign.Center
+        justifyContent: FlexAlign.Center,
+        alignItems: ItemAlign.Center
       }) {
         Column() {
           Column() {
@@ -135,7 +129,9 @@ export struct PickerDialog {
           this.dialogWidth = Number(newArea.width);
         })
         .scale({ x: this.dialogScale, y: this.dialogScale })
+        .width(this.windowService.width >= 400 ? 400 : '100%')
       }
+      .width('100%')
     }
     .componentContainer()
     .onAppear(() => {

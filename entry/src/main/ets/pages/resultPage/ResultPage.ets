@@ -2,6 +2,7 @@ import { LengthMetrics, router } from '@kit.ArkUI';
 import { scanBarcode } from '@kit.ScanKit';
 import { StatusBar } from '../../common/StatusBar';
 import { getScanTypeKey } from '../../common/Utils'
+import { WindowService } from '../customScan/model/WindowService';
 
 @Extend(Text)
 function labelText() {
@@ -23,15 +24,11 @@ function valueText() {
 @Entry
 @Component
 struct ResultPage {
-  @State translateWidth: number = 1;
-  @State translateHeight: number = 1;
-  @State result: scanBarcode.ScanResult = router.getParams() as scanBarcode.ScanResult
-  @StorageLink('windowWidthPx') windowWidth: number = 1;
+  @State result: scanBarcode.ScanResult = router.getParams() as scanBarcode.ScanResult;
+  @State windowService: WindowService = WindowService.getInstance();
 
   build() {
-    RelativeContainer() {
-      StatusBar({ title: $r('app.string.result_content') })
-
+    Stack() {
       Column() {
         Column() {
           Text($r('app.string.code_format'))
@@ -58,31 +55,18 @@ struct ResultPage {
               (this.result.scanCodeRect?.bottom || 0))
               .valueText()
           }
-
         }
         .backgroundColor('#0a000000')
         .borderRadius(12)
-        .width(px2vp(this.windowWidth) <= 480 ? '85%' : '60%')
+        .width(this.windowService.width <= 480 ? '85%' : '60%')
         .alignItems(HorizontalAlign.Start)
         .padding(24)
       }
       .alignItems(HorizontalAlign.Center)
       .width('100%')
-      .alignRules({
-        top: { anchor: '__container__', align: VerticalAlign.Center },
-        left: { anchor: '__container__', align: HorizontalAlign.Center }
-      })
-      .markAnchor({
-        top: LengthMetrics.vp(this.translateHeight),
-        start: LengthMetrics.vp(this.translateWidth),
-      })
-      .onSizeChange((_: SizeOptions, newValue: SizeOptions) => {
-        if (newValue && typeof newValue.width === 'number' && typeof newValue.height === 'number') {
-          this.translateWidth = newValue.width / 2;
-          this.translateHeight = newValue.height / 2;
-        }
-      })
-      .id('columnResultPage')
+
+      StatusBar({ title: $r('app.string.result_content') })
+        .position({ start: LengthMetrics.vp(-15) })
     }
     .width('100%')
     .height('100%')

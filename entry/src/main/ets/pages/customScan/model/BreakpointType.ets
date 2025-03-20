@@ -17,8 +17,12 @@ export class BreakpointType<T> {
     }
     if (currentBreakpoint === BreakpointConstants.BREAKPOINT_LG) {
       return this.lg;
-    } else {
-      return this.sm;
     }
+    return this.sm;
   }
 }
+
+// Padding and margin of the breakpoint.
+export const BREAK_POINT_TYPE_MARGIN_VP: BreakpointType<number> =
+  new BreakpointType<number>(BreakpointConstants.CONTAINER_MARGIN_SM, BreakpointConstants.CONTAINER_MARGIN_MD,
+    BreakpointConstants.CONTAINER_MARGIN_LG);

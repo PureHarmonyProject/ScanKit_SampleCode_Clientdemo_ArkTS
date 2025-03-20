@@ -1,6 +1,7 @@
 import { AnimatorResult, curves, Animator } from '@kit.ArkUI';
 import Logger from '../../../common/Logger';
 import { BreakpointConstants } from '../constants/BreakpointConstants';
+import { ScanLayout } from '../model/ScanLayout';
 
 const TAG = 'ScanLine';
 
@@ -24,8 +25,7 @@ function imageAnimation(speed: number, linePosition: number, allAngle: number) {
 
 @Component
 export struct ScanLine {
-  @StorageLink('currentBreakpoint') currentBreakpoint: string = BreakpointConstants.BREAKPOINT_SM;
-  @State isScanned: boolean = false; // Whether scanning is performed.
+  @State scanLayout: ScanLayout = ScanLayout.getInstance();
   @State linePosition: number = 0;
   @State allAngle: number = 180;
   @State lightFactor: number = 0.075;
@@ -37,7 +37,6 @@ export struct ScanLine {
     [1.0, this.lightFactor, this.lightFactor, this.lightFactor, 0.0, this.lightFactor, this.lightFactor + 1.0,
       this.lightFactor, this.lightFactor, 0.0, this.lightFactor, this.lightFactor, this.lightFactor + 1.0,
       this.lightFactor, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0];
-  @State isOpenAlbum: boolean = false;
   @State isScanMotion: boolean = true; // Whether to display the scanning animation.
   private particlePropertyAnimationDown: ParticlePropertyAnimation<number> = {
     from: 0,
@@ -95,7 +94,6 @@ export struct ScanLine {
         if (!this.isScanMotion) {
           this.isScanMotion = true;
         }
-        this.isOpenAlbum = false;
         value = value / 100;
 
         if (value < 0.389) {
@@ -171,8 +169,7 @@ export struct ScanLine {
           .position({ y: this.linePosition + '%' })
           .fill(Color.White))
     }
-    .width(this.currentBreakpoint === BreakpointConstants.BREAKPOINT_SM ? '100%' : '50%')
+    .width(this.scanLayout.widthBreakpoint === BreakpointConstants.BREAKPOINT_SM ? '100%' : '50%')
     .height('100%')
-    .opacity(this.isScanned || this.isOpenAlbum ? 0 : 1)
   }
 }

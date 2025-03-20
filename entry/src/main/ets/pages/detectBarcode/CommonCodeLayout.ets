@@ -1,7 +1,8 @@
 import { router, display } from '@kit.ArkUI';
 import { scanBarcode } from '@kit.ScanKit';
-import { GlobalThisUtil } from '../../common/GlobalThisUtil';
 import Logger from '../../common/Logger';
+import { DeviceService } from '../customScan/model/DeviceService';
+import { WindowService } from '../customScan/model/WindowService';
 
 const TAG: string = 'CodeLayout';
 
@@ -19,14 +20,10 @@ struct CodeLayout {
   @State screen: number = 1;
   @State codeLocation: Array<Array<number>> = [];
   public scroller: Scroller = new Scroller();
-  private statusHeight: number = 39;
+  @State windowService: WindowService = WindowService.getInstance();
 
   aboutToAppear() {
     this.codeLocation = [];
-    if (GlobalThisUtil.getProperty('scan_topRect_height')) {
-      this.statusHeight = px2vp(GlobalThisUtil.getProperty('scan_topRect_height'));
-    }
-    let isFold: boolean = display.isFoldable();
     this.setDisplay();
     Logger.info(TAG, 'aboutToAppear CodeLayout');
     let params = router.getParams() as Record<string, number | string | Array<scanBarcode.ScanResult>>;
@@ -36,7 +33,7 @@ struct CodeLayout {
     this.infoH = params.infoH as number;
     Logger.info(TAG, `uri: ${this.uri}, infoW: ${this.infoW}, infoH: ${this.infoH}`);
     this.calculate();
-    if (isFold) {
+    if (DeviceService.isFolding) {
       display.on('foldDisplayModeChange', async (foldStatus: display.FoldDisplayMode) => {
         // 1: unfolded 2: folded
         if (foldStatus === 1 || foldStatus === 2) {
@@ -61,7 +58,7 @@ struct CodeLayout {
     }
 
     if (displayClass !== null) {
-      displayClass.height = displayClass.height - vp2px(this.statusHeight);
+      displayClass.height = displayClass.height - vp2px(this.windowService.topAvoidHeight);
       this.displayHeight = Math.round(px2lpx(displayClass.height));
       this.displayWidth = Math.round(px2lpx(displayClass.width));
       Logger.info(TAG, `setDisplay,displayWidth: ${this.displayWidth}, displayHeight: ${this.displayHeight}.`);
@@ -104,7 +101,7 @@ struct CodeLayout {
           router.back();
         })
         .margin({
-          top: this.statusHeight
+          top: this.windowService.topAvoidHeight
         })
       Column() {
         Image(this.uri)
@@ -129,7 +126,7 @@ struct CodeLayout {
         })
       }
       .padding({
-        top: this.statusHeight
+        top: this.windowService.topAvoidHeight
       })
       .width('100%')
       .height('100%')

@@ -5,9 +5,9 @@ import { image } from '@kit.ImageKit';
 import { display, LengthMetrics, router } from '@kit.ArkUI';
 import { detectBarcode, scanBarcode, scanCore } from '@kit.ScanKit';
 import Logger from '../../common/Logger';
-import { GlobalThisUtil } from '../../common/GlobalThisUtil';
 import { BreakpointType } from '../customScan/model/BreakpointType';
 import { BreakpointConstants } from '../customScan/constants/BreakpointConstants';
+import { WindowService } from '../customScan/model/WindowService';
 
 const TAG: string = 'DecodeCameraYuv';
 const CAMERA_1080: number = 1080;
@@ -18,6 +18,7 @@ const CAMERA_1920: number = 1920;
 struct DecodeCameraYuv {
   mXComponentController: XComponentController = new XComponentController();
   @StorageLink('currentBreakpoint') currentBreakpoint: string = BreakpointConstants.BREAKPOINT_SM;
+  @State windowService: WindowService = WindowService.getInstance();
   @State isUserGrant: boolean = false;
   @State xComponentHeight: number = 1;
   @State xComponentWidth: number = 1;
@@ -25,7 +26,6 @@ struct DecodeCameraYuv {
   @State previewScreenOffsetY: number = 0;
   @State scanResultPoints: Array<scanBarcode.ScanCodeRect> = [];
   @State cornerPoints: Array<Array<scanBarcode.Point>> = [];
-  @State navHeight: number = 39;
   // CameraKit
   private cameraManager: camera.CameraManager | undefined = undefined;
   private photoSession: camera.PhotoSession | undefined = undefined;
@@ -68,9 +68,6 @@ struct DecodeCameraYuv {
   async aboutToAppear() {
     this.setDisplay();
     this.setCameraManager();
-    if (GlobalThisUtil.getProperty('scan_topRect_height')) {
-      this.navHeight = px2vp(GlobalThisUtil.getProperty('scan_topRect_height'));
-    }
   }
 
   setDisplay() {
@@ -146,7 +143,7 @@ struct DecodeCameraYuv {
         .fillColor(Color.Black)
         .id('decode_camera_yuv_goBack')
         .margin({
-          top: LengthMetrics.vp(this.navHeight + 8),
+          top: LengthMetrics.vp(this.windowService.topAvoidHeight + 8),
           start: LengthMetrics.vp(new BreakpointType(16,
             24,
             32).getValue(this.currentBreakpoint))

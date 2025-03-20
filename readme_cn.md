@@ -53,7 +53,6 @@
 │ ├─common  
 │ │ ├─CommonComponents.ets // 公共组件  
 │ │ ├─CommonTipsDialog.ets // 公共提示弹窗  
-│ │ ├─GlobalThisUtil.ts // globalThis封装类  
 │ │ ├─Logger.ts // 日志打印方法  
 │ │ ├─PermissionsUtil.ets // 相机授权类  
 │ │ ├─StatusBar.ets // 状态栏组件  
@@ -71,11 +70,14 @@
 │ │ │ ├─model        
 │ │ │ │ ├─BreakpointType.ets // 断点  
 │ │ │ │ ├─CommonEventManager.ts // 公共事件管理  
+│ │ │ │ ├─DeviceService.ets // 设备管理类  
 │ │ │ │ ├─FontSizeScale.ets // 字体大小缩放  
 │ │ │ │ ├─OpenPhoto.ets // 图库  
 │ │ │ │ ├─PromptTone.ts // 提示音  
+│ │ │ │ ├─ScanLayout.ets // 扫码界面布局管理类  
 │ │ │ │ ├─ScanService.ets // 自定义扫码  
-│ │ │ │ ├─ScanSize.ets // 扫面界面尺寸  
+│ │ │ │ ├─WindowService.ets // 窗口管理类  
+│ │ │ │ ├─XComponentService.ets // XComponent管理类  
 │ │ │ ├─pages // 页面  
 │ │ │ │ ├─ScanPage.ets // 扫码页面  
 │ │ │ ├─view // 组件  
@@ -87,7 +89,6 @@
 │ │ │ │ ├─ScanLine.ets // 扫描线组件  
 │ │ │ │ ├─ScanLoading.ets // 加载组件  
 │ │ │ │ ├─ScanTitle.ets // 标题组件  
-│ │ │ │ ├─ScanTopTool.ets // 顶部组件  
 │ │ │ │ ├─ScanXComponent.ets // XComponent组件  
 │ │ │ ├─CustomPage.ets // 自定义扫码按钮入口页面  
 │ │ ├─defaultScan //默认界面扫码  
@@ -166,6 +167,6 @@
 ## 约束与限制
 
 1. 本实例仅支持标准系统上运行，支持设备：华为手机、华为平板。
-2. HarmonyOS系统：HarmonyOS 5.0.2 Beta1及以上。
+2. HarmonyOS系统：HarmonyOS 5.0.3 Release及以上。
 3. DevEco Studio版本：DevEco Studio 5.0.2 Beta1及以上。
 4. HarmonyOS SDK版本：HarmonyOS 5.0.2 Beta1 SDK及以上。

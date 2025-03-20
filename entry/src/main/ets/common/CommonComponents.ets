@@ -1,3 +1,5 @@
+import { WindowService } from "../pages/customScan/model/WindowService";
+
 @Extend(Text)
 function labelText() {
   .fontSize(14).fontColor(0x000000)
@@ -16,13 +18,13 @@ function buttonScanStyle() {
 @Component
 export struct CustomButton {
   @Prop mText: string | Resource = '';
+  @State windowService: WindowService = WindowService.getInstance();
   private mHeight: number = 40;
-  @StorageLink('windowWidthPx') windowWidth: number = 1;
   public mOnClick: () => void = () => {
   };
 
   build() {
-    if (px2vp(this.windowWidth) <= 480) {
+    if (this.windowService.width <= 480) {
       Column() {
         Button(this.mText)
           .height(this.mHeight)

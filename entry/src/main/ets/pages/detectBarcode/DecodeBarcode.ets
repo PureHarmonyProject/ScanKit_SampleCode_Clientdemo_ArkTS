@@ -16,7 +16,6 @@ const TAG: string = 'DecodeBarcode';
 struct DecodeBarcode {
   @State translateWidth: number = 1;
   @State translateHeight: number = 1;
-  @StorageLink('windowWidthPx') windowWidth: number = 1;
 
   build() {
     RelativeContainer() {

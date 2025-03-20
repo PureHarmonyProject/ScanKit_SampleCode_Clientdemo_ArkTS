@@ -1,28 +1,29 @@
-import { display, window } from '@kit.ArkUI';
+import { display, LengthMetrics, router } from '@kit.ArkUI';
 import { customScan, scanBarcode, scanCore } from '@kit.ScanKit';
 import { abilityAccessCtrl, common, Permissions } from '@kit.AbilityKit';
 import { AsyncCallback, BusinessError, emitter } from '@kit.BasicServicesKit';
 import Logger from '../../../common/Logger';
 import { ScanLine } from '../view/ScanLine';
 import { ScanBottom } from '../view/ScanBottom';
-import { ScanTopTool } from '../view/ScanTopTool';
 import { CodeLayout } from '../view/CommonCodeLayout';
 import { ScanTitle } from '../view/ScanTitle';
 import { PromptTone } from '../model/PromptTone';
 import { openAlbum } from '../model/OpenPhoto';
-import { GlobalThisUtil } from '../../../common/GlobalThisUtil';
 import { CommonConstants } from '../constants/CommonConstants'
 import { MaskLayer } from '../view/MaskLayer';
-import { ScanService, ScanResults } from '../model/ScanService';
+import { ScanService, ScanResults, ScanStatus } from '../model/ScanService';
 import { BreakpointConstants } from '../constants/BreakpointConstants';
-import { DeviceStatus, ScanLayout, ScanSize, XComponentSize, NewArea } from '../model/ScanSize';
 import { ScanXComponent } from '../view/ScanXComponent';
 import { ScanLoading } from '../view/ScanLoading';
 import { PermissionsUtil } from '../../../common/PermissionsUtil';
 import { CommonTipsDialog } from '../../../common/CommonTipsDialog';
-import { getFoldStatusByDisplay } from '../model/ScanSize';
+import { DeviceService } from '../model/DeviceService';
+import { WindowService } from '../model/WindowService';
+import { FoldStatus, XComponentService } from '../model/XComponentService';
+import { ScanLayout } from '../model/ScanLayout';
+import { BREAK_POINT_TYPE_MARGIN_VP } from '../model/BreakpointType';
 
-export const TAG = 'ScanPage';
+const TAG = 'ScanPage';
 
 let storage = LocalStorage.getShared();
 let timerId: number | null;
@@ -42,18 +43,17 @@ function tipContainer() {
 struct ScanPage {
   @StorageLink('currentBreakpoint') currentBreakpoint: string = BreakpointConstants.BREAKPOINT_SM;
   @State tipShow: boolean = false; // Determine whether to display the message indicating that no barcode is recognized.
-  @State scanSize: ScanSize = ScanSize.getInstance();
-  @State deviceStatus: DeviceStatus = this.scanSize.deviceStatus;
-  @State xComponentSize: XComponentSize = this.scanSize.xComponentSize;
-  @State scanLayout: ScanLayout = this.scanSize.scanLayout;
+  @State xComponentService: XComponentService = XComponentService.getInstance();
+  @State foldStatus: FoldStatus = this.xComponentService.foldStatus;
+  @State windowService: WindowService = WindowService.getInstance();
+  @State scanLayout: ScanLayout = ScanLayout.getInstance();
   @State scanService: ScanService = ScanService.getInstance();
   @State scanResult: ScanResults = this.scanService.scanResult;
   @State surfaceId: string = '';
   @State densityDPI: number = 0; // Pixel density.
-  @State newArea: NewArea = this.scanSize.newArea; // Latest window area information.
   @State viewControl: customScan.ViewControl = {
-    width: this.xComponentSize.width,
-    height: this.xComponentSize.height,
+    width: this.xComponentService.width,
+    height: this.xComponentService.height,
     surfaceId: ''
   };
   @State isDialogShow: boolean = false;
@@ -72,93 +72,65 @@ struct ScanPage {
     alignment: DialogAlignment.Center
   });
   public avPlayer: PromptTone | null = null; // Audio notification after successful barcode scanning.
-  customCallbackScan: AsyncCallback<scanBarcode.ScanResult[]> =
+  photoPickerCallback: AsyncCallback<scanBarcode.ScanResult[]> =
     async (error: BusinessError, result: scanBarcode.ScanResult[]) => {
-      if (this.scanService.retryOnCondition(error, this.options, this.viewControl, this.customCallbackScan)) {
+      Logger.info(TAG,
+        `photoPickerCallback start. Code: ${error.code}, message: ${error.message},scanStatus: ${this.scanService.scanStatus}`);
+      if (this.scanService.scanStatus === ScanStatus.NO_PHOTO_SELECT) {
+        this.startCustomScan();
+      } else {
+        // ScanStatus: PHOTO_DECODING_COMPLETED
+        this.scanService.isAlbumLoading = true;
+        this.handleDecodeResult(error, result);
+        this.scanService.updateScanStatus(ScanStatus.PHOTO_DECODING_COMPLETED);
+      }
+    }
+  customScanCallback: AsyncCallback<scanBarcode.ScanResult[]> =
+    async (error: BusinessError, result: scanBarcode.ScanResult[]) => {
+      if (this.scanService.retryOnCondition(error, this.options, this.viewControl, this.customScanCallback)) {
         return;
       }
-      if (!this.scanService.isScanned && !this.scanService.isOpenAlbum &&
-      this.scanService.isOnPageShow) {
-        this.scanResult.code = (error && error.code) ? error.code : 0;
-        this.scanResult.data = result || [];
-        let resultLength: number = result ? result.length : 0;
-        if (GlobalThisUtil.getProperty(CommonConstants.GLOBAL_SCAN_SELECT_A_PICTURE) || resultLength) {
-          this.scanService.releaseCamera();
+      if (this.scanService.scanStatus === ScanStatus.PREVIEW_DECODING) {
+        this.handleDecodeResult(error, result);
+        if (this.scanResult.size > 0) {
+          this.scanService.stopPreviewStream();
+          Logger.info(TAG, `customScanCallback, scanStatus: ${this.scanService.scanStatus}`);
+          this.scanService.updateScanStatus(ScanStatus.PREVIEW_DECODING_COMPLETED);
           this.clearTimer();
-          this.scanService.isScanned = true; // Scanned successfully.
-          this.scanResult.uri = GlobalThisUtil.getProperty(CommonConstants.GLOBAL_SCAN_SELECT_A_PICTURE);
-          this.scanResult.size = resultLength;
-          // Display mask.
-          if (this.scanResult.uri) {
-            this.scanService.isAlbumLoading = true;
-          }
-          if (this.scanResult.size >= 1) {
-            this.scanService.isScanLine = false;
-            if (this.avPlayer) {
-              try {
-                this.avPlayer.playDrip();
-              } catch (error) {
-                Logger.error(TAG, `avPlayer catch error. Code: ${error.code}`);
-              }
-            }
-          } else {
-            this.scanService.isAlbumLoading = false;
-          }
-        } else {
-          this.scanService.isAlbumLoading = false;
-          // No image is selected.
-          this.scanService.isOpenAlbum = false;
-          this.initScan();
-
         }
-      } else {
-        // Failed to scan the QR code from an image in the gallery.
-        this.scanService.isAlbumLoading = false;
       }
     }
 
   aboutToAppear() {
-    // Obtain the device orientation.
-    this.scanSize.setDisplayRotation();
-
-    // Not access the gallery for code recognition.
-    GlobalThisUtil.setProperty(CommonConstants.GLOBAL_SCAN_IS_DECODING_GALLERY, false);
-    this.scanService.isOpenAlbum = false;
-
-    if (GlobalThisUtil.getProperty('scan_topRect_height')) {
-      this.scanSize.navHeight = px2vp(GlobalThisUtil.getProperty('scan_topRect_height'));
-    }
-
-    if (GlobalThisUtil.getProperty('hmsCore_scan_isFoldable')) {
-      this.deviceStatus.newFoldStatus = getFoldStatusByDisplay();
-      this.deviceStatus.oldFoldStatus = this.deviceStatus.newFoldStatus;
+    Logger.info(TAG, 'aboutToAppear.');
+    if (DeviceService.isFolding) {
+      this.foldStatus.newFoldStatus = DeviceService.getFoldStatusByDisplay();
+      this.foldStatus.oldFoldStatus = this.foldStatus.newFoldStatus;
       // Foldable screen status listener.
       this.foldStatusSubscribe();
     }
-
-    // Initialize XComponentSize based on the window size.
-    this.setDisplay();
 
     // Window size listener.
     this.windowSizeSubscribe();
 
     // Pixel density listener.
-    this.onDensityDPI();
+    this.onDisplayChange();
 
     // Screen event listener.
     this.onScreenEvent();
+
+    this.windowService.enterCustomScanPage();
   }
 
   async onPageShow(): Promise<void> {
+    Logger.info(TAG, 'onPageShow.');
     await this.empowerment();
-    this.scanService.isOnPageShow = true;
-    this.scanService.isReleaseCamera = false;
-    this.scanService.isStopCamera = false;
   }
 
   onPageHide(): void {
-    this.scanService.scanDestroy();
-    this.scanService.resetRetryScanTimes();
+    Logger.info(TAG, 'onPageHide.');
+    this.scanService.stopPreviewStream();
+    this.scanService.updateScanStatus(ScanStatus.FORBIDDEN);
     this.clearTimer();
     this.userGrant = false;
     this.isDialogShow = false;
@@ -166,25 +138,26 @@ struct ScanPage {
   }
 
   async aboutToDisappear(): Promise<void> {
+    Logger.info(TAG, 'aboutToDisappear.');
     try {
       emitter.off(CommonConstants.WINDOW_SIZE_CHANGE);
-      if (GlobalThisUtil.getProperty('hmsCore_scan_isFoldable')) {
+      if (DeviceService.isFolding) {
         display.off('foldStatusChange');
       }
     } catch (error) {
       Logger.error(TAG, `listener off catch error. Code: ${error.code}`);
     }
-    this.offDensityDPI();
+    this.offDisplayChange();
     this.offScreenEvent();
+    this.windowService.leaveCustomScanPage();
   }
 
   @Builder
   BackgroundBuilder() {
     ScanXComponent({
-      xComponentSize: this.xComponentSize,
       surfaceId: this.surfaceId,
-      initScan: (() => {
-        this.initScan();
+      startCustomScan: (() => {
+        this.startCustomScan();
       })
     }).height('100%')
       .width('100%')
@@ -202,12 +175,7 @@ struct ScanPage {
     Column() {
       ScanTitle({
         scanResultSize: this.scanResult.size,
-        navHeight: this.scanSize.navHeight,
       }).width('100%')
-        .onAreaChange((_: Area, newArea: Area) => {
-          this.scanLayout.topHeight = Number(newArea.height);
-        })
-        .visibility(this.scanResult.size > 0 ? Visibility.Hidden : Visibility.Visible)
       if (this.tipShow) {
         Row() {
           Text($r('app.string.Scan_diaLog_not_found'))
@@ -223,26 +191,15 @@ struct ScanPage {
   @Builder
   ScanLineBuilder() {
     // Scanning line.
-    if (this.scanService.isScanLine) {
+    if (this.scanService.scanStatus === ScanStatus.PREVIEW_DECODING) {
       Column() {
-        ScanLine({
-          isScanned: this.scanService.isScanned,
-          isOpenAlbum: this.scanService.isOpenAlbum
-        })
-          .height(this.currentBreakpoint === BreakpointConstants.BREAKPOINT_SM ?
-            `calc(100% - ${this.scanLayout.topHeight}vp - ${this.scanLayout.bottomHeightSmExcludesMarginD}vp - ${3 *
-            this.scanLayout.marginD}vp)`
-            : `calc(100% - ${this.scanLayout.topHeight}vp - ${this.scanLayout.bottomHeightMdOrLg}vp)`)
+        ScanLine()
+          .height(`calc(100% - ${this.scanLayout.scanLineMarginTop}vp - ${this.scanLayout.scanLineMarginBottom}vp)`)
           .margin({
-            bottom: this.currentBreakpoint === BreakpointConstants.BREAKPOINT_SM ?
-              `calc(${this.scanLayout.bottomHeightSmExcludesMarginD}vp + ${3 * this.scanLayout.marginD}vp)`
-              : this.scanLayout.bottomHeightMdOrLg
-          })
-          .constraintSize({
-            minHeight: 100
+            top: this.scanLayout.scanLineMarginTop
           })
       }
-      .justifyContent(FlexAlign.End)
+      .justifyContent(FlexAlign.Start)
       .width('100%').height('100%')
     }
   }
@@ -251,44 +208,71 @@ struct ScanPage {
   ScanBottomBuilder() {
     // Gallery, flash light
     ScanBottom({
-      isScanned: this.scanService.isScanned,
       enableAlbum: this.options.enableAlbum,
       openPicker: (async () => {
-        if (!this.scanService.isScanned) {
-          GlobalThisUtil.setProperty(CommonConstants.GLOBAL_SCAN_SELECT_A_PICTURE, false);
-          GlobalThisUtil.setProperty(CommonConstants.GLOBAL_SCAN_IS_DECODING_GALLERY, true);
-          this.scanService.isOpenAlbum = true;
-          this.scanService.isScanned = false;
-          this.scanService.isScanLine = false;
-          await this.scanService.releaseCamera();
-          this.scanService.resetRetryScanTimes();
+        if (this.scanService.scanStatus === ScanStatus.PREVIEW_DECODING) {
+          await this.scanService.stopPreviewStream();
           this.clearTimer();
-          openAlbum(this.options, this.customCallbackScan, () => {
-            this.scanService.isAlbumLoading = true;
-            this.scanService.isOpenAlbum = false;
-          });
+          this.scanService.updateScanStatus(ScanStatus.PHOTO_DECODING);
+          Logger.info(TAG, `openAlbum, scanStatus: ${this.scanService.scanStatus}`);
+          openAlbum(this.photoPickerCallback);
         }
       })
     })
   }
 
   @Builder
+  MaskLayerBuilder() {
+    // Radio button information in the single-code and multi-code scanning results.
+    if (this.scanService.isDecodingCompleted()) {
+      MaskLayer()
+    }
+  }
+
+  @Builder
   CodeLayoutBuilder() {
     // Display the radio button for scanning a single barcode or multiple barcodes.
-    if (this.scanService.isScanned) {
-      MaskLayer()
+    if (this.scanService.isDecodingCompleted()) {
       Column() {
         CodeLayout({
-          rotation: this.deviceStatus.rotation,
-          xComponentSize: this.xComponentSize,
-          navHeight: this.scanSize.navHeight,
           scanResults: this.scanResult,
-          backToScan: (() => {
-            this.backToScanCamera();
+          restartPreviewStream: (() => {
+            Logger.info(TAG, 'Start to restartPreviewStream by dialog button.');
+            this.restartPreviewStream();
           })
         })
       }
     }
+  }
+
+  @Builder
+  CloseButtonBuilder() {
+    Button({
+      type: ButtonType.Circle,
+      stateEffect: true
+    }) {
+      SymbolGlyph($r('sys.symbol.xmark'))
+        .fontWeight(FontWeight.Regular)
+        .fontColor([$r('sys.color.font_on_primary')])
+        .fontSize('24vp')
+    }
+    .width(CommonConstants.CLOSE_IMAGE_SIZE)
+    .height(CommonConstants.CLOSE_IMAGE_SIZE)
+    .backgroundColor('rgba(255,255,255,0.15)')
+    .id('scan_page_goBack')
+    .margin({
+      top: LengthMetrics.vp(this.scanLayout.closeButtonMarginTop),
+      start: LengthMetrics.vp(BREAK_POINT_TYPE_MARGIN_VP.getValue(this.scanLayout.widthBreakpoint))
+    })
+    .onClick(async () => {
+      if (this.scanResult.size > 1) {
+        Logger.info(TAG, 'Start to restartPreviewStream by close button.');
+        this.restartPreviewStream();
+      } else {
+        Logger.info(TAG, 'router back');
+        router.back();
+      }
+    })
   }
 
   build() {
@@ -297,25 +281,34 @@ struct ScanPage {
         this.BackgroundBuilder()
       }
 
-      this.ScanTitleBuilder()
-
       this.ScanLineBuilder()
 
       this.ScanBottomBuilder()
 
+      this.MaskLayerBuilder()
+
+      this.ScanTitleBuilder()
+
       this.CodeLayoutBuilder()
 
-      ScanTopTool({
-        scanResultSize: this.scanResult.size,
-        navHeight: this.scanSize.navHeight,
-        backToScan: (() => {
-          this.backToScanCamera();
-        })
-      })
+      this.CloseButtonBuilder()
     }
     .width('100%')
     .height('100%')
     .backgroundColor(this.userGrant ? Color.Transparent : Color.Black)
+  }
+
+  // Code recognition information processing.
+  handleDecodeResult(error: BusinessError, result: scanBarcode.ScanResult[]): void {
+    if (result) {
+      this.scanResult.size = result.length;
+      // Barcode image information recognized.
+      if (this.scanResult.size > 0) {
+        this.scanResult.code = (error && error.code) ? error.code : 0;
+        this.scanResult.data = result;
+        this.avPlayer?.playDrip();
+      }
+    }
   }
 
   onScreenEvent(): void {
@@ -340,7 +333,8 @@ struct ScanPage {
     if (grantStatus === abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED) {
       // If the user has granted the permission, the operation is allowed.
       this.userGrant = true;
-      this.initScan();
+      this.scanService.updateScanStatus(ScanStatus.NOT_STARTED);
+      this.startCustomScan();
     } else {
       // Apply for the camera permission.
       this.requestCameraPermission();
@@ -355,58 +349,63 @@ struct ScanPage {
         // The user has granted the permission.
         Logger.info(TAG, 'Succeeded in requesting permissions from user.');
         this.userGrant = true;
+        this.scanService.updateScanStatus(ScanStatus.NOT_STARTED);
         if (this.isDialogShow) {
           this.isDialogShow = false;
           this.dialogController.close();
         }
-        this.initScan();
+        this.startCustomScan();
       } else {
         // If the user refuses to grant the permission, display a message indicating that user authorization is required, and direct the user to set the permission in system settings.
         Logger.info(TAG, `Failed to requesting permissions from user.`);
         this.userGrant = false;
         if (!this.isDialogShow) {
-          this.dialogController.open();
           this.isDialogShow = true;
+          this.dialogController.open();
         }
       }
     }
   }
 
-  onDensityDPI(): void {
+  onDisplayChange(): void {
     display.on('change', () => {
-      try {
-        let newDisplay = display.getDefaultDisplaySync();
-        if (newDisplay !== null && this.newArea.densityPixels !== newDisplay.densityPixels) {
-          Logger.info(TAG, 'densityPixels has changed.');
-          this.newArea.densityPixels = newDisplay.densityPixels;
-          if (newDisplay.densityPixels > 0) {
-            let windowSize: window.Size = {
-              width: this.newArea.width / newDisplay.densityPixels,
-              height: this.newArea.height / newDisplay.densityPixels,
-            };
-            this.startScan(windowSize);
-          } else {
-            Logger.error(TAG, `densityPixels less than or equal to 0`);
-          }
-        }
-
-        if (this.deviceStatus.rotation !== newDisplay.rotation) {
+      let newDisplay = DeviceService.getDisplayInfoSync();
+      Logger.info(TAG,
+        `onDisplayChange, pre_densityPixels: ${DeviceService.densityPixels}, new_densityPixels: ${newDisplay?.densityPixels}.pre_rotation: ${DeviceService.rotation}, new_rotation: ${newDisplay?.rotation}.`);
+      if (newDisplay !== null) {
+        // The device rotates.
+        if (DeviceService.rotation !== newDisplay.rotation) {
           Logger.info(TAG,
-            `onDisplayChange, pre_rotation: ${this.deviceStatus.rotation}, new_rotation: ${newDisplay.rotation}.`);
-          this.scanService.initScanData();
-          let rotationAngle: number = Math.abs(this.deviceStatus.rotation - newDisplay.rotation);
-          this.deviceStatus.setRotation(newDisplay.rotation);
-          if (rotationAngle === 2) {
-            this.initScan();
+            `onDisplayChange, pre_rotation: ${DeviceService.rotation}, new_rotation: ${newDisplay.rotation}.`);
+          let rotationAngle: number = Math.abs(DeviceService.rotation - newDisplay.rotation);
+          DeviceService.setDisplayInfo(newDisplay);
+
+          // The device rotates and the screen density changes.
+          if (DeviceService.densityPixels !== newDisplay.densityPixels) {
+            this.windowService.refreshLayoutByDensityPixels(DeviceService.densityPixels);
+          } else {
+            this.xComponentService.setScanXComponentSize();
           }
+
+          // rotationAngle === 2 indicates that the rotation angle is 180 degrees. In this case, you do not need to initialize the width and height of XComponent. Instead, you can directly use initScan.
+          if (rotationAngle === 2) {
+            this.startCustomScan();
+          }
+
+          // The device screen density changes.
+        } else if (DeviceService.densityPixels !== newDisplay.densityPixels) {
+          Logger.info(TAG,
+            `onDisplayChange, pre_densityPixels: ${DeviceService.densityPixels}, new_densityPixels: ${newDisplay.densityPixels}.`);
+          DeviceService.setDisplayInfo(newDisplay);
+          this.windowService.refreshLayoutByDensityPixels(DeviceService.densityPixels);
+        } else {
+          DeviceService.setDisplayInfo(newDisplay);
         }
-      } catch (error) {
-        Logger.error(TAG, `Failed to invoke an API of getDefaultDisplaySync. Code: ${error.code}`);
       }
     })
   }
 
-  offDensityDPI(): void {
+  offDisplayChange(): void {
     try {
       display.off('change');
     } catch (error) {
@@ -414,29 +413,15 @@ struct ScanPage {
     }
   }
 
-  setDisplay(): void {
-    let windowSize: window.Size | null = this.scanSize.setWindowSize();
-    if (windowSize) {
-      this.scanSize.setScanXComponentSize(windowSize)
-    }
-  }
-
-  startScan(windowSize: window.Size | null): void {
-    if (windowSize) {
-      this.scanSize.setScanXComponentSize(windowSize);
-      this.initScan()
-    }
-  }
-
-  initScan(): void {
+  startCustomScan(): void {
     this.viewControl = {
-      width: this.xComponentSize.width,
-      height: this.xComponentSize.height,
+      width: this.xComponentService.width,
+      height: this.xComponentService.height,
       surfaceId: this.surfaceId
     }
     if (this.surfaceId) {
-      Logger.info(TAG, `startScan`)
-      this.scanService.initCamera(this.options, this.viewControl, this.customCallbackScan);
+      Logger.info(TAG, `startCustomScan, surfaceId: ${this.surfaceId}`);
+      this.scanService.startPreviewStream(this.options, this.viewControl, this.customScanCallback);
       this.startTimer()
       this.avPlayer = PromptTone.getInstance(getContext(this) as common.UIAbilityContext);
     }
@@ -464,16 +449,14 @@ struct ScanPage {
     emitter.on({ eventId: CommonConstants.WINDOW_SIZE_CHANGE }, async (eventData: emitter.EventData) => {
       Logger.info(TAG, 'windowSizeChange enter');
       if (eventData.data) {
-        let windowSize: window.Size = {
-          width: px2vp(eventData.data.width),
-          height: px2vp(eventData.data.height)
+        if (this.foldStatus.oldFoldStatus !== this.foldStatus.newFoldStatus) {
+          this.foldStatus.oldFoldStatus = this.foldStatus.newFoldStatus;
+          this.clearTimer();
+          await this.scanService.stopPreviewStream();
+          DeviceService.selectSuitableRatio();
+          this.xComponentService.setScanXComponentSize();
         }
-        if (this.deviceStatus.oldFoldStatus !== this.deviceStatus.newFoldStatus) {
-          await this.releaseUI();
-          this.scanService.resetRetryScanTimes();
-          this.deviceStatus.oldFoldStatus = this.deviceStatus.newFoldStatus;
-        }
-        this.startScan(windowSize);
+        this.startCustomScan();
       }
     });
   }
@@ -483,24 +466,17 @@ struct ScanPage {
       display.on('foldStatusChange', async (foldStatus: display.FoldStatus) => {
         // FOLD_STATUS_FOLDED => FOLD_STATUS_HALF_FOLDED; FOLD_STATUS_EXPANDED or FOLD_STATUS_HALF_FOLDED => FOLD_STATUS_FOLDED
         Logger.info(TAG,
-          `foldStatus has changed, pre_foldStatus: ${this.deviceStatus.newFoldStatus}, new_foldStatus: ${foldStatus}`);
-        this.deviceStatus.oldFoldStatus = this.deviceStatus.newFoldStatus;
-        this.deviceStatus.newFoldStatus = foldStatus;
+          `foldStatus has changed, pre_foldStatus: ${this.foldStatus.newFoldStatus}, new_foldStatus: ${foldStatus}`);
+        this.foldStatus.oldFoldStatus = this.foldStatus.newFoldStatus;
+        this.foldStatus.newFoldStatus = foldStatus;
       });
     } catch (error) {
       Logger.error(TAG, `Failed to foldStatusListen. Code: ${error.code}`);
     }
   }
 
-  async releaseUI(): Promise<void> {
-    this.scanService.resetScanData();
-    this.clearTimer();
-    await this.scanService.releaseCamera();
-  }
-
-  async backToScanCamera() {
-    this.clearTimer();
-    this.scanService.backToScan(this.options, this.viewControl, this.customCallbackScan);
-    this.startTimer()
+  restartPreviewStream() {
+    this.scanService.startPreviewStream(this.options, this.viewControl, this.customScanCallback);
+    this.startTimer();
   }
 }

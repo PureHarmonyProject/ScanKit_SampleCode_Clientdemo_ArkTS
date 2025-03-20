@@ -1,10 +1,11 @@
 import { IconPress } from './IconPress'
 import { BreakpointConstants } from '../constants/BreakpointConstants';
 import { CommonConstants } from '../constants/CommonConstants';
-import { ScanSize } from '../model/ScanSize';
 import { BreakpointType } from '../model/BreakpointType';
 import { ScanService } from '../model/ScanService';
 import { FontSizeScale } from '../model/FontSizeScale';
+import { ScanLayout } from '../model/ScanLayout';
+import { LengthMetrics } from '@kit.ArkUI';
 
 @Extend(Column)
 function componentColumnContainer(currentBreakpoint: string) {
@@ -94,13 +95,24 @@ export struct FlashLight {
 export struct ScanBottom {
   @StorageLink('currentBreakpoint') currentBreakpoint: string = BreakpointConstants.BREAKPOINT_LG;
   @State scanService: ScanService = ScanService.getInstance();
-  @State isAlbumOffset: boolean =
-    false; // When the gallery text is displayed between two lines, the gallery is internally offset.
-  @Prop isScanned: boolean = false; // Scanning result.
+  @State scanLayout: ScanLayout = ScanLayout.getInstance();
   @Prop enableAlbum: boolean = false;
-  marginD: number = ScanSize.getInstance().scanLayout.marginD;
   public openPicker: () => void = () => {
   };
+
+  @Builder
+  IsIconPress() {
+    if (this.enableAlbum) {
+      IconPress({
+        url: $r('sys.symbol.picture'),
+        text: $r('app.string.Scan_gallery'),
+        iconId: 'scan_page_openPicker',
+        imageClick: (() => {
+          this.openPicker();
+        })
+      })
+    }
+  }
 
   @Builder
   SMBuilder() {
@@ -110,34 +122,25 @@ export struct ScanBottom {
         isLargeScreen: false
       })
         .margin({
-          top: 24,
-          bottom: 12 + CommonConstants.PLACEHOLDER_HEIGHT + 2 * this.marginD
+          bottom: this.scanLayout.flashToGallery
         })
-        .visibility(this.scanService.isFlashlight || this.scanService.isSensorLight ? Visibility.Visible :
-        Visibility.Hidden) // Determine whether to turn on the flash light based on the light conditions, light change, and whether the flash light is already on.
+        .visibility((this.scanService.isFlashlight || this.scanService.isSensorLight)
+          && this.scanLayout.isFlashShow ? Visibility.Visible : Visibility.Hidden)
 
       // Image button area.
       Row() {
-        if (this.enableAlbum) {
-          IconPress({
-            url: $r('sys.symbol.picture'),
-            text: $r('app.string.Scan_gallery'),
-            iconId: 'scan_page_openPicker',
-            isAlbumOffset: this.isAlbumOffset,
-            imageClick: (() => {
-              this.openPicker();
-            })
-          })
-        }
+        this.IsIconPress()
       }
-      .height(CommonConstants.ICON_PRESS_HEIGHT)
+      .height(this.scanLayout.heightBreakpoint === BreakpointConstants.BREAKPOINT_SM ||
+        this.scanLayout.heightBreakpoint === BreakpointConstants.BREAKPOINT_MD ? CommonConstants.ICON_PRESS_HEIGHT :
+      CommonConstants.ICON_PRESS_TEXT_HEIGHT)
       .width('100%')
       .margin({
-        bottom: CommonConstants.TAB_BAR_HEIGHT + CommonConstants.AI_BOTTOM_BAR_HEIGHT
+        bottom: this.scanLayout.galleryMarginBottom
       })
       .justifyContent(FlexAlign.Center)
     }
-    .componentColumnContainer(this.currentBreakpoint)
+    .componentColumnContainer(this.scanLayout.widthBreakpoint)
   }
 
   @Builder
@@ -147,37 +150,23 @@ export struct ScanBottom {
         isLargeScreen: true
       })
         .margin({
-          right: new BreakpointType($r('app.float.flash_horizontal_margin_right_sm'),
-            $r('app.float.flash_horizontal_margin_right_md'),
-            $r('app.float.flash_horizontal_margin_right_lg')).getValue(this.currentBreakpoint)
+          end: LengthMetrics.vp(this.scanLayout.flashToGallery)
         })
-        .visibility(this.scanService.isFlashlight || this.scanService.isSensorLight ? Visibility.Visible :
-        Visibility.Hidden) // Determine whether to turn on the flash light based on the light conditions, light change, and whether the flash light is already on.
+        .visibility((this.scanService.isFlashlight || this.scanService.isSensorLight)
+          && this.scanLayout.isFlashShow ? Visibility.Visible : Visibility.Hidden)
 
       Column() {
-        if (this.enableAlbum) {
-          IconPress({
-            url: $r('sys.symbol.picture'),
-            text: $r('app.string.Scan_gallery'),
-            iconId: 'scan_page_openPicker',
-            isAlbumOffset: this.isAlbumOffset,
-            imageClick: (() => {
-              this.openPicker();
-            })
-          })
-        }
+        this.IsIconPress()
       }
       .justifyContent(FlexAlign.Center)
       .alignItems(HorizontalAlign.Center)
-      .width(new BreakpointType($r('app.float.icon_container_horizontal_width_sm'),
-        $r('app.float.icon_container_horizontal_width_md'),
-        $r('app.float.icon_container_horizontal_width_lg')).getValue(this.currentBreakpoint))
+      .width(this.scanLayout.galleryAreaWidth)
     }
-    .componentRowContainer(this.currentBreakpoint)
+    .componentRowContainer(this.scanLayout.widthBreakpoint)
   }
 
   build() {
-    if (this.currentBreakpoint === BreakpointConstants.BREAKPOINT_SM) {
+    if (this.scanLayout.widthBreakpoint === BreakpointConstants.BREAKPOINT_SM) {
       this.SMBuilder()
     } else {
       this.NotSMBuilder()

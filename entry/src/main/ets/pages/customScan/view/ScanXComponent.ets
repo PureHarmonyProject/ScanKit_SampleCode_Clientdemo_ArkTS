@@ -1,14 +1,14 @@
-import { XComponentSize } from '../model/ScanSize';
 import Logger from '../../../common/Logger';
+import { XComponentService } from '../model/XComponentService';
 
 const TAG = 'ScanXComponent';
 
 @Component
 export struct ScanXComponent {
-  @ObjectLink xComponentSize: XComponentSize;
+  @State xComponentService: XComponentService = XComponentService.getInstance();
   @Link surfaceId: string;
   private mXComponentController: XComponentController = new XComponentController();
-  public initScan: () => void = () => {
+  public startCustomScan: () => void = () => {
   };
 
   build() {
@@ -20,11 +20,14 @@ export struct ScanXComponent {
       .onLoad(async () => {
         this.surfaceId = this.mXComponentController.getXComponentSurfaceId();
         Logger.info(TAG, `Succeeded in loading XComponent, getXComponentSurfaceId: ${this.surfaceId}`);
-        this.initScan();
+        this.startCustomScan();
       })
-      .height(this.xComponentSize.height)
-      .width(this.xComponentSize.width)
-      .position({ x: this.xComponentSize.offsetX, y: this.xComponentSize.offsetY })
+      .onDestroy(() => {
+        this.surfaceId = '';
+      })
+      .height(this.xComponentService.height)
+      .width(this.xComponentService.width)
+      .position({ x: this.xComponentService.offsetX, y: this.xComponentService.offsetY })
       .clip(true)
   }
 }
